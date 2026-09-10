@@ -1,0 +1,2511 @@
+<title>Собери правильно</title>
+  <style>
+/* css/style.css */
+/* ==========================================================================
+   Тренажёр «Собери правильно» — оформление
+   ========================================================================== */
+
+:root {
+  --bg:            #eef1f6;
+  --bg-deep:       #e2e7f0;
+  --surface:       #ffffff;
+  --surface-2:     #f7f9fc;
+  --ink:           #16202e;
+  --ink-soft:      #55637a;
+  --ink-faint:     #8b97ab;
+  --line:          #d8dfea;
+  --line-strong:   #c2ccdb;
+
+  --accent:        #2f5fd0;
+  --accent-deep:   #23479c;
+  --accent-soft:   #e5ecfb;
+
+  --good:          #1d8a4e;
+  --good-soft:     #e2f5ea;
+  --bad:           #c0392f;
+  --bad-soft:      #fceae8;
+  --warn:          #b8790d;
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+
+  --shadow-sm: 0 1px 2px rgba(22, 32, 46, .07), 0 2px 6px rgba(22, 32, 46, .05);
+  --shadow-md: 0 4px 12px rgba(22, 32, 46, .09), 0 12px 28px rgba(22, 32, 46, .07);
+  --shadow-lg: 0 18px 50px rgba(22, 32, 46, .18);
+
+  --ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --doc: "Times New Roman", "Liberation Serif", Georgia, serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--ui);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 600px at 12% -10%, #ffffff 0%, rgba(255,255,255,0) 60%),
+    radial-gradient(900px 500px at 100% 0%, #dfe8fb 0%, rgba(223,232,251,0) 55%),
+    var(--bg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { margin: 0; line-height: 1.2; font-weight: 700; letter-spacing: -.01em; }
+b, strong { font-weight: 650; }
+
+/* ============================ КНОПКИ ============================ */
+
+.btn {
+  font: inherit;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s, color .15s, transform .08s, box-shadow .15s;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible { outline: 3px solid rgba(47, 95, 208, .35); outline-offset: 2px; }
+
+.btn--primary { background: var(--accent); color: #fff; box-shadow: var(--shadow-sm); }
+.btn--primary:hover { background: var(--accent-deep); }
+
+.btn--soft { background: var(--accent-soft); color: var(--accent-deep); border-color: #ccdaf6; }
+.btn--soft:hover { background: #d9e4fa; }
+
+.btn--ghost { background: transparent; color: var(--ink-soft); border-color: var(--line-strong); }
+.btn--ghost:hover { background: var(--surface); color: var(--ink); }
+
+.btn--lg { padding: 13px 26px; font-size: 16px; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* ============================ ШАПКА ============================ */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, .82);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.topbar__back {
+  font: inherit; font-weight: 600;
+  background: none; border: 0; cursor: pointer;
+  color: var(--ink-soft); padding: 6px 10px; border-radius: var(--r-sm);
+}
+.topbar__back:hover { background: var(--surface-2); color: var(--ink); }
+.topbar__title { font-weight: 650; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar__user { display: flex; align-items: center; gap: 9px; }
+.topbar__avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: grid; place-items: center; font-weight: 700; font-size: 13px;
+}
+.topbar__name { font-weight: 600; font-size: 14px; }
+.topbar__exit {
+  font: inherit; font-size: 13px; background: none; border: 0; cursor: pointer;
+  color: var(--ink-faint); text-decoration: underline; padding: 4px;
+}
+.topbar__exit:hover { color: var(--bad); }
+
+/* ============================ ЭКРАНЫ ============================ */
+
+.app { flex: 1; width: 100%; max-width: 1180px; margin: 0 auto; padding: 24px 20px 40px; }
+.screen { display: none; animation: fade .28s ease both; }
+.screen.is-active { display: block; }
+
+@keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.section-head { margin-bottom: 22px; }
+.section-head__title { font-size: 28px; }
+.section-head__sub { margin: 6px 0 0; color: var(--ink-soft); }
+
+/* ============================ ПРИВЕТСТВИЕ ============================ */
+
+.screen--welcome.is-active { display: grid; place-items: center; min-height: 78vh; }
+
+.welcome {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
+  padding: 44px 40px;
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+}
+.welcome__badge {
+  display: inline-block;
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent-deep); background: var(--accent-soft);
+  padding: 5px 12px; border-radius: 999px; margin-bottom: 18px;
+}
+.welcome__title { font-size: 40px; margin-bottom: 12px; }
+.welcome__lead { color: var(--ink-soft); margin: 0 0 28px; }
+.welcome__form { display: grid; gap: 16px; text-align: left; }
+
+.field { display: grid; gap: 7px; }
+.field__label { font-weight: 600; font-size: 14px; }
+.field__input {
+  font: inherit; padding: 12px 14px;
+  border: 1px solid var(--line-strong); border-radius: var(--r-sm);
+  background: var(--surface-2); color: var(--ink);
+  transition: border-color .15s, box-shadow .15s, background-color .15s;
+  width: 100%;
+}
+.field__input:focus {
+  outline: none; background: var(--surface);
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(47, 95, 208, .16);
+}
+.field__error { color: var(--bad); font-size: 13px; min-height: 18px; }
+
+.welcome__facts {
+  list-style: none; display: flex; justify-content: center; gap: 26px;
+  margin: 28px 0 0; padding: 20px 0 0; border-top: 1px solid var(--line);
+  color: var(--ink-faint); font-size: 13px;
+}
+.welcome__facts b { color: var(--ink); font-size: 17px; display: block; }
+
+/* ============================ ТЕМЫ ============================ */
+
+.topics { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+
+.topic {
+  text-align: left; font: inherit; cursor: pointer;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: transform .16s, box-shadow .16s, border-color .16s;
+  display: flex; flex-direction: column; gap: 14px;
+  position: relative; overflow: hidden;
+}
+.topic::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--topic-color, var(--accent));
+}
+.topic:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--line-strong); }
+.topic:focus-visible { outline: 3px solid rgba(47, 95, 208, .35); outline-offset: 2px; }
+
+.topic__icon {
+  width: 46px; height: 46px; border-radius: var(--r-md);
+  display: grid; place-items: center; font-size: 22px;
+  background: var(--topic-soft, var(--accent-soft));
+}
+.topic__name { font-size: 19px; font-weight: 700; }
+.topic__desc { color: var(--ink-soft); font-size: 14px; flex: 1; margin: 0; }
+.topic__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 4px; }
+.topic__count { font-size: 13px; color: var(--ink-faint); }
+
+.bar { height: 6px; border-radius: 999px; background: var(--bg-deep); overflow: hidden; }
+.bar__fill { height: 100%; background: var(--topic-color, var(--accent)); border-radius: 999px; transition: width .5s cubic-bezier(.2,.7,.3,1); }
+
+.overall {
+  margin-top: 26px; padding: 18px 22px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md);
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  color: var(--ink-soft); font-size: 14px;
+}
+.overall__grade {
+  font-size: 30px; font-weight: 800; color: var(--ink);
+  min-width: 46px; height: 46px; display: grid; place-items: center;
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md);
+}
+
+/* ============================ УРОВНИ ============================ */
+
+.levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+
+.level {
+  text-align: left; font: inherit; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-md); padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: transform .16s, box-shadow .16s;
+  display: grid; gap: 10px;
+}
+.level:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.level:focus-visible { outline: 3px solid rgba(47, 95, 208, .35); outline-offset: 2px; }
+.level__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.level__num {
+  font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.level__name { font-size: 17px; font-weight: 650; }
+.level__desc { color: var(--ink-soft); font-size: 14px; margin: 0; }
+.level__meta { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-faint); }
+
+.grade-chip {
+  min-width: 30px; height: 30px; padding: 0 8px;
+  display: inline-grid; place-items: center;
+  border-radius: var(--r-sm); font-weight: 800; font-size: 15px;
+  background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--line);
+}
+.grade-chip--5 { background: var(--good-soft); color: var(--good); border-color: #bde6cd; }
+.grade-chip--4 { background: #e8f2e2; color: #4a7a2a; border-color: #cfe4c2; }
+.grade-chip--3 { background: #fdf3e0; color: var(--warn); border-color: #f0dcb4; }
+.grade-chip--2 { background: var(--bad-soft); color: var(--bad); border-color: #f3cdc8; }
+
+/* ============================ HUD ============================ */
+
+.hud {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.hud__level { font-size: 22px; font-weight: 700; }
+.hud__task { color: var(--ink-soft); font-size: 14px; margin-top: 3px; max-width: 62ch; }
+.hud__stats { display: flex; align-items: center; gap: 10px; }
+
+.stat {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: 7px 14px; text-align: center; min-width: 66px;
+}
+.stat__value { display: block; font-weight: 750; font-size: 17px; font-variant-numeric: tabular-nums; }
+.stat__label { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .05em; }
+.stat--bad .stat__value { color: var(--bad); }
+
+.hud__progress { height: 5px; background: var(--bg-deep); border-radius: 999px; overflow: hidden; margin-bottom: 16px; }
+.hud__progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), #4f86ef); transition: width .4s ease; }
+
+.theory {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-md); margin-bottom: 18px; overflow: hidden;
+}
+.theory__summary {
+  cursor: pointer; padding: 12px 18px; font-weight: 600; font-size: 14px;
+  color: var(--accent-deep); list-style: none; user-select: none;
+}
+.theory__summary::-webkit-details-marker { display: none; }
+.theory__summary::before { content: "▸ "; display: inline-block; transition: transform .2s; }
+.theory[open] .theory__summary::before { content: "▾ "; }
+.theory__body { padding: 0 18px 16px; color: var(--ink-soft); font-size: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
+.theory__body ul { margin: 8px 0 0; padding-left: 20px; }
+.theory__body li { margin-bottom: 5px; }
+.theory__body code { font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+
+/* ============================ ИГРОВОЕ ПОЛЕ ============================ */
+
+.playfield { display: grid; gap: 18px; }
+
+.board-wrap {
+  background: var(--bg-deep);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 26px;
+  display: grid;
+  place-items: start center;
+  overflow-x: auto;
+}
+
+/* --- лист документа --- */
+.board--doc {
+  background: #fff;
+  width: 100%;
+  max-width: 720px;
+  min-height: 300px;
+  padding: 40px 46px;
+  box-shadow: var(--shadow-lg);
+  font-family: var(--doc);
+  font-size: 15px;
+  line-height: 1.45;
+  color: #111;
+  border-radius: 2px;
+}
+.board--doc .b-text { margin: 0 0 4px; }
+
+/* --- макет страницы (HTML) --- */
+.board--layout {
+  width: 100%; max-width: 720px;
+  background: var(--surface); border-radius: var(--r-md);
+  padding: 18px; box-shadow: var(--shadow-md);
+  display: grid; gap: 10px;
+}
+
+/* --- блок кода --- */
+.board--code {
+  width: 100%; max-width: 760px;
+  background: #101828; color: #dbe3f0;
+  border-radius: var(--r-md); padding: 24px 26px;
+  font-family: var(--mono); font-size: 14px; line-height: 2.7;
+  box-shadow: var(--shadow-lg);
+  overflow-x: auto;
+}
+.board--code .b-text { white-space: pre; margin: 0; }
+.board--code .b-code-line { white-space: pre; }
+.board--code .b-comment { color: #6f7f9c; font-style: italic; }
+
+/* --- строки/колонки --- */
+.b-row { display: flex; gap: 14px; align-items: flex-start; }
+.b-row > * { flex: 1 1 0; min-width: 0; }
+.b-row--split { justify-content: space-between; }
+.b-spacer { height: 14px; }
+.b-rule { border: 0; border-top: 1px solid #999; margin: 10px 0; }
+
+.b-al-left   { text-align: left; }
+.b-al-center { text-align: center; }
+.b-al-right  { text-align: right; }
+.b-al-right  .slot,
+.b-al-center .slot { margin-left: auto; margin-right: auto; }
+.b-al-right  .slot { margin-right: 0; }
+
+.b-strong { font-weight: 700; }
+.b-caps   { text-transform: uppercase; letter-spacing: .06em; }
+.b-small  { font-size: 13px; color: #444; }
+.b-indent { padding-left: 40px; }
+
+/* ============================ ПОЛЯ (SLOT) ============================ */
+
+.slot {
+  display: block;
+  position: relative;
+  border: 2px dashed var(--line-strong);
+  border-radius: var(--r-sm);
+  background: rgba(47, 95, 208, .045);
+  padding: 9px 12px;
+  min-height: 44px;
+  cursor: pointer;
+  transition: border-color .15s, background-color .15s, box-shadow .15s, transform .12s;
+  font-family: var(--ui);
+  font-size: 13.5px;
+  color: var(--ink-faint);
+}
+.slot__placeholder { display: block; font-style: italic; }
+.slot__hint { display: block; font-size: 12px; color: var(--warn); margin-top: 3px; }
+.slot__content { display: block; color: var(--ink); font-style: normal; }
+
+.slot:hover:not(.is-correct) { border-color: var(--accent); background: rgba(47, 95, 208, .09); }
+.slot:focus-visible { outline: 3px solid rgba(47, 95, 208, .4); outline-offset: 2px; }
+
+.slot.is-over {
+  border-color: var(--accent); border-style: solid;
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 4px rgba(47, 95, 208, .16);
+  transform: scale(1.015);
+}
+
+.slot.is-correct {
+  border: 1px solid #b6e2c8;
+  background: var(--good-soft);
+  cursor: default;
+  color: var(--ink);
+  animation: pop .3s ease;
+}
+.slot.is-correct .slot__content { font-weight: 500; }
+
+.slot.is-wrong {
+  border-color: var(--bad); border-style: solid;
+  background: var(--bad-soft); color: var(--bad);
+  animation: shake .4s ease;
+}
+
+.slot__mark {
+  position: absolute; top: -10px; right: -10px;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+  box-shadow: var(--shadow-sm);
+  font-family: var(--ui);
+}
+.slot.is-correct .slot__mark { background: var(--good); }
+.slot.is-wrong   .slot__mark { background: var(--bad); }
+
+/* поле внутри блока кода */
+.board--code .slot {
+  display: inline-block;
+  vertical-align: middle;
+  min-height: 0;
+  padding: 3px 10px;
+  margin: 2px 0;
+  background: rgba(255,255,255,.07);
+  border-color: #3d4d6b;
+  color: #8fa2c0;
+  font-family: var(--mono);
+  min-width: 150px;
+}
+.board--code .slot.is-correct { background: rgba(29,138,78,.22); border-color: #2f9e63; color: #b8f0cf; }
+.board--code .slot.is-wrong   { background: rgba(192,57,47,.22); border-color: #d9584c; color: #ffc4bd; }
+.board--code .slot__content   { display: inline; color: inherit; }
+.board--code .slot__placeholder { display: inline; }
+.board--code .slot__hint { display: block; font-size: 11px; }
+
+@keyframes pop   { 0% { transform: scale(.94); } 60% { transform: scale(1.03); } 100% { transform: scale(1); } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+
+/* ============================ БАНК КАРТОЧЕК ============================ */
+
+.bank {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); padding: 18px 20px 20px;
+  box-shadow: var(--shadow-sm);
+}
+.bank__head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.bank__title { font-weight: 700; font-size: 16px; }
+.bank__hint { font-size: 13px; color: var(--ink-faint); }
+.bank__items { display: flex; flex-wrap: wrap; gap: 10px; min-height: 56px; align-content: flex-start; }
+.bank__empty { color: var(--ink-faint); font-style: italic; font-size: 14px; padding: 12px 0; }
+
+.card {
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-sm);
+  padding: 9px 13px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  max-width: 340px;
+  box-shadow: var(--shadow-sm);
+  transition: transform .12s, box-shadow .15s, border-color .15s, opacity .2s;
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--accent); }
+.card:focus-visible { outline: 3px solid rgba(47, 95, 208, .4); outline-offset: 2px; }
+.card__tag { display: block; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--accent-deep); margin-bottom: 2px; }
+.card__text { display: block; font-size: 14px; line-height: 1.35; }
+.card--code .card__text { font-family: var(--mono); font-size: 13px; }
+
+.card.is-picked {
+  border-color: var(--accent); background: var(--accent-soft);
+  box-shadow: 0 0 0 3px rgba(47, 95, 208, .2), var(--shadow-md);
+}
+.card.is-dragging { opacity: .35; }
+.card.is-flying { pointer-events: none; }
+
+/* слой перетаскивания */
+.drag-layer { position: fixed; inset: 0; pointer-events: none; z-index: 100; }
+.drag-layer .card {
+  position: absolute; margin: 0; cursor: grabbing;
+  box-shadow: var(--shadow-lg);
+  transform: rotate(-1.5deg) scale(1.03);
+  border-color: var(--accent);
+  background: #fff;
+}
+body.is-dragging { cursor: grabbing; user-select: none; }
+
+/* ============================ РЕЗУЛЬТАТ ============================ */
+
+.result {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-md);
+  padding: 36px; max-width: 720px; margin: 12px auto;
+}
+.result__head { text-align: center; margin-bottom: 26px; }
+.result__emoji { font-size: 44px; line-height: 1; }
+.result__title { font-size: 26px; margin: 10px 0 6px; }
+.result__sub { color: var(--ink-soft); margin: 0; }
+
+.result__grade {
+  display: grid; place-items: center; gap: 2px;
+  width: 128px; height: 128px; margin: 22px auto 6px;
+  border-radius: 50%; border: 5px solid var(--good);
+  background: var(--good-soft);
+}
+.result__grade-num { font-size: 52px; font-weight: 800; color: var(--good); line-height: 1; }
+.result__grade-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--good); font-weight: 700; }
+.result__grade[data-grade="4"] { border-color: #6b9e46; background: #eef6e8; }
+.result__grade[data-grade="4"] .result__grade-num,
+.result__grade[data-grade="4"] .result__grade-label { color: #4a7a2a; }
+.result__grade[data-grade="3"] { border-color: var(--warn); background: #fdf3e0; }
+.result__grade[data-grade="3"] .result__grade-num,
+.result__grade[data-grade="3"] .result__grade-label { color: var(--warn); }
+.result__grade[data-grade="2"] { border-color: var(--bad); background: var(--bad-soft); }
+.result__grade[data-grade="2"] .result__grade-num,
+.result__grade[data-grade="2"] .result__grade-label { color: var(--bad); }
+
+.result__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin: 26px 0; }
+.result__stat { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); padding: 14px; text-align: center; }
+.result__stat b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+.result__stat span { font-size: 12px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .04em; }
+
+.result__section-title { font-size: 15px; font-weight: 700; margin: 0 0 10px; }
+.review { list-style: none; margin: 0 0 26px; padding: 0; display: grid; gap: 8px; }
+.review__item {
+  border: 1px solid var(--line); border-left: 3px solid var(--bad);
+  border-radius: var(--r-sm); padding: 11px 14px; background: var(--surface-2); font-size: 14px;
+}
+.review__item--clean { border-left-color: var(--good); }
+.review__name { font-weight: 650; }
+.review__note { color: var(--ink-soft); display: block; margin-top: 3px; font-size: 13px; }
+.review__note code { font-family: var(--mono); font-size: 12.5px; background: #eef1f6; padding: 1px 5px; border-radius: 4px; }
+
+.result__actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+/* ============================ ТОСТ ============================ */
+
+.toast {
+  position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px);
+  background: var(--ink); color: #fff; padding: 11px 20px; border-radius: 999px;
+  font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
+  opacity: 0; pointer-events: none; transition: opacity .22s, transform .22s;
+  z-index: 120; max-width: calc(100vw - 40px); text-align: center;
+}
+.toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+.toast.is-good { background: var(--good); }
+.toast.is-bad  { background: var(--bad); }
+
+/* ============================ ПОДВАЛ ============================ */
+
+.footer {
+  text-align: center; font-size: 12px; color: var(--ink-faint);
+  padding: 20px; border-top: 1px solid var(--line);
+}
+
+/* ============================ АДАПТИВ ============================ */
+
+@media (min-width: 1000px) {
+  .playfield { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+  .bank { position: sticky; top: 76px; max-height: calc(100vh - 100px); overflow-y: auto; }
+  .bank__items { flex-direction: column; flex-wrap: nowrap; }
+  .card { max-width: none; }
+}
+
+@media (max-width: 720px) {
+  .app { padding: 16px 14px 30px; }
+  .welcome { padding: 30px 22px; }
+  .welcome__title { font-size: 30px; }
+  .board-wrap { padding: 14px; }
+  .board--doc { padding: 24px 20px; font-size: 14px; }
+  .board--code { padding: 16px 14px; font-size: 12.5px; }
+  .board--code .slot { min-width: 110px; }
+  .hud__stats { width: 100%; justify-content: space-between; }
+  .result { padding: 24px 18px; }
+  .b-row { flex-direction: column; }
+  .b-indent { padding-left: 16px; }
+  .topbar { padding: 10px 14px; gap: 10px; }
+  .topbar__title { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+/* ============================ УТОЧНЕНИЯ ============================ */
+
+/* многострочные реквизиты (адресат, гриф утверждения, подписи комиссии) */
+.card__text,
+.slot__content { white-space: pre-line; }
+.board--code .slot__content { white-space: normal; }
+
+.slot.is-locked { cursor: default; }
+.slot.is-locked:hover { border-color: #b6e2c8; }
+
+/* чтобы длинные реквизиты не рвали лист документа */
+.board--doc .slot { overflow-wrap: anywhere; }
+.card { overflow-wrap: anywhere; }
+
+  </style>
+<!-- ============ ШАПКА ============ -->
+  <header class="topbar" id="topbar" hidden>
+    <button class="topbar__back" id="btn-back" type="button" aria-label="Назад">
+      <span aria-hidden="true">←</span> Назад
+    </button>
+    <div class="topbar__title" id="topbar-title">Выбор темы</div>
+    <div class="topbar__user">
+      <span class="topbar__avatar" id="user-avatar" aria-hidden="true">?</span>
+      <span class="topbar__name" id="user-name">Студент</span>
+      <button class="topbar__exit" id="btn-logout" type="button" title="Сменить пользователя">Выйти</button>
+    </div>
+  </header>
+
+  <main class="app" id="app">
+
+    <!-- ============ ЭКРАН 1: ПРИВЕТСТВИЕ ============ -->
+    <section class="screen screen--welcome is-active" id="screen-welcome">
+      <div class="welcome">
+        <div class="welcome__badge">учебный тренажёр</div>
+        <h1 class="welcome__title">Собери правильно</h1>
+        <p class="welcome__lead">
+          Симулятор-сопоставление по трём темам: <b>HTML</b>, <b>CSS</b> и
+          <b>документооборот РФ</b>. Перетаскивай карточки в пустые поля,
+          получай очки и оценку по пятибалльной шкале.
+        </p>
+
+        <form class="welcome__form" id="form-login" novalidate>
+          <label class="field">
+            <span class="field__label">Как тебя зовут?</span>
+            <input class="field__input" id="input-name" type="text" name="name"
+                   placeholder="Например: Анна Смирнова" autocomplete="name"
+                   maxlength="40" required>
+            <span class="field__error" id="name-error" role="alert"></span>
+          </label>
+          <button class="btn btn--primary btn--lg" type="submit">Начать</button>
+        </form>
+
+        <ul class="welcome__facts">
+          <li><b>9</b> уровней</li>
+          <li><b>3</b> темы</li>
+          <li>оценка <b>2–5</b></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ ЭКРАН 2: ВЫБОР ТЕМЫ ============ -->
+    <section class="screen screen--topics" id="screen-topics">
+      <div class="section-head">
+        <h2 class="section-head__title" id="greeting">Привет!</h2>
+        <p class="section-head__sub">Выбери тему, по которой хочешь пройти уровни.</p>
+      </div>
+      <div class="topics" id="topics-grid"></div>
+      <div class="overall" id="overall"></div>
+    </section>
+
+    <!-- ============ ЭКРАН 3: ВЫБОР УРОВНЯ ============ -->
+    <section class="screen screen--levels" id="screen-levels">
+      <div class="section-head">
+        <h2 class="section-head__title" id="levels-title">Уровни</h2>
+        <p class="section-head__sub" id="levels-sub"></p>
+      </div>
+      <div class="levels" id="levels-grid"></div>
+    </section>
+
+    <!-- ============ ЭКРАН 4: ИГРА ============ -->
+    <section class="screen screen--game" id="screen-game">
+      <div class="hud">
+        <div class="hud__info">
+          <div class="hud__level" id="hud-level">Уровень</div>
+          <div class="hud__task" id="hud-task"></div>
+        </div>
+        <div class="hud__stats">
+          <div class="stat">
+            <span class="stat__value" id="hud-score">0</span>
+            <span class="stat__label">очки</span>
+          </div>
+          <div class="stat">
+            <span class="stat__value" id="hud-filled">0/0</span>
+            <span class="stat__label">полей</span>
+          </div>
+          <div class="stat stat--bad">
+            <span class="stat__value" id="hud-mistakes">0</span>
+            <span class="stat__label">ошибок</span>
+          </div>
+          <button class="btn btn--ghost" id="btn-restart" type="button">Сначала</button>
+        </div>
+      </div>
+
+      <div class="hud__progress"><div class="hud__progress-bar" id="hud-progress"></div></div>
+
+      <details class="theory" id="theory">
+        <summary class="theory__summary">Подсказка по теме</summary>
+        <div class="theory__body" id="theory-body"></div>
+      </details>
+
+      <div class="playfield">
+        <div class="board-wrap">
+          <div class="board" id="board"></div>
+        </div>
+        <div class="bank">
+          <div class="bank__head">
+            <span class="bank__title">Карточки</span>
+            <span class="bank__hint">перетащи мышкой или нажми на карточку, затем на поле</span>
+          </div>
+          <div class="bank__items" id="bank"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ЭКРАН 5: РЕЗУЛЬТАТ ============ -->
+    <section class="screen screen--result" id="screen-result">
+      <div class="result" id="result"></div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="drag-layer" id="drag-layer" aria-hidden="true"></div>
+
+  <footer class="footer">
+    Учебный тренажёр · реквизиты приведены по ГОСТ Р 7.0.97-2025 (ОРД) ·
+    перед использованием сверьте формулировки с действующей редакцией стандарта
+  </footer>
+  <script>
+/* js/data/html-topic.js */
+/* ==========================================================================
+   Тема 1 — HTML
+   Схема уровня описана в README.md (раздел «Как добавить свой уровень»)
+   ========================================================================== */
+
+window.TOPIC_HTML = {
+  id: 'html',
+  name: 'HTML',
+  icon: '</>',
+  color: '#e2622f',
+  soft: '#fdeee7',
+  desc: 'Структура страницы, семантические теги и формы. Собери разметку из готовых фрагментов.',
+
+  levels: [
+
+    /* ---------------------------------------------------------------- */
+    {
+      id: 'html-1',
+      name: 'Скелет страницы',
+      desc: 'Базовая структура HTML-документа',
+      task: 'Расставь недостающие теги так, чтобы получился корректный HTML-документ.',
+      theory:
+        '<p>Любая страница строится по одной схеме:</p>' +
+        '<ul>' +
+        '<li><code>&lt;!DOCTYPE html&gt;</code> — объявление типа документа, всегда первая строка;</li>' +
+        '<li><code>&lt;head&gt;</code> — служебные данные: кодировка, заголовок вкладки, подключение стилей. На странице не видны;</li>' +
+        '<li><code>&lt;body&gt;</code> — всё, что пользователь видит в окне браузера;</li>' +
+        '<li>парные теги закрываются в обратном порядке: что открыли последним — закрываем первым.</li>' +
+        '</ul>',
+      boardType: 'code',
+      blocks: [
+        { t: 'line', items: [ { t: 'slot', id: 'h1-doctype', answer: 'c-doctype', ph: 'поле 1',
+            hint: 'Объявление типа документа',
+            explain: '<code>&lt;!DOCTYPE html&gt;</code> — первая строка файла, включает стандартный режим отображения.' } ] },
+        { t: 'line', items: [ { t: 'text', text: '<html lang="ru">' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h1-head', answer: 'c-head', ph: 'поле 2',
+            hint: 'Открывающий тег служебного раздела',
+            explain: '<code>&lt;head&gt;</code> — раздел с метаданными: кодировка, title, ссылки на CSS.' } ] },
+        { t: 'line', items: [ { t: 'text', text: '    ' }, { t: 'slot', id: 'h1-meta', answer: 'c-meta', ph: 'поле 3',
+            hint: 'Кодировка документа',
+            explain: '<code>&lt;meta charset="UTF-8"&gt;</code> задаёт кодировку — без неё кириллица может превратиться в «кракозябры».' } ] },
+        { t: 'line', items: [ { t: 'text', text: '    ' }, { t: 'slot', id: 'h1-title', answer: 'c-title', ph: 'поле 4',
+            hint: 'Заголовок вкладки браузера',
+            explain: '<code>&lt;title&gt;</code> — название страницы: показывается на вкладке и в результатах поиска.' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  </head>' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h1-body', answer: 'c-body', ph: 'поле 5',
+            hint: 'Открывающий тег видимой части',
+            explain: '<code>&lt;body&gt;</code> открывает содержимое, которое видит пользователь.' } ] },
+        { t: 'line', items: [ { t: 'text', text: '    <h1>Добро пожаловать</h1>' } ] },
+        { t: 'line', items: [ { t: 'text', text: '    <p>Это моя первая страница.</p>' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h1-bodyend', answer: 'c-bodyend', ph: 'поле 6',
+            hint: 'Закрывающий тег видимой части',
+            explain: '<code>&lt;/body&gt;</code> закрывается перед <code>&lt;/html&gt;</code>: вложенность соблюдается строго.' } ] },
+        { t: 'line', items: [ { t: 'text', text: '</html>' } ] }
+      ],
+      cards: [
+        { id: 'c-doctype', text: '<!DOCTYPE html>', code: true },
+        { id: 'c-head',    text: '<head>',          code: true },
+        { id: 'c-meta',    text: '<meta charset="UTF-8">', code: true },
+        { id: 'c-title',   text: '<title>Моя первая страница</title>', code: true },
+        { id: 'c-body',    text: '<body>',          code: true },
+        { id: 'c-bodyend', text: '</body>',         code: true },
+        { id: 'c-x-html',  text: '</html>',         code: true, note: 'Закрывающий тег <html> уже стоит в разметке последней строкой.' },
+        { id: 'c-x-div',   text: '<div>',           code: true, note: '<div> — блок без смысла, в скелете документа он не нужен.' },
+        { id: 'c-x-style', text: '<style>',         code: true, note: 'Стили подключают отдельно; для базовой структуры тег не требуется.' },
+        { id: 'c-x-br',    text: '<br>',            code: true, note: '<br> — перенос строки внутри текста, к структуре документа отношения не имеет.' }
+      ]
+    },
+
+    /* ---------------------------------------------------------------- */
+    {
+      id: 'html-2',
+      name: 'Семантическая разметка',
+      desc: 'Теги, которые описывают смысл блока',
+      task: 'Подбери семантический тег для каждой области страницы.',
+      theory:
+        '<p>Семантические теги говорят браузеру и поисковику, <b>чем является</b> блок, а не как он выглядит:</p>' +
+        '<ul>' +
+        '<li><code>&lt;header&gt;</code> — шапка, <code>&lt;footer&gt;</code> — подвал;</li>' +
+        '<li><code>&lt;nav&gt;</code> — блок навигационных ссылок;</li>' +
+        '<li><code>&lt;main&gt;</code> — основное содержимое, на странице ровно один раз;</li>' +
+        '<li><code>&lt;article&gt;</code> — самостоятельный материал, который можно вынести отдельно;</li>' +
+        '<li><code>&lt;aside&gt;</code> — то, что связано с содержимым косвенно (боковая колонка).</li>' +
+        '</ul>',
+      boardType: 'layout',
+      blocks: [
+        { t: 'row', items: [
+          { t: 'text', text: 'Логотип, название сайта и телефон вверху страницы', cls: 'b-small' },
+          { t: 'slot', id: 'h2-header', answer: 'c-header', ph: 'тег',
+            hint: 'Вводная часть страницы',
+            explain: '<code>&lt;header&gt;</code> — вводный блок: логотип, название, контакты.' } ] },
+        { t: 'row', items: [
+          { t: 'text', text: 'Горизонтальное меню со ссылками на разделы', cls: 'b-small' },
+          { t: 'slot', id: 'h2-nav', answer: 'c-nav', ph: 'тег',
+            hint: 'Навигация',
+            explain: '<code>&lt;nav&gt;</code> — блок основных навигационных ссылок.' } ] },
+        { t: 'row', items: [
+          { t: 'text', text: 'Основное содержимое, уникальное для этой страницы', cls: 'b-small' },
+          { t: 'slot', id: 'h2-main', answer: 'c-main', ph: 'тег',
+            hint: 'Главная область, одна на страницу',
+            explain: '<code>&lt;main&gt;</code> — основное содержимое; на странице должен быть только один такой тег.' } ] },
+        { t: 'row', items: [
+          { t: 'text', text: 'Текст новости, который можно опубликовать отдельно', cls: 'b-small' },
+          { t: 'slot', id: 'h2-article', answer: 'c-article', ph: 'тег',
+            hint: 'Самостоятельный материал',
+            explain: '<code>&lt;article&gt;</code> — законченный материал: новость, статья, отзыв.' } ] },
+        { t: 'row', items: [
+          { t: 'text', text: 'Боковая колонка: «Читайте также» и реклама', cls: 'b-small' },
+          { t: 'slot', id: 'h2-aside', answer: 'c-aside', ph: 'тег',
+            hint: 'Побочное содержимое',
+            explain: '<code>&lt;aside&gt;</code> — содержимое, связанное с основным лишь косвенно.' } ] },
+        { t: 'row', items: [
+          { t: 'text', text: 'Копирайт, адрес и ссылки на соцсети внизу', cls: 'b-small' },
+          { t: 'slot', id: 'h2-footer', answer: 'c-footer', ph: 'тег',
+            hint: 'Завершающая часть страницы',
+            explain: '<code>&lt;footer&gt;</code> — подвал: копирайт, контакты, служебные ссылки.' } ] }
+      ],
+      cards: [
+        { id: 'c-header',  text: '<header>',  code: true },
+        { id: 'c-nav',     text: '<nav>',     code: true },
+        { id: 'c-main',    text: '<main>',    code: true },
+        { id: 'c-article', text: '<article>', code: true },
+        { id: 'c-aside',   text: '<aside>',   code: true },
+        { id: 'c-footer',  text: '<footer>',  code: true },
+        { id: 'c-x-div2',  text: '<div>',     code: true, note: '<div> не несёт смысла — его берут, когда подходящего семантического тега нет.' },
+        { id: 'c-x-span',  text: '<span>',    code: true, note: '<span> — строчный контейнер для куска текста, не для области страницы.' },
+        { id: 'c-x-fig',   text: '<figure>',  code: true, note: '<figure> — иллюстрация с подписью, а не структурная область.' },
+        { id: 'c-x-table', text: '<table>',   code: true, note: '<table> — таблица данных; вёрстку макета на таблицах давно не делают.' }
+      ]
+    },
+
+    /* ---------------------------------------------------------------- */
+    {
+      id: 'html-3',
+      name: 'Форма обратной связи',
+      desc: 'Поля ввода, список и кнопка отправки',
+      task: 'Собери рабочую форму: под каждой подписью должно стоять подходящее поле.',
+      theory:
+        '<p>Форма отправляет данные на сервер. Ключевые элементы:</p>' +
+        '<ul>' +
+        '<li><code>&lt;form action="…" method="post"&gt;</code> — куда и каким методом уходят данные;</li>' +
+        '<li><code>&lt;input type="email"&gt;</code> — однострочное поле с проверкой адреса;</li>' +
+        '<li><code>&lt;textarea&gt;</code> — многострочный текст, тег обязательно парный;</li>' +
+        '<li><code>&lt;select&gt;</code> — выпадающий список с <code>&lt;option&gt;</code> внутри;</li>' +
+        '<li><code>&lt;button type="submit"&gt;</code> — отправка формы.</li>' +
+        '</ul>' +
+        '<p>Атрибут <code>for</code> у <code>&lt;label&gt;</code> должен совпадать с <code>id</code> поля.</p>',
+      boardType: 'code',
+      blocks: [
+        { t: 'line', items: [ { t: 'slot', id: 'h3-form', answer: 'c-form', ph: 'поле 1',
+            hint: 'Открывающий тег формы с адресом и методом',
+            explain: '<code>&lt;form action="/feedback" method="post"&gt;</code> — адрес обработчика и метод отправки.' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  <label for="mail">Электронная почта</label>' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h3-input', answer: 'c-input', ph: 'поле 2',
+            hint: 'Однострочное поле для адреса почты',
+            explain: '<code>&lt;input type="email" id="mail" required&gt;</code> — браузер сам проверит формат адреса.' } ] },
+        { t: 'line', items: [ { t: 'text', text: '' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  <label for="topic">Тема обращения</label>' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h3-select', answer: 'c-select', ph: 'поле 3',
+            hint: 'Выбор одного варианта из списка',
+            explain: '<code>&lt;select&gt;</code> — выпадающий список; варианты задаются тегами <code>&lt;option&gt;</code>.' } ] },
+        { t: 'line', items: [ { t: 'text', text: '' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  <label for="msg">Сообщение</label>' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h3-textarea', answer: 'c-textarea', ph: 'поле 4',
+            hint: 'Многострочный ввод текста',
+            explain: '<code>&lt;textarea&gt;&lt;/textarea&gt;</code> — многострочное поле, тег парный, размер задаётся через rows/cols.' } ] },
+        { t: 'line', items: [ { t: 'text', text: '' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h3-button', answer: 'c-button', ph: 'поле 5',
+            hint: 'Кнопка отправки формы',
+            explain: '<code>&lt;button type="submit"&gt;</code> отправляет форму по адресу из атрибута action.' } ] },
+        { t: 'line', items: [ { t: 'text', text: '</form>' } ] }
+      ],
+      cards: [
+        { id: 'c-form',     text: '<form action="/feedback" method="post">', code: true },
+        { id: 'c-input',    text: '<input type="email" id="mail" required>', code: true },
+        { id: 'c-select',   text: '<select id="topic">...</select>', code: true },
+        { id: 'c-textarea', text: '<textarea id="msg" rows="4"></textarea>', code: true },
+        { id: 'c-button',   text: '<button type="submit">Отправить</button>', code: true },
+        { id: 'c-x-pass',   text: '<input type="password" id="mail">', code: true, note: 'Тип password скрывает ввод точками — для адреса почты не подходит.' },
+        { id: 'c-x-reset',  text: '<button type="reset">Очистить</button>', code: true, note: 'type="reset" очищает форму, но не отправляет её.' },
+        { id: 'c-x-link',   text: '<a href="/feedback">Отправить</a>', code: true, note: 'Ссылка выполняет переход, а не отправку данных формы.' },
+        { id: 'c-x-img',    text: '<img src="mail.png" alt="почта">', code: true, note: 'Картинка ничего не вводит и не отправляет.' }
+      ]
+    }
+
+  ]
+};
+
+  </script>
+  <script>
+/* js/data/css-topic.js */
+/* ==========================================================================
+   Тема 2 — CSS
+   ========================================================================== */
+
+window.TOPIC_CSS = {
+  id: 'css',
+  name: 'CSS',
+  icon: '#',
+  color: '#2f6fd0',
+  soft: '#e6eefb',
+  desc: 'Свойства оформления, селекторы и флексбокс. Собери правила из отдельных объявлений.',
+
+  levels: [
+
+    /* ---------------------------------------------------------------- */
+    {
+      id: 'css-1',
+      name: 'Оформление карточки',
+      desc: 'Цвет, отступы, рамка, шрифт',
+      task: 'Подставь свойство, которое даёт описанный в комментарии результат.',
+      theory:
+        '<p>Правило CSS состоит из селектора и объявлений <code>свойство: значение;</code></p>' +
+        '<ul>' +
+        '<li><code>background-color</code> — заливка фона, <code>color</code> — цвет текста;</li>' +
+        '<li><code>padding</code> — внутренний отступ (между рамкой и содержимым);</li>' +
+        '<li><code>margin</code> — внешний отступ (между этим блоком и соседями);</li>' +
+        '<li><code>border</code> — рамка, <code>border-radius</code> — скругление её углов;</li>' +
+        '<li><code>font-size</code> — размер шрифта.</li>' +
+        '</ul>',
+      boardType: 'code',
+      blocks: [
+        { t: 'line', items: [ { t: 'text', text: '.card {' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-bg', answer: 'p-bg', ph: 'свойство' , w: 190,
+            hint: 'Отвечает за заливку фона',
+            explain: '<code>background-color</code> задаёт цвет фона элемента.' },
+          { t: 'text', text: ': #ffffff;' }, { t: 'text', text: '            /* белая заливка */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-color', answer: 'p-color', ph: 'свойство', w: 190,
+            hint: 'Отвечает за цвет текста',
+            explain: '<code>color</code> — цвет текста внутри элемента.' },
+          { t: 'text', text: ': #16202e;' }, { t: 'text', text: '            /* тёмный текст */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-fs', answer: 'p-fs', ph: 'свойство', w: 190,
+            hint: 'Размер шрифта',
+            explain: '<code>font-size</code> — размер шрифта; в примере 16 пикселей.' },
+          { t: 'text', text: ': 16px;' }, { t: 'text', text: '               /* размер шрифта */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-padding', answer: 'p-padding', ph: 'свойство', w: 190,
+            hint: 'Отступ внутри рамки',
+            explain: '<code>padding</code> — внутренний отступ: воздух между рамкой и содержимым.' },
+          { t: 'text', text: ': 20px;' }, { t: 'text', text: '               /* воздух внутри блока */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-margin', answer: 'p-margin', ph: 'свойство', w: 190,
+            hint: 'Отступ снаружи блока',
+            explain: '<code>margin</code> — внешний отступ, раздвигает соседние блоки.' },
+          { t: 'text', text: ': 12px;' }, { t: 'text', text: '               /* отступ от соседей */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-border', answer: 'p-border', ph: 'свойство', w: 190,
+            hint: 'Рамка вокруг блока',
+            explain: '<code>border</code> — рамка: толщина, стиль и цвет одной строкой.' },
+          { t: 'text', text: ': 1px solid #d8dfea;' }, { t: 'text', text: '  /* тонкая рамка */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-radius', answer: 'p-radius', ph: 'свойство', w: 190,
+            hint: 'Скругление углов',
+            explain: '<code>border-radius</code> скругляет углы блока.' },
+          { t: 'text', text: ': 12px;' }, { t: 'text', text: '               /* скруглённые углы */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '}' } ] }
+      ],
+      cards: [
+        { id: 'p-bg',      text: 'background-color', code: true },
+        { id: 'p-color',   text: 'color',            code: true },
+        { id: 'p-fs',      text: 'font-size',        code: true },
+        { id: 'p-padding', text: 'padding',          code: true },
+        { id: 'p-margin',  text: 'margin',           code: true },
+        { id: 'p-border',  text: 'border',           code: true },
+        { id: 'p-radius',  text: 'border-radius',    code: true },
+        { id: 'p-x-bgimg', text: 'background-image', code: true, note: 'Подставляет картинку, а не цвет.' },
+        { id: 'p-x-zi',    text: 'z-index',          code: true, note: 'Управляет порядком наложения слоёв, оформления не меняет.' },
+        { id: 'p-x-ff',    text: 'font-family',      code: true, note: 'Задаёт гарнитуру шрифта, а не его размер.' },
+        { id: 'p-x-os',    text: 'outline',          code: true, note: 'Обводка поверх рамки; место в потоке не занимает.' }
+      ]
+    },
+
+    /* ---------------------------------------------------------------- */
+    {
+      id: 'css-2',
+      name: 'Селекторы',
+      desc: 'Как выбрать нужные элементы',
+      task: 'Подбери селектор под каждую задачу.',
+      theory:
+        '<p>Селектор отвечает на вопрос «к чему применить стиль»:</p>' +
+        '<ul>' +
+        '<li><code>p</code> — по имени тега, все такие элементы;</li>' +
+        '<li><code>.btn</code> — по классу, <code>#menu</code> — по уникальному id;</li>' +
+        '<li><code>.card p</code> — потомки: абзацы где-то внутри <code>.card</code>;</li>' +
+        '<li><code>a:hover</code> — псевдокласс состояния (наведение мышью);</li>' +
+        '<li><code>li:first-child</code> — первый ребёнок своего родителя;</li>' +
+        '<li><code>input[type="text"]</code> — по значению атрибута.</li>' +
+        '</ul>',
+      boardType: 'layout',
+      blocks: [
+        { t: 'row', items: [
+          { t: 'text', text: 'Все абзацы на странице', cls: 'b-small' },
+          { t: 'slot', id: 'c2-tag', answer: 's-tag', ph: 'селектор',
+            hint: 'Выбор по имени тега',
+            explain: '<code>p</code> — селектор тега: попадают все абзацы документа.' } ] },
+        { t: 'row', items: [
+          { t: 'text', text: 'Единственный блок с id="menu"', cls: 'b-small' },
+          { t: 'slot', id: 'c2-id', answer: 's-id', ph: 'селектор',
+            hint: 'Выбор по идентификатору',
+            explain: '<code>#menu</code> — селектор id; id на странице уникален.' } ] },
+        { t: 'row', items: [
+          { t: 'text', text: 'Все кнопки с классом btn', cls: 'b-small' },
+          { t: 'slot', id: 'c2-class', answer: 's-class', ph: 'селектор',
+            hint: 'Выбор по классу',
+            explain: '<code>.btn</code> — селектор класса, один класс можно повесить на сколько угодно элементов.' } ] },
+        { t: 'row', items: [
+          { t: 'text', text: 'Ссылка в момент наведения курсора', cls: 'b-small' },
+          { t: 'slot', id: 'c2-hover', answer: 's-hover', ph: 'селектор',
+            hint: 'Псевдокласс состояния',
+            explain: '<code>a:hover</code> срабатывает, пока курсор находится над ссылкой.' } ] },
+        { t: 'row', items: [
+          { t: 'text', text: 'Только те абзацы, что лежат внутри .card', cls: 'b-small' },
+          { t: 'slot', id: 'c2-desc', answer: 's-desc', ph: 'селектор',
+            hint: 'Вложенность через пробел',
+            explain: '<code>.card p</code> — пробел означает «любой потомок внутри».' } ] },
+        { t: 'row', items: [
+          { t: 'text', text: 'Первый пункт в каждом списке', cls: 'b-small' },
+          { t: 'slot', id: 'c2-first', answer: 's-first', ph: 'селектор',
+            hint: 'Псевдокласс позиции',
+            explain: '<code>li:first-child</code> — элемент, стоящий первым у своего родителя.' } ] },
+        { t: 'row', items: [
+          { t: 'text', text: 'Текстовые поля ввода (но не чекбоксы)', cls: 'b-small' },
+          { t: 'slot', id: 'c2-attr', answer: 's-attr', ph: 'селектор',
+            hint: 'Выбор по атрибуту',
+            explain: '<code>input[type="text"]</code> — селектор атрибута, отбирает поля нужного типа.' } ] }
+      ],
+      cards: [
+        { id: 's-tag',    text: 'p',                     code: true },
+        { id: 's-id',     text: '#menu',                 code: true },
+        { id: 's-class',  text: '.btn',                  code: true },
+        { id: 's-hover',  text: 'a:hover',               code: true },
+        { id: 's-desc',   text: '.card p',               code: true },
+        { id: 's-first',  text: 'li:first-child',        code: true },
+        { id: 's-attr',   text: 'input[type="text"]',    code: true },
+        { id: 's-x-all',  text: '*',                     code: true, note: 'Универсальный селектор — попадают вообще все элементы страницы.' },
+        { id: 's-x-adj',  text: 'p + p',                 code: true, note: 'Соседний селектор: абзац сразу после другого абзаца.' },
+        { id: 's-x-last', text: 'li:last-child',         code: true, note: 'Это последний пункт списка, а не первый.' },
+        { id: 's-x-grp',  text: '.card, p',              code: true, note: 'Запятая — это группировка: «и .card, и все абзацы», а не вложенность.' }
+      ]
+    },
+
+    /* ---------------------------------------------------------------- */
+    {
+      id: 'css-3',
+      name: 'Флексбокс',
+      desc: 'Раскладка панели инструментов',
+      task: 'Собери правило так, чтобы элементы встали в строку с описанным поведением.',
+      theory:
+        '<p>Флексбокс включается на родителе и раскладывает его детей:</p>' +
+        '<ul>' +
+        '<li><code>display: flex</code> — включает режим;</li>' +
+        '<li><code>flex-direction</code> — направление главной оси (<code>row</code> / <code>column</code>);</li>' +
+        '<li><code>justify-content</code> — распределение вдоль главной оси;</li>' +
+        '<li><code>align-items</code> — выравнивание поперёк главной оси;</li>' +
+        '<li><code>gap</code> — расстояние между элементами;</li>' +
+        '<li><code>flex-wrap: wrap</code> — разрешает перенос на новую строку.</li>' +
+        '</ul>',
+      boardType: 'code',
+      blocks: [
+        { t: 'line', items: [ { t: 'text', text: '.toolbar {' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-display', answer: 'f-display', ph: 'свойство', w: 180,
+            hint: 'Включает флекс-раскладку',
+            explain: '<code>display: flex</code> — без этой строки остальные флекс-свойства не работают.' },
+          { t: 'text', text: ': flex;' }, { t: 'text', text: '                    /* включаем флексбокс */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-dir', answer: 'f-dir', ph: 'свойство', w: 180,
+            hint: 'Направление главной оси',
+            explain: '<code>flex-direction: row</code> выстраивает элементы в строку слева направо.' },
+          { t: 'text', text: ': row;' }, { t: 'text', text: '                     /* элементы в строку */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-justify', answer: 'f-justify', ph: 'свойство', w: 180,
+            hint: 'Распределение вдоль строки',
+            explain: '<code>justify-content: space-between</code> прижимает крайние элементы к краям, промежутки делает равными.' },
+          { t: 'text', text: ': space-between;' }, { t: 'text', text: '  /* по краям, промежутки поровну */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-align', answer: 'f-align', ph: 'свойство', w: 180,
+            hint: 'Выравнивание поперёк строки',
+            explain: '<code>align-items: center</code> центрирует элементы по вертикали внутри строки.' },
+          { t: 'text', text: ': center;' }, { t: 'text', text: '                  /* по центру по вертикали */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-gap', answer: 'f-gap', ph: 'свойство', w: 180,
+            hint: 'Расстояние между элементами',
+            explain: '<code>gap</code> задаёт промежутки между флекс-элементами без margin-хаков.' },
+          { t: 'text', text: ': 12px;' }, { t: 'text', text: '                     /* просвет между кнопками */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-wrap', answer: 'f-wrap', ph: 'свойство', w: 180,
+            hint: 'Разрешение переноса',
+            explain: '<code>flex-wrap: wrap</code> позволяет элементам перейти на следующую строку, если не помещаются.' },
+          { t: 'text', text: ': wrap;' }, { t: 'text', text: '                    /* перенос на новую строку */', cls: 'b-comment' } ] },
+        { t: 'line', items: [ { t: 'text', text: '}' } ] }
+      ],
+      cards: [
+        { id: 'f-display', text: 'display',         code: true },
+        { id: 'f-dir',     text: 'flex-direction',  code: true },
+        { id: 'f-justify', text: 'justify-content', code: true },
+        { id: 'f-align',   text: 'align-items',     code: true },
+        { id: 'f-gap',     text: 'gap',             code: true },
+        { id: 'f-wrap',    text: 'flex-wrap',       code: true },
+        { id: 'f-x-float', text: 'float',           code: true, note: 'Старый способ раскладки; во флексбоксе float на детях игнорируется.' },
+        { id: 'f-x-ta',    text: 'text-align',      code: true, note: 'Выравнивает текст внутри строки, а не флекс-элементы.' },
+        { id: 'f-x-vert',  text: 'vertical-align',  code: true, note: 'Работает для строчных элементов и ячеек таблиц, на флекс-детей не влияет.' },
+        { id: 'f-x-pos',   text: 'position',        code: true, note: 'Вырывает элемент из потока — это другой механизм раскладки.' }
+      ]
+    }
+
+  ]
+};
+
+  </script>
+  <script>
+/* js/data/docs-topic.js */
+/* ==========================================================================
+   Тема 3 — Документооборот в РФ
+   Состав и нумерация реквизитов приведены по ГОСТ Р 7.0.97-2025
+   «Организационно-распорядительная документация. Требования к оформлению
+   документов» (перечень реквизитов 01–30).
+
+   ВНИМАНИЕ ПРЕПОДАВАТЕЛЮ: перед использованием в учебном процессе сверьте
+   формулировки и номера реквизитов с действующей редакцией стандарта —
+   правки вносятся только в этот файл.
+   ========================================================================== */
+
+window.TOPIC_DOCS = {
+  id: 'docs',
+  name: 'Документооборот в РФ',
+  icon: '§',
+  color: '#1d8a4e',
+  soft: '#e2f5ea',
+  desc: 'Реквизиты ОРД по ГОСТ Р 7.0.97-2025. Заполни бланк приказа, письма и акта правильными реквизитами.',
+
+  levels: [
+
+    /* ================================================================
+       Уровень 1 — ПРИКАЗ
+       ================================================================ */
+    {
+      id: 'docs-1',
+      name: 'Приказ по основной деятельности',
+      desc: 'Распорядительный документ: 8 реквизитов',
+      task: 'Перетащи реквизиты на их места на бланке приказа. Часть карточек в приказе не используется.',
+      theory:
+        '<p>Приказ оформляется на бланке организации <b>продольным</b> способом: наименование организации, ' +
+        'вид документа и место составления — по центру.</p>' +
+        '<ul>' +
+        '<li><b>05</b> наименование организации — автора документа: вверху, полное наименование по уставу;</li>' +
+        '<li><b>09</b> наименование вида документа — прописными буквами: ПРИКАЗ;</li>' +
+        '<li><b>10</b> дата и <b>11</b> регистрационный номер — на одной строке под видом документа;</li>' +
+        '<li><b>13</b> место составления (издания) документа — населённый пункт;</li>' +
+        '<li><b>17</b> заголовок к тексту — отвечает на вопрос «о чём?»;</li>' +
+        '<li><b>22</b> подпись — должность, личная подпись, инициалы и фамилия;</li>' +
+        '<li><b>25</b> отметка об исполнителе — внизу листа, мелким шрифтом.</li>' +
+        '</ul>' +
+        '<p>Адресат, гриф утверждения и резолюция в бланке приказа не оформляются.</p>',
+      boardType: 'doc',
+      blocks: [
+        { t: 'block', cls: 'b-al-center', items: [
+          { t: 'slot', id: 'd1-org', answer: 'r05', ph: 'реквизит',
+            hint: 'Реквизит 05 — наименование организации',
+            explain: '<b>05 — наименование организации — автора документа.</b> Указывается вверху бланка полностью, как в уставе.' } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-center b-caps b-strong', items: [
+          { t: 'slot', id: 'd1-kind', answer: 'r09', ph: 'реквизит',
+            hint: 'Реквизит 09 — наименование вида документа',
+            explain: '<b>09 — наименование вида документа.</b> В приказе печатается прописными буквами: ПРИКАЗ.' } ] },
+        { t: 'spacer' },
+        { t: 'row', cls: 'b-row--split', items: [
+          { t: 'block', cls: 'b-al-left', items: [
+            { t: 'slot', id: 'd1-date', answer: 'r10', ph: 'реквизит',
+              hint: 'Реквизит 10 — дата документа',
+              explain: '<b>10 — дата документа.</b> Дата подписания. Цифровой способ: 14.01.2026.' } ] },
+          { t: 'block', cls: 'b-al-right', items: [
+            { t: 'slot', id: 'd1-num', answer: 'r11', ph: 'реквизит',
+              hint: 'Реквизит 11 — регистрационный номер',
+              explain: '<b>11 — регистрационный номер документа.</b> Порядковый номер, при необходимости с индексом дела.' } ] } ] },
+        { t: 'block', cls: 'b-al-center', items: [
+          { t: 'slot', id: 'd1-place', answer: 'r13', ph: 'реквизит',
+            hint: 'Реквизит 13 — место составления (издания) документа',
+            explain: '<b>13 — место составления (издания) документа.</b> Населённый пункт, где издан документ.' } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'd1-head', answer: 'r17', ph: 'реквизит',
+            hint: 'Реквизит 17 — заголовок к тексту',
+            explain: '<b>17 — заголовок к тексту.</b> Краткое содержание, отвечает на вопрос «о чём?»: «Об утверждении…».' } ] },
+        { t: 'spacer' },
+        { t: 'text', text: 'В соответствии со статьёй 123 Трудового кодекса Российской Федерации и в целях соблюдения очерёдности предоставления ежегодных оплачиваемых отпусков', cls: 'b-al-left' },
+        { t: 'text', text: 'ПРИКАЗЫВАЮ:', cls: 'b-al-left b-strong' },
+        { t: 'text', text: '1. Утвердить график отпусков работников на 2026 год (приложение).', cls: 'b-al-left' },
+        { t: 'text', text: '2. Контроль исполнения настоящего приказа возложить на начальника отдела кадров.', cls: 'b-al-left' },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'd1-sign', answer: 'r22', ph: 'реквизит',
+            hint: 'Реквизит 22 — подпись',
+            explain: '<b>22 — подпись.</b> Наименование должности, личная подпись, инициалы и фамилия.' } ] },
+        { t: 'spacer' },
+        { t: 'rule' },
+        { t: 'block', cls: 'b-al-left b-small', items: [
+          { t: 'slot', id: 'd1-exec', answer: 'r25', ph: 'реквизит',
+            hint: 'Реквизит 25 — отметка об исполнителе',
+            explain: '<b>25 — отметка об исполнителе.</b> Фамилия, имя, отчество и телефон исполнителя; размещается на лицевой стороне последнего листа внизу.' } ] }
+      ],
+      cards: [
+        { id: 'r05', tag: '05 · наименование организации', text: 'Общество с ограниченной ответственностью «Гранит»' },
+        { id: 'r09', tag: '09 · вид документа', text: 'ПРИКАЗ' },
+        { id: 'r10', tag: '10 · дата документа', text: '14.01.2026' },
+        { id: 'r11', tag: '11 · регистрационный номер', text: '№ 5-ОД' },
+        { id: 'r13', tag: '13 · место составления', text: 'г. Екатеринбург' },
+        { id: 'r17', tag: '17 · заголовок к тексту', text: 'Об утверждении графика отпусков на 2026 год' },
+        { id: 'r22', tag: '22 · подпись', text: 'Генеральный директор            П.С. Ковалёв' },
+        { id: 'r25', tag: '25 · отметка об исполнителе', text: 'Смирнова Анна Игоревна, +7 (343) 200-15-40' },
+
+        { id: 'rx-15', tag: '15 · адресат', text: 'Директору ООО «Вектор» А.П. Ильину',
+          note: 'Адресат оформляется в письмах и служебных записках. В приказе его нет: приказ адресован работникам организации.' },
+        { id: 'rx-16', tag: '16 · гриф утверждения', text: 'УТВЕРЖДАЮ Генеральный директор ...',
+          note: 'Гриф утверждения ставят на документах, которые вводятся в действие другим документом или должностным лицом (акт, положение, инструкция). Приказ утверждения не требует — он сам распорядительный документ.' },
+        { id: 'rx-28', tag: '28 · резолюция', text: 'Ивановой Т.С. Подготовить проект к 20.01.2026',
+          note: 'Резолюция наносится руководителем на поступивший документ и в бланк издаваемого приказа не входит.' },
+        { id: 'rx-27', tag: '27 · отметка о поступлении', text: 'ООО «Гранит» вх. № 112 от 13.01.2026',
+          note: 'Отметка о поступлении проставляется на входящих документах при их регистрации.' }
+      ]
+    },
+
+    /* ================================================================
+       Уровень 2 — СЛУЖЕБНОЕ ПИСЬМО
+       ================================================================ */
+    {
+      id: 'docs-2',
+      name: 'Служебное письмо',
+      desc: 'Бланк письма: 9 реквизитов',
+      task: 'Заполни бланк служебного письма. Внимательно: часть реквизитов в письме не оформляется.',
+      theory:
+        '<p>Письмо оформляется на <b>бланке письма</b>. Его отличия от бланка приказа:</p>' +
+        '<ul>' +
+        '<li>есть <b>08</b> справочные данные об организации (адрес, телефон, e-mail, ОГРН, ИНН/КПП);</li>' +
+        '<li>есть <b>15</b> адресат — в правом верхнем углу;</li>' +
+        '<li>есть <b>12</b> ссылка на регистрационный номер и дату поступившего документа — заполняется только в письмах-ответах;</li>' +
+        '<li><b>нет</b> реквизита 09 (наименование вида документа) — слово «ПИСЬМО» не пишут;</li>' +
+        '<li><b>нет</b> реквизита 13 (место составления) — населённый пункт уже указан в справочных данных;</li>' +
+        '<li><b>19</b> отметка о приложении помещается после текста, перед подписью.</li>' +
+        '</ul>',
+      boardType: 'doc',
+      blocks: [
+        { t: 'block', cls: 'b-al-left b-strong', items: [
+          { t: 'slot', id: 'd2-org', answer: 'w05', ph: 'реквизит',
+            hint: 'Реквизит 05 — наименование организации',
+            explain: '<b>05 — наименование организации — автора документа.</b> В бланке письма размещается в левом верхнем углу или по центру.' } ] },
+        { t: 'block', cls: 'b-al-left b-small', items: [
+          { t: 'slot', id: 'd2-ref', answer: 'w08', ph: 'реквизит',
+            hint: 'Реквизит 08 — справочные данные об организации',
+            explain: '<b>08 — справочные данные об организации.</b> Почтовый адрес, телефон, электронная почта, ОГРН, ИНН/КПП. Оформляется только в бланке письма.' } ] },
+        { t: 'rule' },
+        { t: 'row', cls: 'b-row--split', items: [
+          { t: 'block', cls: 'b-al-left', items: [
+            { t: 'slot', id: 'd2-date', answer: 'w10', ph: 'реквизит',
+              hint: 'Реквизит 10 — дата документа',
+              explain: '<b>10 — дата документа.</b> Дата подписания письма.' } ] },
+          { t: 'block', cls: 'b-al-left', items: [
+            { t: 'slot', id: 'd2-num', answer: 'w11', ph: 'реквизит',
+              hint: 'Реквизит 11 — регистрационный номер',
+              explain: '<b>11 — регистрационный номер документа.</b> Присваивается при регистрации исходящего письма.' } ] } ] },
+        { t: 'block', cls: 'b-al-left b-small', items: [
+          { t: 'slot', id: 'd2-link', answer: 'w12', ph: 'реквизит',
+            hint: 'Реквизит 12 — ссылка на номер и дату поступившего документа',
+            explain: '<b>12 — ссылка на регистрационный номер и дату поступившего документа.</b> Заполняется только в письме-ответе, по ней адресат находит свой запрос.' } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-right', items: [
+          { t: 'slot', id: 'd2-to', answer: 'w15', ph: 'реквизит',
+            hint: 'Реквизит 15 — адресат',
+            explain: '<b>15 — адресат.</b> Правый верхний угол. Должность и Ф.И.О. — в дательном падеже, наименование организации — в именительном.' } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'd2-head', answer: 'w17', ph: 'реквизит',
+            hint: 'Реквизит 17 — заголовок к тексту',
+            explain: '<b>17 — заголовок к тексту.</b> В письме отвечает на вопрос «о чём?»: «О заключении договора…».' } ] },
+        { t: 'spacer' },
+        { t: 'text', text: 'Уважаемый Алексей Петрович!', cls: 'b-al-left' },
+        { t: 'text', text: 'Направляем Вам проект договора поставки оборудования на 2026 год. Просим рассмотреть проект и вернуть подписанный экземпляр в срок до 01.02.2026.', cls: 'b-al-left' },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'd2-app', answer: 'w19', ph: 'реквизит',
+            hint: 'Реквизит 19 — отметка о приложении',
+            explain: '<b>19 — отметка о приложении.</b> Размещается после текста перед подписью: «Приложение: на 4 л. в 2 экз.».' } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'd2-sign', answer: 'w22', ph: 'реквизит',
+            hint: 'Реквизит 22 — подпись',
+            explain: '<b>22 — подпись.</b> Должность, личная подпись, инициалы и фамилия подписавшего.' } ] },
+        { t: 'spacer' },
+        { t: 'rule' },
+        { t: 'block', cls: 'b-al-left b-small', items: [
+          { t: 'slot', id: 'd2-exec', answer: 'w25', ph: 'реквизит',
+            hint: 'Реквизит 25 — отметка об исполнителе',
+            explain: '<b>25 — отметка об исполнителе.</b> Ф.И.О. и телефон сотрудника, подготовившего письмо.' } ] }
+      ],
+      cards: [
+        { id: 'w05', tag: '05 · наименование организации', text: 'Общество с ограниченной ответственностью «Гранит»' },
+        { id: 'w08', tag: '08 · справочные данные', text: 'ул. Малышева, д. 51, г. Екатеринбург, 620075\nтел. +7 (343) 200-15-40, info@granit.ru\nОГРН 1156658012345, ИНН/КПП 6658123456/665801001' },
+        { id: 'w10', tag: '10 · дата документа', text: '20.01.2026' },
+        { id: 'w11', tag: '11 · регистрационный номер', text: '№ 14-07/218' },
+        { id: 'w12', tag: '12 · ссылка на поступивший документ', text: 'на № 3-15 от 12.01.2026' },
+        { id: 'w15', tag: '15 · адресат', text: 'Генеральному директору\nООО «Вектор»\nА.П. Ильину' },
+        { id: 'w17', tag: '17 · заголовок к тексту', text: 'О направлении проекта договора поставки' },
+        { id: 'w19', tag: '19 · отметка о приложении', text: 'Приложение: проект договора на 4 л. в 2 экз.' },
+        { id: 'w22', tag: '22 · подпись', text: 'Коммерческий директор            М.В. Лебедева' },
+        { id: 'w25', tag: '25 · отметка об исполнителе', text: 'Смирнова Анна Игоревна, +7 (343) 200-15-42' },
+
+        { id: 'wx-09', tag: '09 · вид документа', text: 'ПИСЬМО',
+          note: 'В бланке письма реквизит «наименование вида документа» не оформляется — слово «ПИСЬМО» не пишут. Вид документа понятен из бланка.' },
+        { id: 'wx-13', tag: '13 · место составления', text: 'г. Екатеринбург',
+          note: 'Место составления в письме не указывают: населённый пункт уже входит в справочные данные об организации (реквизит 08).' },
+        { id: 'wx-16', tag: '16 · гриф утверждения', text: 'УТВЕРЖДАЮ Генеральный директор ...',
+          note: 'Гриф утверждения на письмах не проставляется — письмо вступает в силу с момента подписания.' },
+        { id: 'wx-24', tag: '24 · печать', text: '(оттиск печати организации)',
+          note: 'Печатью заверяют документы, удостоверяющие права, факты и расход средств (доверенности, акты, справки). На обычном служебном письме печать не ставится.' }
+      ]
+    },
+
+    /* ================================================================
+       Уровень 3 — АКТ
+       ================================================================ */
+    {
+      id: 'docs-3',
+      name: 'Акт с грифом утверждения',
+      desc: 'Информационно-справочный документ: 9 реквизитов',
+      task: 'Заполни бланк акта. Обрати внимание на верхний правый угол.',
+      theory:
+        '<p>Акт составляется комиссией и, как правило, <b>утверждается</b> руководителем.</p>' +
+        '<ul>' +
+        '<li><b>16</b> гриф утверждения документа — правый верхний угол первого листа: слово УТВЕРЖДАЮ без кавычек и двоеточия, должность, подпись, инициалы, фамилия, дата;</li>' +
+        '<li><b>09</b> наименование вида документа — АКТ;</li>' +
+        '<li><b>13</b> место составления обязательно, как и в приказе;</li>' +
+        '<li><b>22</b> подпись — подписывают все члены комиссии, первым председатель;</li>' +
+        '<li><b>24</b> печать заверяет подпись должностного лица и не должна её перекрывать;</li>' +
+        '<li><b>20</b> гриф согласования — если документ согласуется со сторонней организацией.</li>' +
+        '</ul>',
+      boardType: 'doc',
+      blocks: [
+        { t: 'row', cls: 'b-row--split', items: [
+          { t: 'block', cls: 'b-al-left b-strong', items: [
+            { t: 'slot', id: 'd3-org', answer: 'a05', ph: 'реквизит',
+              hint: 'Реквизит 05 — наименование организации',
+              explain: '<b>05 — наименование организации — автора документа.</b>' } ] },
+          { t: 'block', cls: 'b-al-right', items: [
+            { t: 'slot', id: 'd3-approve', answer: 'a16', ph: 'реквизит',
+              hint: 'Реквизит 16 — гриф утверждения документа',
+              explain: '<b>16 — гриф утверждения документа.</b> Правый верхний угол: УТВЕРЖДАЮ, должность, подпись, инициалы и фамилия, дата.' } ] } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-center b-caps b-strong', items: [
+          { t: 'slot', id: 'd3-kind', answer: 'a09', ph: 'реквизит',
+            hint: 'Реквизит 09 — наименование вида документа',
+            explain: '<b>09 — наименование вида документа.</b> Печатается прописными буквами: АКТ.' } ] },
+        { t: 'spacer' },
+        { t: 'row', cls: 'b-row--split', items: [
+          { t: 'block', cls: 'b-al-left', items: [
+            { t: 'slot', id: 'd3-date', answer: 'a10', ph: 'реквизит',
+              hint: 'Реквизит 10 — дата документа',
+              explain: '<b>10 — дата документа.</b> Для акта это дата события, а не дата подписания.' } ] },
+          { t: 'block', cls: 'b-al-right', items: [
+            { t: 'slot', id: 'd3-num', answer: 'a11', ph: 'реквизит',
+              hint: 'Реквизит 11 — регистрационный номер',
+              explain: '<b>11 — регистрационный номер документа.</b>' } ] } ] },
+        { t: 'block', cls: 'b-al-center', items: [
+          { t: 'slot', id: 'd3-place', answer: 'a13', ph: 'реквизит',
+            hint: 'Реквизит 13 — место составления (издания) документа',
+            explain: '<b>13 — место составления (издания) документа.</b> В акте оформляется обязательно.' } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'd3-head', answer: 'a17', ph: 'реквизит',
+            hint: 'Реквизит 17 — заголовок к тексту',
+            explain: '<b>17 — заголовок к тексту.</b> У акта отвечает на вопрос «чего?»: «Акт приёма-передачи…».' } ] },
+        { t: 'spacer' },
+        { t: 'text', text: 'Основание: приказ ООО «Гранит» от 10.02.2026 № 12-ОД «О проведении инвентаризации».', cls: 'b-al-left' },
+        { t: 'text', text: 'Составлен комиссией в составе: председатель — начальник АХО В.Н. Гусев; члены комиссии — бухгалтер Л.И. Орлова, кладовщик Д.А. Шевчук.', cls: 'b-al-left' },
+        { t: 'text', text: 'В период с 12.02.2026 по 14.02.2026 комиссия провела инвентаризацию складского оборудования. Расхождений с данными бухгалтерского учёта не выявлено.', cls: 'b-al-left' },
+        { t: 'text', text: 'Составлен в двух экземплярах: 1-й экз. — в дело № 03-15, 2-й экз. — в бухгалтерию.', cls: 'b-al-left' },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'd3-sign', answer: 'a22', ph: 'реквизит',
+            hint: 'Реквизит 22 — подпись',
+            explain: '<b>22 — подпись.</b> В акте подписи членов комиссии; первым — председатель.' } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'd3-seal', answer: 'a24', ph: 'реквизит',
+            hint: 'Реквизит 24 — печать',
+            explain: '<b>24 — печать.</b> Заверяет подлинность подписи должностного лица; оттиск не должен перекрывать саму подпись.' } ] }
+      ],
+      cards: [
+        { id: 'a05', tag: '05 · наименование организации', text: 'Общество с ограниченной ответственностью «Гранит»' },
+        { id: 'a16', tag: '16 · гриф утверждения', text: 'УТВЕРЖДАЮ\nГенеральный директор ООО «Гранит»\n________ П.С. Ковалёв\n16.02.2026' },
+        { id: 'a09', tag: '09 · вид документа', text: 'АКТ' },
+        { id: 'a10', tag: '10 · дата документа', text: '14.02.2026' },
+        { id: 'a11', tag: '11 · регистрационный номер', text: '№ 3' },
+        { id: 'a13', tag: '13 · место составления', text: 'г. Екатеринбург' },
+        { id: 'a17', tag: '17 · заголовок к тексту', text: 'Об инвентаризации складского оборудования' },
+        { id: 'a22', tag: '22 · подпись', text: 'Председатель комиссии            В.Н. Гусев\nЧлены комиссии                     Л.И. Орлова\n                                              Д.А. Шевчук' },
+        { id: 'a24', tag: '24 · печать', text: '(оттиск печати организации)' },
+
+        { id: 'ax-15', tag: '15 · адресат', text: 'Генеральному директору ООО «Вектор» А.П. Ильину',
+          note: 'Акт не адресуется конкретному лицу — он фиксирует факт. Реквизит «адресат» используется в письмах и служебных записках.' },
+        { id: 'ax-12', tag: '12 · ссылка на поступивший документ', text: 'на № 3-15 от 12.01.2026',
+          note: 'Ссылка на входящий номер оформляется только в письмах-ответах.' },
+        { id: 'ax-27', tag: '27 · отметка о поступлении', text: 'ООО «Гранит» вх. № 112 от 13.01.2026',
+          note: 'Отметку о поступлении проставляет получатель на входящем документе; в собственном акте её нет.' },
+        { id: 'ax-29', tag: '29 · отметка о контроле', text: 'Контроль',
+          note: 'Отметка о контроле ставится на документах, поставленных на контроль исполнения, и наносится штампом или словом «Контроль».' }
+      ]
+    }
+
+  ]
+};
+
+  </script>
+  <script>
+/* js/storage.js */
+/* ==========================================================================
+   Хранилище прогресса (localStorage с безопасными заглушками)
+   ========================================================================== */
+
+window.Store = (function () {
+  'use strict';
+
+  var KEY = 'sim-trainer-v1';
+
+  var empty = { name: '', results: {} };   // results: { 'html-1': {score, max, percent, grade, mistakes, date} }
+
+  function read() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return clone(empty);
+      var data = JSON.parse(raw);
+      if (!data || typeof data !== 'object') return clone(empty);
+      if (typeof data.name !== 'string') data.name = '';
+      if (!data.results || typeof data.results !== 'object') data.results = {};
+      return data;
+    } catch (e) {
+      return clone(empty);
+    }
+  }
+
+  function write(data) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(data));
+    } catch (e) {
+      /* приватный режим или запрет на хранение — играем без сохранения */
+    }
+  }
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  return {
+    getName: function () { return read().name; },
+
+    setName: function (name) {
+      var d = read();
+      d.name = name;
+      write(d);
+    },
+
+    /** Сохраняем результат уровня, если он лучше предыдущего */
+    saveResult: function (levelId, result) {
+      var d = read();
+      var prev = d.results[levelId];
+      if (!prev || result.percent > prev.percent) {
+        d.results[levelId] = result;
+        write(d);
+        return true;                       // новый рекорд
+      }
+      return false;
+    },
+
+    getResult: function (levelId) { return read().results[levelId] || null; },
+
+    getAll: function () { return read().results; },
+
+    reset: function () { write(clone(empty)); }
+  };
+})();
+
+  </script>
+  <script>
+/* js/dragdrop.js */
+/* ==========================================================================
+   Перетаскивание карточек.
+
+   Работает на pointer-событиях, поэтому одинаково ведёт себя с мышью,
+   пальцем и стилусом. Дополнительно поддержаны два способа без перетаскивания:
+     • клик по карточке, затем клик по полю;
+     • клавиатура: Enter/Пробел на карточке, затем Enter/Пробел на поле.
+   ========================================================================== */
+
+window.DragDrop = (function () {
+  'use strict';
+
+  var THRESHOLD = 6;                       // сдвиг в px, после которого это уже перетаскивание
+
+  var layer   = null;
+  var onDrop  = function () {};
+  var picked  = null;                      // выбранная кликом карточка (DOM-элемент)
+
+  var drag = null;                         // { card, ghost, dx, dy, pointerId, started }
+
+  /* ---------------------------------------------------------------- */
+
+  function init(dragLayer, dropHandler) {
+    layer  = dragLayer;
+    onDrop = dropHandler;
+
+    document.addEventListener('pointermove', onMove, { passive: false });
+    document.addEventListener('pointerup', onUp);
+    document.addEventListener('pointercancel', cancel);
+  }
+
+  /** Навешивает поведение на карточку из банка */
+  function bindCard(card) {
+    card.addEventListener('pointerdown', onDown);
+    card.addEventListener('keydown', onCardKey);
+    card.addEventListener('click', function (e) { e.preventDefault(); });
+  }
+
+  /** Навешивает поведение на поле-приёмник */
+  function bindSlot(slot) {
+    slot.addEventListener('click', function () {
+      if (picked && !slot.classList.contains('is-locked')) {
+        var card = picked;
+        clearPick();
+        onDrop(card, slot);
+      }
+    });
+    slot.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && picked && !slot.classList.contains('is-locked')) {
+        e.preventDefault();
+        var card = picked;
+        clearPick();
+        onDrop(card, slot);
+      }
+    });
+  }
+
+  /* ------------------------- выбор кликом ------------------------- */
+
+  function pick(card) {
+    if (picked === card) { clearPick(); return; }
+    clearPick();
+    picked = card;
+    card.classList.add('is-picked');
+    card.setAttribute('aria-pressed', 'true');
+  }
+
+  function clearPick() {
+    if (picked) {
+      picked.classList.remove('is-picked');
+      picked.setAttribute('aria-pressed', 'false');
+    }
+    picked = null;
+  }
+
+  function onCardKey(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      pick(e.currentTarget);
+    }
+  }
+
+  /* ------------------------- перетаскивание ------------------------ */
+
+  function onDown(e) {
+    if (e.button !== undefined && e.button !== 0) return;   // только левая кнопка
+    var card = e.currentTarget;
+    drag = {
+      card: card,
+      startX: e.clientX,
+      startY: e.clientY,
+      pointerId: e.pointerId,
+      started: false,
+      ghost: null,
+      dx: 0, dy: 0
+    };
+  }
+
+  function onMove(e) {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+
+    if (!drag.started) {
+      if (Math.abs(e.clientX - drag.startX) < THRESHOLD &&
+          Math.abs(e.clientY - drag.startY) < THRESHOLD) return;
+      startGhost(e);
+    }
+
+    e.preventDefault();
+    moveGhost(e.clientX, e.clientY);
+    highlight(e.clientX, e.clientY);
+  }
+
+  function startGhost(e) {
+    var card = drag.card;
+    var rect = card.getBoundingClientRect();
+
+    var ghost = card.cloneNode(true);
+    ghost.classList.remove('is-picked');
+    ghost.style.width = rect.width + 'px';
+    layer.appendChild(ghost);
+
+    drag.ghost   = ghost;
+    drag.dx      = drag.startX - rect.left;
+    drag.dy      = drag.startY - rect.top;
+    drag.started = true;
+
+    card.classList.add('is-dragging');
+    document.body.classList.add('is-dragging');
+    clearPick();
+  }
+
+  function moveGhost(x, y) {
+    drag.ghost.style.left = (x - drag.dx) + 'px';
+    drag.ghost.style.top  = (y - drag.dy) + 'px';
+  }
+
+  function highlight(x, y) {
+    var slot = slotAt(x, y);
+    var all = document.querySelectorAll('.slot.is-over');
+    for (var i = 0; i < all.length; i++) {
+      if (all[i] !== slot) all[i].classList.remove('is-over');
+    }
+    if (slot) slot.classList.add('is-over');
+  }
+
+  function slotAt(x, y) {
+    var el = document.elementFromPoint(x, y);
+    if (!el) return null;
+    var slot = el.closest('.slot');
+    if (!slot || slot.classList.contains('is-locked')) return null;
+    return slot;
+  }
+
+  function onUp(e) {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+
+    if (!drag.started) {                    // это был обычный клик — выбираем карточку
+      pick(drag.card);
+      drag = null;
+      return;
+    }
+
+    var slot = slotAt(e.clientX, e.clientY);
+    var card = drag.card;
+
+    finishDrag();
+
+    if (slot) {
+      slot.classList.remove('is-over');
+      onDrop(card, slot);
+    }
+  }
+
+  function cancel() { if (drag && drag.started) finishDrag(); else drag = null; }
+
+  function finishDrag() {
+    if (drag.ghost && drag.ghost.parentNode) drag.ghost.parentNode.removeChild(drag.ghost);
+    drag.card.classList.remove('is-dragging');
+    document.body.classList.remove('is-dragging');
+    var over = document.querySelectorAll('.slot.is-over');
+    for (var i = 0; i < over.length; i++) over[i].classList.remove('is-over');
+    drag = null;
+  }
+
+  /* ---------------------------------------------------------------- */
+
+  return {
+    init: init,
+    bindCard: bindCard,
+    bindSlot: bindSlot,
+    clearPick: clearPick,
+    getPicked: function () { return picked; }
+  };
+})();
+
+  </script>
+  <script>
+/* js/game.js */
+/* ==========================================================================
+   Игровой уровень: отрисовка поля, приём карточек, подсчёт очков
+   ========================================================================== */
+
+window.Game = (function () {
+  'use strict';
+
+  /* Очки за поле в зависимости от номера попытки */
+  var POINTS = [100, 60, 30, 10];
+  var MAX_PER_SLOT = POINTS[0];
+
+  var el = {};            // ссылки на DOM
+  var state = null;
+  var onFinish = function () {};
+  var busy = false;       // блокировка на время анимации ошибки
+
+  /* ---------------------------------------------------------------- */
+
+  function init(refs, finishHandler) {
+    el = refs;
+    onFinish = finishHandler;
+    DragDrop.init(el.dragLayer, handleDrop);
+    el.restart.addEventListener('click', function () { start(state.topic, state.level); });
+  }
+
+  /* ------------------------------ старт ---------------------------- */
+
+  function start(topic, level) {
+    busy = false;
+    DragDrop.clearPick();
+
+    state = {
+      topic: topic,
+      level: level,
+      slots: {},
+      score: 0,
+      solved: 0,
+      total: 0,
+      mistakes: 0,
+      unusedWrong: {},        // id лишних карточек, которые пытались поставить
+      startedAt: Date.now()
+    };
+
+    el.hudLevel.textContent = level.name;
+    el.hudTask.textContent = level.task;
+    el.theoryBody.innerHTML = level.theory;
+    el.theory.open = false;
+
+    renderBoard(level);
+    renderBank(level);
+    updateHud();
+  }
+
+  /* ---------------------------- отрисовка -------------------------- */
+
+  function renderBoard(level) {
+    var board = el.board;
+    board.className = 'board board--' + level.boardType;
+    board.innerHTML = '';
+    level.blocks.forEach(function (block) { board.appendChild(buildBlock(block)); });
+  }
+
+  function buildBlock(block) {
+    switch (block.t) {
+
+      case 'text': {
+        var p = document.createElement('p');
+        p.className = 'b-text ' + (block.cls || '');
+        p.textContent = block.text;
+        return p;
+      }
+
+      case 'spacer': {
+        var s = document.createElement('div');
+        s.className = 'b-spacer';
+        return s;
+      }
+
+      case 'rule':
+        return document.createElement('hr');
+
+      case 'row': {
+        var row = document.createElement('div');
+        row.className = 'b-row ' + (block.cls || '');
+        block.items.forEach(function (it) { row.appendChild(buildBlock(it)); });
+        return row;
+      }
+
+      case 'block': {
+        var g = document.createElement('div');
+        g.className = block.cls || '';
+        block.items.forEach(function (it) { g.appendChild(buildBlock(it)); });
+        return g;
+      }
+
+      case 'line': {                       /* строка кода: текст и поля вперемешку */
+        var line = document.createElement('div');
+        line.className = 'b-code-line';
+        block.items.forEach(function (it) {
+          if (it.t === 'text') {
+            var span = document.createElement('span');
+            if (it.cls) span.className = it.cls;
+            span.textContent = it.text;
+            line.appendChild(span);
+          } else {
+            line.appendChild(buildBlock(it));
+          }
+        });
+        if (!block.items.length) line.innerHTML = '&nbsp;';
+        return line;
+      }
+
+      case 'slot':
+        return buildSlot(block);
+    }
+    return document.createTextNode('');
+  }
+
+  function buildSlot(def) {
+    var slot = document.createElement('div');
+    slot.className = 'slot';
+    slot.dataset.slotId = def.id;
+    slot.setAttribute('tabindex', '0');
+    slot.setAttribute('role', 'button');
+    slot.setAttribute('aria-label', 'Пустое поле: ' + def.ph);
+    if (def.w) slot.style.minWidth = def.w + 'px';
+
+    var ph = document.createElement('span');
+    ph.className = 'slot__placeholder';
+    ph.textContent = def.ph;
+    slot.appendChild(ph);
+
+    state.slots[def.id] = {
+      el: slot,
+      def: def,
+      answer: def.answer,
+      attempts: 0,
+      solved: false
+    };
+    state.total++;
+
+    DragDrop.bindSlot(slot);
+    return slot;
+  }
+
+  function renderBank(level) {
+    el.bank.innerHTML = '';
+    shuffle(level.cards.slice()).forEach(function (def) {
+      el.bank.appendChild(buildCard(def, state.topic));
+    });
+  }
+
+  function buildCard(def, topic) {
+    var card = document.createElement('div');
+    card.className = 'card' + (def.code ? ' card--code' : '');
+    card.dataset.cardId = def.id;
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-pressed', 'false');
+    card.style.borderLeftColor = topic.color || '';
+
+    if (def.tag) {
+      var tag = document.createElement('span');
+      tag.className = 'card__tag';
+      tag.textContent = def.tag;
+      card.appendChild(tag);
+    }
+    var text = document.createElement('span');
+    text.className = 'card__text';
+    text.textContent = def.text;
+    card.appendChild(text);
+
+    card._def = def;
+    DragDrop.bindCard(card);
+    return card;
+  }
+
+  /* ------------------------- приём карточки ------------------------ */
+
+  function handleDrop(card, slot) {
+    if (busy || !card || !slot) return;
+    var st = state.slots[slot.dataset.slotId];
+    if (!st || st.solved) return;
+
+    st.attempts++;
+
+    if (card.dataset.cardId === st.answer) {
+      acceptCard(card, slot, st);
+    } else {
+      rejectCard(card, slot, st);
+    }
+  }
+
+  function acceptCard(card, slot, st) {
+    var earned = POINTS[Math.min(st.attempts - 1, POINTS.length - 1)];
+    st.solved = true;
+    st.earned = earned;
+    state.score += earned;
+    state.solved++;
+
+    slot.classList.remove('is-wrong');
+    slot.classList.add('is-correct', 'is-locked');
+    slot.setAttribute('aria-label', 'Заполнено верно: ' + card._def.text);
+    slot.innerHTML = '';
+
+    var content = document.createElement('span');
+    content.className = 'slot__content';
+    content.textContent = card._def.text;
+    slot.appendChild(content);
+    slot.appendChild(mark('✓'));
+
+    card.parentNode.removeChild(card);
+    checkBankEmpty();
+
+    toast(st.attempts === 1 ? 'Верно! +' + earned : 'Верно! +' + earned + ' (со ' + st.attempts + '-й попытки)', 'good');
+    updateHud();
+
+    if (state.solved === state.total) {
+      window.setTimeout(finish, 700);
+    }
+  }
+
+  function rejectCard(card, slot, st) {
+    busy = true;
+    state.mistakes++;
+    if (card._def.note) state.unusedWrong[card._def.id] = card._def;
+
+    var backup = slot.innerHTML;
+    slot.classList.add('is-wrong');
+    slot.innerHTML = '';
+
+    var content = document.createElement('span');
+    content.className = 'slot__content';
+    content.textContent = card._def.text;
+    slot.appendChild(content);
+    slot.appendChild(mark('✕'));
+
+    card.classList.add('is-flying');
+    toast('Не подходит — попробуй другую карточку', 'bad');
+    updateHud();
+
+    window.setTimeout(function () {
+      slot.classList.remove('is-wrong');
+      slot.innerHTML = backup;
+      addHint(slot, st);
+      card.classList.remove('is-flying');
+      busy = false;
+    }, 950);
+  }
+
+  /** После ошибки поле начинает подсказывать, что от него хотят */
+  function addHint(slot, st) {
+    if (slot.querySelector('.slot__hint') || !st.def.hint) return;
+    var hint = document.createElement('span');
+    hint.className = 'slot__hint';
+    hint.textContent = st.def.hint;
+    slot.appendChild(hint);
+    slot.setAttribute('aria-label', 'Пустое поле: ' + st.def.hint);
+  }
+
+  function mark(sign) {
+    var m = document.createElement('span');
+    m.className = 'slot__mark';
+    m.textContent = sign;
+    return m;
+  }
+
+  function checkBankEmpty() {
+    if (el.bank.children.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'bank__empty';
+      empty.textContent = 'Все карточки разложены.';
+      el.bank.appendChild(empty);
+    }
+  }
+
+  /* ------------------------------ HUD ------------------------------ */
+
+  function updateHud() {
+    el.hudScore.textContent = state.score;
+    el.hudFilled.textContent = state.solved + '/' + state.total;
+    el.hudMistakes.textContent = state.mistakes;
+    el.hudProgress.style.width = (state.total ? (state.solved / state.total) * 100 : 0) + '%';
+  }
+
+  /* ---------------------------- завершение ------------------------- */
+
+  function finish() {
+    el.toast.className = 'toast';          // убираем всплывающее сообщение с экрана результата
+    var max = state.total * MAX_PER_SLOT;
+    var percent = max ? Math.round((state.score / max) * 100) : 0;
+
+    var review = [];
+    Object.keys(state.slots).forEach(function (id) {
+      var st = state.slots[id];
+      if (st.attempts > 1) {
+        review.push({
+          name: st.def.hint || st.def.ph,
+          attempts: st.attempts,
+          explain: st.def.explain
+        });
+      }
+    });
+
+    var traps = Object.keys(state.unusedWrong).map(function (k) { return state.unusedWrong[k]; });
+
+    onFinish({
+      topicId: state.topic.id,
+      levelId: state.level.id,
+      score: state.score,
+      max: max,
+      percent: percent,
+      grade: gradeOf(percent),
+      mistakes: state.mistakes,
+      slots: state.total,
+      seconds: Math.round((Date.now() - state.startedAt) / 1000),
+      review: review,
+      traps: traps,
+      date: new Date().toISOString()
+    });
+  }
+
+  /** Перевод процента в пятибалльную оценку */
+  function gradeOf(percent) {
+    if (percent >= 90) return 5;
+    if (percent >= 75) return 4;
+    if (percent >= 60) return 3;
+    return 2;
+  }
+
+  /* --------------------------- утилиты ----------------------------- */
+
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
+
+  var toastTimer = null;
+  function toast(message, kind) {
+    var t = el.toast;
+    t.textContent = message;
+    t.className = 'toast is-visible' + (kind ? ' is-' + kind : '');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () { t.className = 'toast'; }, 1600);
+  }
+
+  /* ---------------------------------------------------------------- */
+
+  return { init: init, start: start, gradeOf: gradeOf };
+})();
+
+  </script>
+  <script>
+/* js/app.js */
+/* ==========================================================================
+   Приложение: экраны, навигация, итоги
+   ========================================================================== */
+
+(function () {
+  'use strict';
+
+  var TOPICS = [window.TOPIC_HTML, window.TOPIC_CSS, window.TOPIC_DOCS];
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  var ui = {
+    topbar:      $('topbar'),
+    topbarTitle: $('topbar-title'),
+    back:        $('btn-back'),
+    logout:      $('btn-logout'),
+    userName:    $('user-name'),
+    userAvatar:  $('user-avatar'),
+
+    screens: {
+      welcome: $('screen-welcome'),
+      topics:  $('screen-topics'),
+      levels:  $('screen-levels'),
+      game:    $('screen-game'),
+      result:  $('screen-result')
+    },
+
+    loginForm: $('form-login'),
+    nameInput: $('input-name'),
+    nameError: $('name-error'),
+    greeting:  $('greeting'),
+
+    topicsGrid: $('topics-grid'),
+    overall:    $('overall'),
+
+    levelsTitle: $('levels-title'),
+    levelsSub:   $('levels-sub'),
+    levelsGrid:  $('levels-grid'),
+
+    result: $('result')
+  };
+
+  var current = { topic: null, level: null, lastResult: null };
+  var history = [];
+
+  /* ============================ ЭКРАНЫ ============================ */
+
+  function show(name, title) {
+    Object.keys(ui.screens).forEach(function (k) {
+      ui.screens[k].classList.toggle('is-active', k === name);
+    });
+    ui.topbar.hidden = (name === 'welcome');
+    ui.back.hidden = (name === 'topics');
+    if (title) ui.topbarTitle.textContent = title;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goto(name, title) {
+    if (history[history.length - 1] !== name) history.push(name);
+    show(name, title);
+  }
+
+  ui.back.addEventListener('click', function () {
+    var from = history.pop();
+    if (from === 'result' || from === 'game') openLevels(current.topic);
+    else openTopics();
+  });
+
+  /* ============================ ВХОД ============================== */
+
+  ui.loginForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = ui.nameInput.value.trim();
+    if (name.length < 2) {
+      ui.nameError.textContent = 'Введите имя — минимум 2 символа.';
+      ui.nameInput.focus();
+      return;
+    }
+    ui.nameError.textContent = '';
+    Store.setName(name);
+    applyUser(name);
+    openTopics();
+  });
+
+  ui.nameInput.addEventListener('input', function () { ui.nameError.textContent = ''; });
+
+  ui.logout.addEventListener('click', function () {
+    if (!window.confirm('Выйти и очистить сохранённый прогресс?')) return;
+    Store.reset();
+    ui.nameInput.value = '';
+    history = [];
+    show('welcome');
+    ui.nameInput.focus();
+  });
+
+  function applyUser(name) {
+    ui.userName.textContent = name;
+    ui.userAvatar.textContent = name.charAt(0).toUpperCase();
+    ui.greeting.textContent = 'Привет, ' + name + '!';
+  }
+
+  /* ========================== ВЫБОР ТЕМЫ ========================== */
+
+  function openTopics() {
+    history = ['topics'];
+    renderTopics();
+    show('topics', 'Выбор темы');
+  }
+
+  function renderTopics() {
+    ui.topicsGrid.innerHTML = '';
+
+    TOPICS.forEach(function (topic) {
+      var st = topicStats(topic);
+
+      var card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'topic';
+      card.style.setProperty('--topic-color', topic.color);
+      card.style.setProperty('--topic-soft', topic.soft);
+
+      var icon = document.createElement('div');
+      icon.className = 'topic__icon';
+      icon.style.color = topic.color;
+      icon.textContent = topic.icon;
+
+      var name = document.createElement('div');
+      name.className = 'topic__name';
+      name.textContent = topic.name;
+
+      var desc = document.createElement('p');
+      desc.className = 'topic__desc';
+      desc.textContent = topic.desc;
+
+      var bar = document.createElement('div');
+      bar.className = 'bar';
+      var fill = document.createElement('div');
+      fill.className = 'bar__fill';
+      fill.style.width = (st.done / st.count * 100) + '%';
+      bar.appendChild(fill);
+
+      var foot = document.createElement('div');
+      foot.className = 'topic__foot';
+      var count = document.createElement('span');
+      count.className = 'topic__count';
+      count.textContent = 'Пройдено ' + st.done + ' из ' + st.count;
+      foot.appendChild(count);
+      if (st.done) foot.appendChild(gradeChip(st.grade));
+
+      card.appendChild(icon);
+      card.appendChild(name);
+      card.appendChild(desc);
+      card.appendChild(bar);
+      card.appendChild(foot);
+
+      card.addEventListener('click', function () { openLevels(topic); });
+      ui.topicsGrid.appendChild(card);
+    });
+
+    renderOverall();
+  }
+
+  function renderOverall() {
+    var done = 0, count = 0, sum = 0;
+    TOPICS.forEach(function (t) {
+      var s = topicStats(t);
+      done += s.done; count += s.count; sum += s.percentSum;
+    });
+
+    ui.overall.innerHTML = '';
+    if (!done) {
+      ui.overall.textContent = 'Пройди уровни — здесь появится итоговая оценка по всем темам.';
+      return;
+    }
+
+    var percent = Math.round(sum / done);
+    var chip = document.createElement('div');
+    chip.className = 'overall__grade';
+    chip.textContent = Game.gradeOf(percent);
+
+    var text = document.createElement('div');
+    text.innerHTML = '<b>Общий результат:</b> пройдено ' + done + ' из ' + count +
+      ' уровней, средний результат ' + percent + '%.';
+
+    ui.overall.appendChild(chip);
+    ui.overall.appendChild(text);
+  }
+
+  function topicStats(topic) {
+    var done = 0, percentSum = 0;
+    topic.levels.forEach(function (lvl) {
+      var r = Store.getResult(lvl.id);
+      if (r) { done++; percentSum += r.percent; }
+    });
+    return {
+      done: done,
+      count: topic.levels.length,
+      percentSum: percentSum,
+      grade: done ? Game.gradeOf(Math.round(percentSum / done)) : null
+    };
+  }
+
+  function gradeChip(grade) {
+    var chip = document.createElement('span');
+    chip.className = 'grade-chip' + (grade ? ' grade-chip--' + grade : '');
+    chip.textContent = grade || '—';
+    chip.title = grade ? 'Оценка: ' + grade : 'Уровень ещё не пройден';
+    return chip;
+  }
+
+  /* ========================= ВЫБОР УРОВНЯ ========================= */
+
+  function openLevels(topic) {
+    current.topic = topic;
+    history = ['topics', 'levels'];
+
+    ui.levelsTitle.textContent = topic.name;
+    ui.levelsSub.textContent = topic.desc;
+    ui.levelsGrid.innerHTML = '';
+
+    topic.levels.forEach(function (level, i) {
+      var res = Store.getResult(level.id);
+
+      var card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'level';
+
+      var top = document.createElement('div');
+      top.className = 'level__top';
+      var num = document.createElement('span');
+      num.className = 'level__num';
+      num.textContent = 'Уровень ' + (i + 1);
+      top.appendChild(num);
+      top.appendChild(gradeChip(res ? res.grade : null));
+
+      var name = document.createElement('div');
+      name.className = 'level__name';
+      name.textContent = level.name;
+
+      var desc = document.createElement('p');
+      desc.className = 'level__desc';
+      desc.textContent = level.desc;
+
+      var meta = document.createElement('div');
+      meta.className = 'level__meta';
+      meta.textContent = res
+        ? 'Лучший результат: ' + res.score + ' из ' + res.max + ' (' + res.percent + '%)'
+        : 'Ещё не пройден';
+
+      card.appendChild(top);
+      card.appendChild(name);
+      card.appendChild(desc);
+      card.appendChild(meta);
+
+      card.addEventListener('click', function () { openGame(topic, level); });
+      ui.levelsGrid.appendChild(card);
+    });
+
+    show('levels', topic.name);
+  }
+
+  /* ============================= ИГРА ============================= */
+
+  function openGame(topic, level) {
+    current.topic = topic;
+    current.level = level;
+    Game.start(topic, level);
+    goto('game', topic.name + ' · ' + level.name);
+  }
+
+  /* =========================== РЕЗУЛЬТАТ ========================== */
+
+  function showResult(res) {
+    current.lastResult = res;
+    var isRecord = Store.saveResult(res.levelId, {
+      score: res.score, max: res.max, percent: res.percent,
+      grade: res.grade, mistakes: res.mistakes, date: res.date
+    });
+
+    ui.result.innerHTML = '';
+
+    var praise = {
+      5: { emoji: '🏆', title: 'Отлично!',        sub: 'Уровень пройден почти без ошибок.' },
+      4: { emoji: '👍', title: 'Хорошо',          sub: 'Пара неточностей — разбери их ниже.' },
+      3: { emoji: '🙂', title: 'Удовлетворительно', sub: 'Основное понятно, но ошибок многовато.' },
+      2: { emoji: '📚', title: 'Нужно повторить', sub: 'Прочитай подсказку по теме и пройди уровень ещё раз.' }
+    }[res.grade];
+
+    var head = document.createElement('div');
+    head.className = 'result__head';
+    head.innerHTML =
+      '<div class="result__emoji">' + praise.emoji + '</div>' +
+      '<h2 class="result__title">' + praise.title + '</h2>' +
+      '<p class="result__sub">' + praise.sub + '</p>';
+    ui.result.appendChild(head);
+
+    var grade = document.createElement('div');
+    grade.className = 'result__grade';
+    grade.dataset.grade = res.grade;
+    grade.innerHTML =
+      '<span class="result__grade-num">' + res.grade + '</span>' +
+      '<span class="result__grade-label">оценка</span>';
+    ui.result.appendChild(grade);
+
+    if (isRecord) {
+      var rec = document.createElement('p');
+      rec.className = 'result__sub';
+      rec.style.textAlign = 'center';
+      rec.textContent = 'Это твой лучший результат на этом уровне.';
+      ui.result.appendChild(rec);
+    }
+
+    var stats = document.createElement('div');
+    stats.className = 'result__stats';
+    stats.appendChild(statBox(res.score + ' / ' + res.max, 'очки'));
+    stats.appendChild(statBox(res.percent + '%', 'выполнено'));
+    stats.appendChild(statBox(String(res.mistakes), 'ошибок'));
+    stats.appendChild(statBox(formatTime(res.seconds), 'время'));
+    ui.result.appendChild(stats);
+
+    if (res.review.length) {
+      ui.result.appendChild(sectionTitle('Разбор полей, где были ошибки'));
+      var list = document.createElement('ul');
+      list.className = 'review';
+      res.review.forEach(function (item) {
+        var li = document.createElement('li');
+        li.className = 'review__item';
+        li.innerHTML =
+          '<span class="review__name">' + escapeHtml(item.name) +
+          ' — попыток: ' + item.attempts + '</span>' +
+          '<span class="review__note">' + item.explain + '</span>';
+        list.appendChild(li);
+      });
+      ui.result.appendChild(list);
+    } else {
+      ui.result.appendChild(sectionTitle('Разбор'));
+      var clean = document.createElement('ul');
+      clean.className = 'review';
+      clean.innerHTML = '<li class="review__item review__item--clean">' +
+        '<span class="review__name">Все поля заполнены с первой попытки.</span></li>';
+      ui.result.appendChild(clean);
+    }
+
+    if (res.traps.length) {
+      ui.result.appendChild(sectionTitle('Почему эти карточки сюда не подходят'));
+      var traps = document.createElement('ul');
+      traps.className = 'review';
+      res.traps.forEach(function (t) {
+        var li = document.createElement('li');
+        li.className = 'review__item';
+        li.innerHTML =
+          '<span class="review__name">' + escapeHtml(t.tag || t.text) + '</span>' +
+          '<span class="review__note">' + escapeHtml(t.note) + '</span>';
+        traps.appendChild(li);
+      });
+      ui.result.appendChild(traps);
+    }
+
+    var actions = document.createElement('div');
+    actions.className = 'result__actions';
+
+    actions.appendChild(button('Пройти заново', 'btn--soft', function () {
+      openGame(current.topic, current.level);
+    }));
+
+    var next = nextLevel();
+    if (next) {
+      actions.appendChild(button('Следующий уровень →', 'btn--primary', function () {
+        openGame(current.topic, next);
+      }));
+    } else {
+      actions.appendChild(button('К списку тем', 'btn--primary', openTopics));
+    }
+    actions.appendChild(button('К уровням', 'btn--ghost', function () { openLevels(current.topic); }));
+
+    ui.result.appendChild(actions);
+
+    goto('result', 'Результат: ' + current.level.name);
+  }
+
+  function nextLevel() {
+    var list = current.topic.levels;
+    var i = list.indexOf(current.level);
+    return (i >= 0 && i < list.length - 1) ? list[i + 1] : null;
+  }
+
+  function statBox(value, label) {
+    var box = document.createElement('div');
+    box.className = 'result__stat';
+    box.innerHTML = '<b>' + escapeHtml(value) + '</b><span>' + escapeHtml(label) + '</span>';
+    return box;
+  }
+
+  function sectionTitle(text) {
+    var h = document.createElement('h3');
+    h.className = 'result__section-title';
+    h.textContent = text;
+    return h;
+  }
+
+  function button(text, cls, handler) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'btn ' + cls;
+    b.textContent = text;
+    b.addEventListener('click', handler);
+    return b;
+  }
+
+  function formatTime(sec) {
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return m ? m + ' мин ' + s + ' с' : s + ' с';
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /* ============================ ЗАПУСК ============================ */
+
+  Game.init({
+    board:       $('board'),
+    bank:        $('bank'),
+    dragLayer:   $('drag-layer'),
+    toast:       $('toast'),
+    theory:      $('theory'),
+    theoryBody:  $('theory-body'),
+    hudLevel:    $('hud-level'),
+    hudTask:     $('hud-task'),
+    hudScore:    $('hud-score'),
+    hudFilled:   $('hud-filled'),
+    hudMistakes: $('hud-mistakes'),
+    hudProgress: $('hud-progress'),
+    restart:     $('btn-restart')
+  }, showResult);
+
+  var saved = Store.getName();
+  if (saved) {
+    ui.nameInput.value = saved;
+    applyUser(saved);
+    openTopics();
+  } else {
+    show('welcome');
+    ui.nameInput.focus();
+  }
+})();
+
+  </script>
