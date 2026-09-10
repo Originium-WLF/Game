@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Тренажёр: HTML, CSS и документооборот РФ</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f5fd0'/%3E%3Ctext x='16' y='23' font-size='19' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E%E2%9C%93%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ============ ШАПКА ============ -->
+  <header class="topbar" id="topbar" hidden>
+    <button class="topbar__back" id="btn-back" type="button" aria-label="Назад">
+      <span aria-hidden="true">←</span> Назад
+    </button>
+    <div class="topbar__title" id="topbar-title">Выбор темы</div>
+    <div class="topbar__user">
+      <span class="topbar__avatar" id="user-avatar" aria-hidden="true">?</span>
+      <span class="topbar__name" id="user-name">Студент</span>
+      <button class="topbar__exit" id="btn-logout" type="button" title="Сменить пользователя">Выйти</button>
+    </div>
+  </header>
+
+  <main class="app" id="app">
+
+    <!-- ============ ЭКРАН 1: ПРИВЕТСТВИЕ ============ -->
+    <section class="screen screen--welcome is-active" id="screen-welcome">
+      <div class="welcome">
+        <div class="welcome__badge">учебный тренажёр</div>
+        <h1 class="welcome__title">Собери правильно</h1>
+        <p class="welcome__lead">
+          Симулятор-сопоставление по трём темам: <b>HTML</b>, <b>CSS</b> и
+          <b>документооборот РФ</b>. Перетаскивай карточки в пустые поля,
+          получай очки и оценку по пятибалльной шкале.
+        </p>
+
+        <form class="welcome__form" id="form-login" novalidate>
+          <label class="field">
+            <span class="field__label">Как тебя зовут?</span>
+            <input class="field__input" id="input-name" type="text" name="name"
+                   placeholder="Например: Анна Смирнова" autocomplete="name"
+                   maxlength="40" required>
+            <span class="field__error" id="name-error" role="alert"></span>
+          </label>
+          <button class="btn btn--primary btn--lg" type="submit">Начать</button>
+        </form>
+
+        <ul class="welcome__facts">
+          <li><b>9</b> уровней</li>
+          <li><b>3</b> темы</li>
+          <li>оценка <b>2–5</b></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ ЭКРАН 2: ВЫБОР ТЕМЫ ============ -->
+    <section class="screen screen--topics" id="screen-topics">
+      <div class="section-head">
+        <h2 class="section-head__title" id="greeting">Привет!</h2>
+        <p class="section-head__sub">Выбери тему, по которой хочешь пройти уровни.</p>
+      </div>
+      <div class="topics" id="topics-grid"></div>
+      <div class="overall" id="overall"></div>
+    </section>
+
+    <!-- ============ ЭКРАН 3: ВЫБОР УРОВНЯ ============ -->
+    <section class="screen screen--levels" id="screen-levels">
+      <div class="section-head">
+        <h2 class="section-head__title" id="levels-title">Уровни</h2>
+        <p class="section-head__sub" id="levels-sub"></p>
+      </div>
+      <div class="levels" id="levels-grid"></div>
+    </section>
+
+    <!-- ============ ЭКРАН 4: ИГРА ============ -->
+    <section class="screen screen--game" id="screen-game">
+      <div class="hud">
+        <div class="hud__info">
+          <div class="hud__level" id="hud-level">Уровень</div>
+          <div class="hud__task" id="hud-task"></div>
+        </div>
+        <div class="hud__stats">
+          <div class="stat">
+            <span class="stat__value" id="hud-score">0</span>
+            <span class="stat__label">очки</span>
+          </div>
+          <div class="stat">
+            <span class="stat__value" id="hud-filled">0/0</span>
+            <span class="stat__label">полей</span>
+          </div>
+          <div class="stat stat--bad">
+            <span class="stat__value" id="hud-mistakes">0</span>
+            <span class="stat__label">ошибок</span>
+          </div>
+          <button class="btn btn--ghost" id="btn-restart" type="button">Сначала</button>
+        </div>
+      </div>
+
+      <div class="hud__progress"><div class="hud__progress-bar" id="hud-progress"></div></div>
+
+      <details class="theory" id="theory">
+        <summary class="theory__summary">Подсказка по теме</summary>
+        <div class="theory__body" id="theory-body"></div>
+      </details>
+
+      <div class="playfield">
+        <div class="board-wrap">
+          <div class="board" id="board"></div>
+        </div>
+        <div class="bank">
+          <div class="bank__head">
+            <span class="bank__title">Карточки</span>
+            <span class="bank__hint">перетащи мышкой или нажми на карточку, затем на поле</span>
+          </div>
+          <div class="bank__items" id="bank"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ЭКРАН 5: РЕЗУЛЬТАТ ============ -->
+    <section class="screen screen--result" id="screen-result">
+      <div class="result" id="result"></div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="drag-layer" id="drag-layer" aria-hidden="true"></div>
+
+  <footer class="footer">
+    Учебный тренажёр · реквизиты приведены по ГОСТ Р 7.0.97-2025 (ОРД) ·
+    перед использованием сверьте формулировки с действующей редакцией стандарта
+  </footer>
+
+  <script src="js/data/html-topic.js"></script>
+  <script src="js/data/css-topic.js"></script>
+  <script src="js/data/docs-topic.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/dragdrop.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
