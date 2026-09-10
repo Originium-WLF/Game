@@ -1,20 +1,28 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Собери правильно</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f5fd0'/%3E%3Ctext x='16' y='23' font-size='19' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E%E2%9C%93%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%235044d4'/%3E%3Ctext x='16' y='23' font-size='19' font-family='sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E%E2%9C%93%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@600;700&display=swap">
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/theme.js"></script>
 </head>
 <body>
 
   <!-- ============ ШАПКА ============ -->
   <header class="topbar" id="topbar" hidden>
-    <button class="topbar__back" id="btn-back" type="button" aria-label="Назад">
+    <button class="topbar__back" id="btn-back" type="button">
       <span aria-hidden="true">←</span> Назад
     </button>
     <div class="topbar__title" id="topbar-title">Выбор темы</div>
+    <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Переключить тему оформления">
+      <span class="theme-toggle__opt theme-toggle__opt--sun" aria-hidden="true">☀</span>
+      <span class="theme-toggle__opt theme-toggle__opt--moon" aria-hidden="true">☾</span>
+    </button>
     <div class="topbar__user">
       <span class="topbar__avatar" id="user-avatar" aria-hidden="true">?</span>
       <span class="topbar__name" id="user-name">Студент</span>
@@ -26,6 +34,12 @@
 
     <!-- ============ ЭКРАН 1: ПРИВЕТСТВИЕ ============ -->
     <section class="screen screen--welcome is-active" id="screen-welcome">
+      <button class="theme-toggle theme-toggle--floating" type="button" aria-pressed="false"
+              aria-label="Переключить тему оформления">
+        <span class="theme-toggle__opt theme-toggle__opt--sun" aria-hidden="true">☀</span>
+        <span class="theme-toggle__opt theme-toggle__opt--moon" aria-hidden="true">☾</span>
+      </button>
+
       <div class="welcome">
         <div class="welcome__badge">учебный тренажёр</div>
         <h1 class="welcome__title">Собери правильно</h1>
@@ -49,7 +63,7 @@
         <ul class="welcome__facts">
           <li><b>9</b> уровней</li>
           <li><b>3</b> темы</li>
-          <li>оценка <b>2–5</b></li>
+          <li><b>2–5</b> оценка</li>
         </ul>
       </div>
     </section>
@@ -75,7 +89,7 @@
 
     <!-- ============ ЭКРАН 4: ИГРА ============ -->
     <section class="screen screen--game" id="screen-game">
-      <div class="hud">
+      <div class="hud" id="hud">
         <div class="hud__info">
           <div class="hud__level" id="hud-level">Уровень</div>
           <div class="hud__task" id="hud-task"></div>
@@ -127,16 +141,20 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="drag-layer" id="drag-layer" aria-hidden="true"></div>
+  <canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
 
   <footer class="footer">
     Учебный тренажёр · реквизиты приведены по ГОСТ Р 7.0.97-2025 (ОРД) ·
     перед использованием сверьте формулировки с действующей редакцией стандарта
   </footer>
 
+  <div class="rgb-glow" aria-hidden="true"></div>
+
   <script src="js/data/html-topic.js"></script>
   <script src="js/data/css-topic.js"></script>
   <script src="js/data/docs-topic.js"></script>
   <script src="js/storage.js"></script>
+  <script src="js/confetti.js"></script>
   <script src="js/dragdrop.js"></script>
   <script src="js/game.js"></script>
   <script src="js/app.js"></script>

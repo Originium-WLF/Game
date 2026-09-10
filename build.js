@@ -1,13 +1,15 @@
 /* ==========================================================================
    Сборка проекта в один HTML-файл.
 
-   Зачем: файл можно открыть без сервера, отправить одним вложением или
-   опубликовать там, где принимается только одна страница.
+   Каждый тег <link rel="stylesheet"> и <script src> с локальным адресом
+   заменяется содержимым файла прямо на своём месте, поэтому порядок и
+   расположение (head или body) сохраняются. Внешние адреса — например,
+   шрифты Google — остаются ссылками.
 
    Запуск:  node build.js
-   Результат: dist/index.html            — самостоятельная страница
-              dist/embed.html            — то же без обёртки <html>/<head>/<body>,
-                                           для площадок, которые её добавляют сами
+   Результат: dist/index.html   — самостоятельная страница
+              dist/embed.html   — то же без обёртки <html>/<head>/<body>,
+                                  для площадок, которые добавляют её сами
    ========================================================================== */
 
 const fs = require('fs');
@@ -15,61 +17,44 @@ const path = require('path');
 
 const root = __dirname;
 const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
+const isExternal = (href) => /^(https?:)?\/\//.test(href);
 
-const html = read('index.html');
+let doc = read('index.html');
+let inlinedStyles = 0;
+let inlinedScripts = 0;
 
-/* Порядок подключения берём из самого index.html, чтобы сборка не разъехалась
-   с исходником, если появится новый файл темы. */
-const scripts = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map((m) => m[1]);
-const styles  = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)].map((m) => m[1]);
+doc = doc.replace(/[ \t]*<link rel="stylesheet" href="([^"]+)">/g, (tag, href) => {
+  if (isExternal(href)) return tag;
+  inlinedStyles++;
+  return `  <style>\n/* ${href} */\n${read(href)}\n  </style>`;
+});
 
-const inlinedStyles = styles
-  .map((href) => `  <style>\n/* ${href} */\n${read(href)}\n  </style>`)
-  .join('\n');
-
-const inlinedScripts = scripts
-  .map((src) => `  <script>\n/* ${src} */\n${read(src)}\n  </script>`)
-  .join('\n');
-
-/* Тело страницы: всё между <body> и </body>, без тегов подключения */
-const body = html
-  .slice(html.indexOf('<body>') + '<body>'.length, html.indexOf('</body>'))
-  .replace(/\s*<script src="[^"]+"><\/script>/g, '')
-  .trim();
-
-const head = html.slice(html.indexOf('<head>') + '<head>'.length, html.indexOf('</head>'));
-const title = (head.match(/<title>([^<]*)<\/title>/) || [, 'Тренажёр'])[1];
-const icon  = (head.match(/<link rel="icon"[^>]*>/) || [''])[0];
+doc = doc.replace(/[ \t]*<script src="([^"]+)"><\/script>/g, (tag, src) => {
+  if (isExternal(src)) return tag;
+  inlinedScripts++;
+  return `  <script>\n/* ${src} */\n${read(src)}\n  </script>`;
+});
 
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
+fs.writeFileSync(path.join(root, 'dist/index.html'), doc);
 
-/* --- самостоятельная страница --- */
-fs.writeFileSync(path.join(root, 'dist/index.html'),
-`<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${title}</title>
-  ${icon}
-${inlinedStyles}
-</head>
-<body>
-${body}
-${inlinedScripts}
-</body>
-</html>
-`);
+/* Вариант без обёртки: оставляем содержимое head (кроме служебных мета)
+   и содержимое body одним куском.
 
-/* --- вариант без обёртки --- */
-fs.writeFileSync(path.join(root, 'dist/embed.html'),
-`<title>${title}</title>
-${inlinedStyles}
-${body}
-${inlinedScripts}
-`);
+   Границы body ищем с конца: среди карточек уровня HTML встречаются строки
+   вида "</body>", и поиск с начала обрезал бы страницу на них. */
+const head = doc.slice(doc.indexOf('<head>') + 6, doc.indexOf('</head>'));
+const body = doc.slice(doc.indexOf('<body>') + 6, doc.lastIndexOf('</body>'));
+
+const embedHead = head
+  .replace(/[ \t]*<meta charset="[^"]*">\n?/g, '')
+  .replace(/[ \t]*<meta name="viewport"[^>]*>\n?/g, '')
+  .replace(/[ \t]*<link rel="icon"[^>]*>\n?/g, '')      // иконку задаёт сама площадка
+  .trim();
+
+fs.writeFileSync(path.join(root, 'dist/embed.html'), `${embedHead}\n${body.trim()}\n`);
 
 const kb = (f) => (fs.statSync(path.join(root, f)).size / 1024).toFixed(0);
-console.log(`Собрано: ${styles.length} стилей, ${scripts.length} скриптов`);
+console.log(`Встроено: ${inlinedStyles} стилей, ${inlinedScripts} скриптов`);
 console.log(`  dist/index.html — ${kb('dist/index.html')} КБ`);
 console.log(`  dist/embed.html — ${kb('dist/embed.html')} КБ`);

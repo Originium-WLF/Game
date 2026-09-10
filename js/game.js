@@ -157,7 +157,8 @@ window.Game = (function () {
     card.setAttribute('tabindex', '0');
     card.setAttribute('role', 'button');
     card.setAttribute('aria-pressed', 'false');
-    card.style.borderLeftColor = topic.color || '';
+    card.style.setProperty('--tc-light', topic.color);
+    card.style.setProperty('--tc-dark', topic.colorDark || topic.color);
 
     if (def.tag) {
       var tag = document.createElement('span');

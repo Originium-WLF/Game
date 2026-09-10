@@ -40,6 +40,9 @@
     result: $('result')
   };
 
+  /* Уровень считается пройденным начиная с оценки 3. Ниже — конфетти не летит. */
+  var PASS_GRADE = 3;
+
   var current = { topic: null, level: null, lastResult: null };
   var history = [];
 
@@ -116,12 +119,11 @@
       var card = document.createElement('button');
       card.type = 'button';
       card.className = 'topic';
-      card.style.setProperty('--topic-color', topic.color);
-      card.style.setProperty('--topic-soft', topic.soft);
+      card.style.setProperty('--tc-light', topic.color);
+      card.style.setProperty('--tc-dark', topic.colorDark);
 
       var icon = document.createElement('div');
       icon.className = 'topic__icon';
-      icon.style.color = topic.color;
       icon.textContent = topic.icon;
 
       var name = document.createElement('div');
@@ -264,6 +266,8 @@
   function openGame(topic, level) {
     current.topic = topic;
     current.level = level;
+    $('hud').style.setProperty('--tc-light', topic.color);
+    $('hud').style.setProperty('--tc-dark', topic.colorDark);
     Game.start(topic, level);
     goto('game', topic.name + ' · ' + level.name);
   }
@@ -279,33 +283,32 @@
 
     ui.result.innerHTML = '';
 
+    var passed = res.grade >= PASS_GRADE;
+
     var praise = {
-      5: { emoji: '🏆', title: 'Отлично!',        sub: 'Уровень пройден почти без ошибок.' },
-      4: { emoji: '👍', title: 'Хорошо',          sub: 'Пара неточностей — разбери их ниже.' },
-      3: { emoji: '🙂', title: 'Удовлетворительно', sub: 'Основное понятно, но ошибок многовато.' },
-      2: { emoji: '📚', title: 'Нужно повторить', sub: 'Прочитай подсказку по теме и пройди уровень ещё раз.' }
+      5: { title: 'Отлично!',            sub: 'Уровень пройден почти без ошибок.' },
+      4: { title: 'Хорошо',              sub: 'Пара неточностей — разбери их ниже.' },
+      3: { title: 'Уровень пройден',     sub: 'Основное понятно, но ошибок многовато.' },
+      2: { title: 'Уровень не пройден',  sub: 'Открой подсказку по теме и попробуй ещё раз.' }
     }[res.grade];
 
     var head = document.createElement('div');
     head.className = 'result__head';
-    head.innerHTML =
-      '<div class="result__emoji">' + praise.emoji + '</div>' +
-      '<h2 class="result__title">' + praise.title + '</h2>' +
-      '<p class="result__sub">' + praise.sub + '</p>';
+    var title = document.createElement('h2');
+    title.className = 'result__title';
+    title.textContent = praise.title;
+    var sub = document.createElement('p');
+    sub.className = 'result__sub';
+    sub.textContent = praise.sub;
+    head.appendChild(title);
+    head.appendChild(sub);
     ui.result.appendChild(head);
 
-    var grade = document.createElement('div');
-    grade.className = 'result__grade';
-    grade.dataset.grade = res.grade;
-    grade.innerHTML =
-      '<span class="result__grade-num">' + res.grade + '</span>' +
-      '<span class="result__grade-label">оценка</span>';
-    ui.result.appendChild(grade);
+    ui.result.appendChild(gradeRing(res));
 
     if (isRecord) {
       var rec = document.createElement('p');
-      rec.className = 'result__sub';
-      rec.style.textAlign = 'center';
+      rec.className = 'result__record';
       rec.textContent = 'Это твой лучший результат на этом уровне.';
       ui.result.appendChild(rec);
     }
@@ -376,6 +379,62 @@
     ui.result.appendChild(actions);
 
     goto('result', 'Результат: ' + current.level.name);
+
+    /* Конфетти только за пройденный уровень. За двойку не летит ничего. */
+    if (passed) {
+      window.setTimeout(function () {
+        Confetti.fire(confettiColors(current.topic), res.grade === 5 ? 1.5 : 1);
+      }, 260);
+    }
+  }
+
+  /** Кольцо с оценкой: заполнение показывает процент выполнения */
+  function gradeRing(res) {
+    var R = 66, C = 2 * Math.PI * R;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'result__ring';
+    wrap.dataset.grade = res.grade;
+
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('width', '150');
+    svg.setAttribute('height', '150');
+    svg.setAttribute('viewBox', '0 0 150 150');
+
+    var track = document.createElementNS(ns, 'circle');
+    track.setAttribute('class', 'result__ring-track');
+    track.setAttribute('cx', '75'); track.setAttribute('cy', '75'); track.setAttribute('r', String(R));
+
+    var fill = document.createElementNS(ns, 'circle');
+    fill.setAttribute('class', 'result__ring-fill');
+    fill.setAttribute('cx', '75'); fill.setAttribute('cy', '75'); fill.setAttribute('r', String(R));
+    fill.setAttribute('stroke-dasharray', String(C));
+    fill.setAttribute('stroke-dashoffset', String(C));      // старт с пустого кольца
+
+    svg.appendChild(track);
+    svg.appendChild(fill);
+    wrap.appendChild(svg);
+
+    var inner = document.createElement('div');
+    inner.className = 'result__ring-inner';
+    inner.innerHTML =
+      '<span class="result__grade-num">' + res.grade + '</span>' +
+      '<span class="result__grade-label">оценка</span>';
+    wrap.appendChild(inner);
+
+    /* заполняем на следующем кадре, чтобы сработал переход */
+    window.requestAnimationFrame(function () {
+      fill.setAttribute('stroke-dashoffset', String(C * (1 - res.percent / 100)));
+    });
+
+    return wrap;
+  }
+
+  /** Цвета бумажек: акцент темы плюс нейтральные праздничные */
+  function confettiColors(topic) {
+    var themed = (Theme.get() === 'dark') ? topic.colorDark : topic.color;
+    return [themed, '#5044d4', '#ffc93c', '#1a8a55', '#e8556d', '#3ec2e0'];
   }
 
   function nextLevel() {
@@ -435,6 +494,9 @@
     hudProgress: $('hud-progress'),
     restart:     $('btn-restart')
   }, showResult);
+
+  Theme.bind();
+  Confetti.init($('confetti'));
 
   var saved = Store.getName();
   if (saved) {
