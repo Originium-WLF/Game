@@ -59,7 +59,26 @@
     ui.topbar.hidden = (name === 'welcome');
     ui.back.hidden = (name === 'levels');          // список уровней — главный экран
     if (title) ui.topbarTitle.textContent = title;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToTop();
+  }
+
+  /**
+   * Возврат к началу страницы при смене экрана.
+   *
+   * Словарную форму window.scrollTo({ top, behavior }) часть мобильных
+   * браузеров не поддерживает и молча ничего не делает, поэтому используем
+   * позиционный вызов и дополнительно сбрасываем scrollTop: на iOS
+   * прокручивается documentElement, в старых WebView — body.
+   * Сброс повторяем в следующем кадре, когда новый экран уже разложен.
+   */
+  function scrollToTop() {
+    var reset = function () {
+      window.scrollTo(0, 0);
+      if (document.documentElement) document.documentElement.scrollTop = 0;
+      if (document.body) document.body.scrollTop = 0;
+    };
+    reset();
+    window.requestAnimationFrame(reset);
   }
 
   /* Из игры и с экрана результата возвращаемся к списку уровней */

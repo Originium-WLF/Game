@@ -47,6 +47,15 @@
   --paper-slot-bg:   rgba(80, 68, 212, .05);
   --paper-slot-line: #b9b6d0;
 
+  /* Отметки на листе не переключаются вместе с темой: лист светлый всегда,
+     и цвета темы дали бы тёмный текст на тёмном фоне. Объявлены один раз. */
+  --paper-good:      #1a8a55;
+  --paper-good-bg:   #e0f4ea;
+  --paper-good-line: #b3e3c9;
+  --paper-bad:       #c3372b;
+  --paper-bad-bg:    #fbe9e7;
+  --paper-warn:      #8a5a05;
+
   /* блок кода */
   --code-bg:      #14131f;
   --code-ink:     #dcdaf0;
@@ -269,9 +278,10 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
 }
 .topbar__back:hover { background: var(--surface-2); color: var(--ink); }
 .topbar__title {
-  font-weight: 600; flex: 1; min-width: 0;
+  font-weight: 500; flex: 1; min-width: 0; color: var(--ink-soft);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.topbar__title::before { content: "· "; color: var(--ink-faint); }
 .topbar__user { display: flex; align-items: center; gap: 10px; }
 .topbar__avatar {
   width: 32px; height: 32px; border-radius: 50%;
@@ -602,6 +612,7 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
 .slot.is-correct {
   border: 1px solid var(--good-line);
   background: var(--good-soft);
+  color: var(--ink);
   cursor: default;
   animation: pop .34s cubic-bezier(.2,.7,.3,1);
 }
@@ -622,6 +633,29 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
 }
 .slot.is-correct .slot__mark { background: var(--good); }
 .slot.is-wrong   .slot__mark { background: var(--bad); }
+
+/* Лист документа: собственные цвета отметок, не зависящие от темы оформления */
+.board--doc .slot.is-correct {
+  background: var(--paper-good-bg);
+  border-color: var(--paper-good-line);
+}
+.board--doc .slot.is-correct .slot__mark { background: var(--paper-good); }
+
+.board--doc .slot.is-wrong {
+  background: var(--paper-bad-bg);
+  border-color: var(--paper-bad);
+  color: var(--paper-bad);
+}
+.board--doc .slot.is-wrong .slot__content,
+.board--doc .slot.is-wrong .slot__placeholder { color: var(--paper-bad); }
+.board--doc .slot.is-wrong .slot__mark { background: var(--paper-bad); }
+
+.board--doc .slot__hint { color: var(--paper-warn); }
+
+.board--doc .slot.is-over {
+  background: #e7e4fb;
+  border-color: var(--accent);
+}
 
 /* поле внутри блока кода */
 .board--code .slot {
@@ -1113,3 +1147,40 @@ body.is-dragging { cursor: grabbing; user-select: none; }
    иначе штамп ложится поверх строки состояния */
 .level.has-stamp { padding-bottom: 52px; }
 .passed-stamp { letter-spacing: .12em; bottom: 14px; }
+
+/* =============================== ЗНАК =================================== */
+
+/* Знак повторяет механику тренажёра: карточка встаёт в пустое поле бланка */
+.brand { display: flex; align-items: center; gap: 9px; flex: none; }
+
+.brand__mark { width: 26px; height: 26px; flex: none; }
+.welcome__mark { width: 62px; height: 62px; margin-bottom: 14px; }
+
+.brand__sheet {
+  fill: var(--surface);
+  stroke: var(--line-strong);
+  stroke-width: 2;
+}
+.brand__slot { fill: var(--accent-soft); }
+.brand__card { fill: var(--accent); }
+
+/* на приветственном экране лист чуть контрастнее — он крупный */
+.welcome__mark .brand__sheet { stroke: var(--accent); stroke-opacity: .45; }
+
+.brand__name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -.02em;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* порядок на приветственном экране: знак, название, затем пояснение */
+.welcome__badge { margin-bottom: 24px; }
+.welcome__title { margin-bottom: 12px; }
+
+@media (max-width: 720px) {
+  .brand__name { display: none; }      /* на телефоне остаётся только знак */
+  .welcome__mark { width: 52px; height: 52px; }
+}
