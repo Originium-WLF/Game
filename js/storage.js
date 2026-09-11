@@ -5,7 +5,7 @@
 window.Store = (function () {
   'use strict';
 
-  var KEY = 'sim-trainer-v1';
+  var KEY = 'sim-trainer-v2';   // v2: другой набор уровней, старый прогресс неприменим
 
   var empty = { name: '', results: {} };   // results: { 'html-1': {score, max, percent, grade, mistakes, date} }
 

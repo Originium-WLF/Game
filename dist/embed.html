@@ -387,53 +387,8 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
   font-family: var(--display); letter-spacing: -.02em; text-transform: none;
 }
 
-/* ============================== ТЕМЫ ==================================== */
-
-.topics { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 20px; }
-
-.topic {
-  --topic-color: var(--tc-light, var(--accent));
-  text-align: left; font: inherit; cursor: pointer;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: 26px;
-  box-shadow: var(--shadow-sm);
-  transition: transform .18s cubic-bezier(.2,.7,.3,1), box-shadow .18s, border-color .18s;
-  display: flex; flex-direction: column; gap: 16px;
-  position: relative; overflow: hidden;
-  color: var(--ink);
-}
-:root[data-theme="dark"] .topic { --topic-color: var(--tc-dark, var(--accent)); }
-
-.topic::before {
-  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
-  background: var(--topic-color);
-}
-.topic:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--topic-color);
-}
-
-.topic__icon {
-  width: 50px; height: 50px; border-radius: var(--r-md);
-  display: grid; place-items: center;
-  font-family: var(--mono); font-size: 20px; font-weight: 500;
-  color: var(--topic-color);
-  background: color-mix(in srgb, var(--topic-color) 13%, transparent);
-  border: 1px solid color-mix(in srgb, var(--topic-color) 26%, transparent);
-}
-.topic__name { font-family: var(--display); font-weight: 600; font-size: 19px; letter-spacing: -.02em; }
-.topic__desc { color: var(--ink-soft); font-size: 14px; flex: 1; margin: 0; }
-.topic__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.topic__count { font-size: 13px; color: var(--ink-faint); }
-
 .bar { height: 6px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
-.bar__fill {
-  height: 100%; background: var(--topic-color); border-radius: 999px;
-  transition: width .6s cubic-bezier(.2,.7,.3,1);
-}
+.bar__fill { height: 100%; border-radius: 999px; background: var(--accent); transition: width .6s cubic-bezier(.2,.7,.3,1); }
 
 .overall {
   margin-top: 28px; padding: 20px 24px;
@@ -987,23 +942,6 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 
 .welcome { overflow: hidden; }
 
-/* ------------------- крупный знак на карточке темы ---------------------- */
-
-.topic::after {
-  content: attr(data-glyph);
-  position: absolute;
-  right: -8px; bottom: -46px;
-  font-family: var(--mono);
-  font-size: 150px; font-weight: 500; line-height: 1;
-  color: var(--topic-color);
-  opacity: .08;
-  pointer-events: none;
-  user-select: none;
-  transition: transform .4s cubic-bezier(.2,.7,.3,1), opacity .3s;
-}
-.topic:hover::after { transform: translate(-6px, -8px) rotate(-6deg); opacity: .13; }
-.topic > * { position: relative; z-index: 1; }
-
 /* --------------------- отметка на пройденном уровне --------------------- */
 
 .level { position: relative; overflow: hidden; }
@@ -1159,6 +1097,32 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 /* в разборе ошибок блок чуть плотнее */
 .mis .refs { margin-top: 9px; }
 
+/* =========================== ЗАКРЫТЫЕ УРОВНИ ============================ */
+
+.level.is-locked {
+  cursor: not-allowed;
+  opacity: .62;
+  background:
+    repeating-linear-gradient(135deg,
+      transparent 0 10px,
+      color-mix(in srgb, var(--ink-faint) 7%, transparent) 10px 11px),
+    var(--surface-2);
+  border-style: dashed;
+}
+.level.is-locked:hover { transform: none; box-shadow: var(--shadow-sm); border-color: var(--line); }
+.level.is-locked .level__name { color: var(--ink-soft); }
+
+.grade-chip--locked {
+  background: var(--surface-3);
+  border-color: var(--line-strong);
+  font-size: 13px;
+}
+
+/* отметка «без ошибок» на зачтённом уровне: под неё отводится своя полоса,
+   иначе штамп ложится поверх строки состояния */
+.level.has-stamp { padding-bottom: 52px; }
+.passed-stamp { letter-spacing: .12em; bottom: 14px; }
+
   </style>
   <script>
 /* js/theme.js */
@@ -1217,7 +1181,7 @@ window.Theme = (function () {
     <button class="topbar__back" id="btn-back" type="button">
       <span aria-hidden="true">←</span> Назад
     </button>
-    <div class="topbar__title" id="topbar-title">Выбор темы</div>
+    <div class="topbar__title" id="topbar-title">Уровни</div>
     <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Переключить тему оформления">
       <span class="theme-toggle__opt theme-toggle__opt--sun" aria-hidden="true">☀</span>
       <span class="theme-toggle__opt theme-toggle__opt--moon" aria-hidden="true">☾</span>
@@ -1259,9 +1223,9 @@ window.Theme = (function () {
         <div class="welcome__badge">учебный тренажёр</div>
         <h1 class="welcome__title">Собери правильно</h1>
         <p class="welcome__lead">
-          Симулятор-сопоставление по трём темам: <b>HTML</b>, <b>CSS</b> и
-          <b>документооборот РФ</b>. Перетаскивай карточки в пустые поля,
-          получай очки и оценку по пятибалльной шкале.
+          Тренажёр по оформлению организационно-распорядительных документов:
+          приказ, служебная записка, письмо, акт, протокол. Перетаскивай
+          реквизиты на бланк и ставь каждый на своё место по ГОСТ Р 7.0.97-2025.
         </p>
 
         <form class="welcome__form" id="form-login" novalidate>
@@ -1276,33 +1240,24 @@ window.Theme = (function () {
         </form>
 
         <ul class="welcome__facts">
-          <li><b>9</b> уровней</li>
-          <li><b>3</b> темы</li>
+          <li><b>7</b> уровней</li>
+          <li><b>30</b> реквизитов</li>
           <li><b>2–5</b> оценка</li>
         </ul>
       </div>
     </section>
 
-    <!-- ============ ЭКРАН 2: ВЫБОР ТЕМЫ ============ -->
-    <section class="screen screen--topics" id="screen-topics">
-      <div class="section-head">
-        <h2 class="section-head__title" id="greeting">Привет!</h2>
-        <p class="section-head__sub">Выбери тему, по которой хочешь пройти уровни.</p>
-      </div>
-      <div class="topics" id="topics-grid"></div>
-      <div class="overall" id="overall"></div>
-    </section>
-
-    <!-- ============ ЭКРАН 3: ВЫБОР УРОВНЯ ============ -->
+    <!-- ============ ЭКРАН 2: УРОВНИ (главный экран) ============ -->
     <section class="screen screen--levels" id="screen-levels">
       <div class="section-head">
-        <h2 class="section-head__title" id="levels-title">Уровни</h2>
+        <h2 class="section-head__title" id="greeting">Привет!</h2>
         <p class="section-head__sub" id="levels-sub"></p>
       </div>
       <div class="levels" id="levels-grid"></div>
+      <div class="overall" id="overall"></div>
     </section>
 
-    <!-- ============ ЭКРАН 4: ИГРА ============ -->
+    <!-- ============ ЭКРАН 3: ИГРА ============ -->
     <section class="screen screen--game" id="screen-game">
       <div class="hud" id="hud">
         <div class="hud__info">
@@ -1356,7 +1311,7 @@ window.Theme = (function () {
       </section>
     </section>
 
-    <!-- ============ ЭКРАН 5: РЕЗУЛЬТАТ ============ -->
+    <!-- ============ ЭКРАН 4: РЕЗУЛЬТАТ ============ -->
     <section class="screen screen--result" id="screen-result">
       <div class="result" id="result"></div>
     </section>
@@ -1374,632 +1329,6 @@ window.Theme = (function () {
 
   <div class="rgb-glow" aria-hidden="true"></div>
 
-  <script>
-/* js/data/html-topic.js */
-/* ==========================================================================
-   Тема 1 — HTML
-   Схема уровня описана в README.md (раздел «Как добавить свой уровень»)
-   ========================================================================== */
-
-window.TOPIC_HTML = {
-  id: 'html',
-  name: 'HTML',
-  icon: '</>',
-  color: '#d1541c',        // акцент темы на светлом фоне
-  colorDark: '#ff9257',    // он же на тёмном
-  desc: 'Структура страницы, семантические теги и формы. Собери разметку из готовых фрагментов.',
-
-  levels: [
-
-    /* ---------------------------------------------------------------- */
-    {
-      id: 'html-1',
-      name: 'Скелет страницы',
-      desc: 'Базовая структура HTML-документа',
-      task: 'Расставь недостающие теги так, чтобы получился корректный HTML-документ.',
-      theory:
-        '<p>Любая страница строится по одной схеме:</p>' +
-        '<ul>' +
-        '<li><code>&lt;!DOCTYPE html&gt;</code> — объявление типа документа, всегда первая строка;</li>' +
-        '<li><code>&lt;head&gt;</code> — служебные данные: кодировка, заголовок вкладки, подключение стилей. На странице не видны;</li>' +
-        '<li><code>&lt;body&gt;</code> — всё, что пользователь видит в окне браузера;</li>' +
-        '<li>парные теги закрываются в обратном порядке: что открыли последним — закрываем первым.</li>' +
-        '</ul>',
-      boardType: 'code',
-      blocks: [
-        { t: 'line', items: [ { t: 'slot', id: 'h1-doctype', answer: 'c-doctype', ph: 'поле 1',
-            hint: 'Объявление типа документа',
-            explain: '<code>&lt;!DOCTYPE html&gt;</code> — объявление типа документа. Стоит самой первой строкой, ' +
-              'до тега <code>&lt;html&gt;</code>, и переключает браузер в стандартный режим отображения. ' +
-              'Без него страница рисуется в режиме совместимости (quirks mode), где иначе считаются ' +
-              'размеры блоков и работает наследование стилей. Это не тег и не элемент: у него нет ' +
-              'закрывающей пары и он ничего не выводит.',
-            refs: ['HTML Living Standard (WHATWG), § 13.1.1 — The DOCTYPE',
-                   'HTML Living Standard, § 4.1 — the document element'] } ] },
-        { t: 'line', items: [ { t: 'text', text: '<html lang="ru">' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h1-head', answer: 'c-head', ph: 'поле 2',
-            hint: 'Открывающий тег служебного раздела',
-            explain: '<code>&lt;head&gt;</code> открывает раздел метаданных — сведений о странице, а не её содержимого. ' +
-              'Сюда помещают кодировку, заголовок вкладки, описание для поисковых систем, ' +
-              'настройку масштабирования на мобильных, подключение стилей и скриптов. ' +
-              'Ничего из этого пользователь в окне браузера не видит. Раздел идёт первым ' +
-              'внутри <code>&lt;html&gt;</code>, до <code>&lt;body&gt;</code>.',
-            refs: ['HTML Living Standard (WHATWG), § 4.2 — document metadata',
-                   'HTML Living Standard, § 4.2.1 — the head element'] } ] },
-        { t: 'line', items: [ { t: 'text', text: '    ' }, { t: 'slot', id: 'h1-meta', answer: 'c-meta', ph: 'поле 3',
-            hint: 'Кодировка документа',
-            explain: '<code>&lt;meta charset="UTF-8"&gt;</code> объявляет кодировку символов документа. ' +
-              'UTF-8 — единственная кодировка, которую предписывает современный стандарт: она покрывает ' +
-              'кириллицу, латиницу и любые другие письменности. Объявление должно попасть в первые 1024 байта ' +
-              'документа, поэтому его ставят сразу после открывающего <code>&lt;head&gt;</code>. ' +
-              'Без него браузер угадывает кодировку, и кириллица превращается в «кракозябры».',
-            refs: ['Encoding Standard (WHATWG) — UTF-8 как обязательная кодировка',
-                   'HTML Living Standard, § 4.2.5 — the meta element',
-                   'HTML Living Standard, § 4.2.5.5 — specifying the document character encoding'] } ] },
-        { t: 'line', items: [ { t: 'text', text: '    ' }, { t: 'slot', id: 'h1-title', answer: 'c-title', ph: 'поле 4',
-            hint: 'Заголовок вкладки браузера',
-            explain: '<code>&lt;title&gt;</code> задаёт название документа. Оно выводится на вкладке браузера, ' +
-              'подставляется в закладку и служит заголовком ссылки в результатах поиска. ' +
-              'Элемент обязателен: в каждом документе должен быть ровно один непустой ' +
-              '<code>&lt;title&gt;</code> внутри <code>&lt;head&gt;</code>. Разметка внутри него не работает — ' +
-              'допускается только текст.',
-            refs: ['HTML Living Standard (WHATWG), § 4.2.2 — the title element',
-                   'WCAG 2.2, критерий успеха 2.4.2 — Page Titled'] } ] },
-        { t: 'line', items: [ { t: 'text', text: '  </head>' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h1-body', answer: 'c-body', ph: 'поле 5',
-            hint: 'Открывающий тег видимой части',
-            explain: '<code>&lt;body&gt;</code> открывает тело документа — всё, что пользователь видит в окне браузера: ' +
-              'текст, изображения, таблицы, формы. В документе он ровно один и следует сразу за ' +
-              '<code>&lt;/head&gt;</code>. Именно к нему применяются глобальные стили страницы ' +
-              'и на нём обычно ловят события, всплывающие от вложенных элементов.',
-            refs: ['HTML Living Standard (WHATWG), § 4.3.1 — the body element'] } ] },
-        { t: 'line', items: [ { t: 'text', text: '    <h1>Добро пожаловать</h1>' } ] },
-        { t: 'line', items: [ { t: 'text', text: '    <p>Это моя первая страница.</p>' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h1-bodyend', answer: 'c-bodyend', ph: 'поле 6',
-            hint: 'Закрывающий тег видимой части',
-            explain: '<code>&lt;/body&gt;</code> закрывает тело документа и ставится перед <code>&lt;/html&gt;</code>. ' +
-              'Вложенность парных элементов строгая: что открыли последним — закрываем первым, ' +
-              'пересечение тегов недопустимо. Нарушение порядка браузер исправит по правилам ' +
-              'разбора ошибок, но дерево документа при этом получится не тем, которое задумано, ' +
-              'и стили со скриптами начнут работать непредсказуемо.',
-            refs: ['HTML Living Standard (WHATWG), § 13.2 — parsing HTML documents',
-                   'HTML Living Standard, § 13.1.2 — elements'] } ] },
-        { t: 'line', items: [ { t: 'text', text: '</html>' } ] }
-      ],
-      cards: [
-        { id: 'c-doctype', text: '<!DOCTYPE html>', code: true },
-        { id: 'c-head',    text: '<head>',          code: true },
-        { id: 'c-meta',    text: '<meta charset="UTF-8">', code: true },
-        { id: 'c-title',   text: '<title>Моя первая страница</title>', code: true },
-        { id: 'c-body',    text: '<body>',          code: true },
-        { id: 'c-bodyend', text: '</body>',         code: true },
-        { id: 'c-x-html',  text: '</html>',         code: true, note: 'Закрывающий тег <html> уже стоит в разметке последней строкой.' },
-        { id: 'c-x-div',   text: '<div>',           code: true, note: '<div> — блок без смысла, в скелете документа он не нужен.' },
-        { id: 'c-x-style', text: '<style>',         code: true, note: 'Стили подключают отдельно; для базовой структуры тег не требуется.' },
-        { id: 'c-x-br',    text: '<br>',            code: true, note: '<br> — перенос строки внутри текста, к структуре документа отношения не имеет.' }
-      ]
-    },
-
-    /* ---------------------------------------------------------------- */
-    {
-      id: 'html-2',
-      name: 'Семантическая разметка',
-      desc: 'Теги, которые описывают смысл блока',
-      task: 'Подбери семантический тег для каждой области страницы.',
-      theory:
-        '<p>Семантические теги говорят браузеру и поисковику, <b>чем является</b> блок, а не как он выглядит:</p>' +
-        '<ul>' +
-        '<li><code>&lt;header&gt;</code> — шапка, <code>&lt;footer&gt;</code> — подвал;</li>' +
-        '<li><code>&lt;nav&gt;</code> — блок навигационных ссылок;</li>' +
-        '<li><code>&lt;main&gt;</code> — основное содержимое, на странице ровно один раз;</li>' +
-        '<li><code>&lt;article&gt;</code> — самостоятельный материал, который можно вынести отдельно;</li>' +
-        '<li><code>&lt;aside&gt;</code> — то, что связано с содержимым косвенно (боковая колонка).</li>' +
-        '</ul>',
-      boardType: 'layout',
-      blocks: [
-        { t: 'row', items: [
-          { t: 'text', text: 'Логотип, название сайта и телефон вверху страницы', cls: 'b-small' },
-          { t: 'slot', id: 'h2-header', answer: 'c-header', ph: 'тег',
-            hint: 'Вводная часть страницы',
-            explain: '<code>&lt;header&gt;</code> — вводная часть страницы или отдельного раздела: логотип, ' +
-              'название, контакты, поиск. Элементов может быть несколько: свой <code>&lt;header&gt;</code> ' +
-              'допустим внутри <code>&lt;article&gt;</code> или <code>&lt;section&gt;</code>. ' +
-              'Нельзя вкладывать его в другой <code>&lt;header&gt;</code> или в <code>&lt;footer&gt;</code>. ' +
-              'Экранные читалки используют его как ориентир «banner» при навигации по странице.',
-            refs: ['HTML Living Standard (WHATWG), § 4.3 — sections',
-                   'WAI-ARIA: роль banner — соответствие элементу header',
-                   'WCAG 2.2, критерий успеха 1.3.1 — Info and Relationships'] } ] },
-        { t: 'row', items: [
-          { t: 'text', text: 'Горизонтальное меню со ссылками на разделы', cls: 'b-small' },
-          { t: 'slot', id: 'h2-nav', answer: 'c-nav', ph: 'тег',
-            hint: 'Навигация',
-            explain: '<code>&lt;nav&gt;</code> — блок навигационных ссылок: главное меню, «хлебные крошки», ' +
-              'оглавление. Размечать им нужно только основные группы ссылок, а не каждое скопление ' +
-              'ссылок на странице: ссылки в подвале обычно оставляют в <code>&lt;footer&gt;</code> ' +
-              'без обёртки. Внутри чаще всего лежит список <code>&lt;ul&gt;</code>: так читалка ' +
-              'объявит число пунктов меню.',
-            refs: ['HTML Living Standard (WHATWG), § 4.3 — sections',
-                   'WAI-ARIA: роль navigation — соответствие элементу nav'] } ] },
-        { t: 'row', items: [
-          { t: 'text', text: 'Основное содержимое, уникальное для этой страницы', cls: 'b-small' },
-          { t: 'slot', id: 'h2-main', answer: 'c-main', ph: 'тег',
-            hint: 'Главная область, одна на страницу',
-            explain: '<code>&lt;main&gt;</code> — основное содержимое документа, уникальное для этой страницы. ' +
-              'Видимый элемент <code>&lt;main&gt;</code> на странице должен быть только один, ' +
-              'и в него не помещают то, что повторяется на всех страницах: шапку, меню, подвал, ' +
-              'боковую колонку. Он не должен быть потомком <code>&lt;article&gt;</code>, ' +
-              '<code>&lt;aside&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code> ' +
-              'или <code>&lt;nav&gt;</code>. Браузеры используют его как цель для перехода ' +
-              '«к основному содержимому».',
-            refs: ['HTML Living Standard (WHATWG), § 4.4 — grouping content (the main element)',
-                   'WCAG 2.2, критерий успеха 2.4.1 — Bypass Blocks'] } ] },
-        { t: 'row', items: [
-          { t: 'text', text: 'Текст новости, который можно опубликовать отдельно', cls: 'b-small' },
-          { t: 'slot', id: 'h2-article', answer: 'c-article', ph: 'тег',
-            hint: 'Самостоятельный материал',
-            explain: '<code>&lt;article&gt;</code> — самостоятельная, законченная часть содержимого, которую можно ' +
-              'распространять отдельно от страницы: новость, статья блога, карточка товара, ' +
-              'комментарий, отзыв. Проверка простая: если фрагмент осмысленно читается в RSS-ленте ' +
-              'или на чужом сайте — это <code>&lt;article&gt;</code>. Элементы можно вкладывать: ' +
-              'комментарии внутри статьи тоже статьи.',
-            refs: ['HTML Living Standard (WHATWG), § 4.3 — sections (the article element)'] } ] },
-        { t: 'row', items: [
-          { t: 'text', text: 'Боковая колонка: «Читайте также» и реклама', cls: 'b-small' },
-          { t: 'slot', id: 'h2-aside', answer: 'c-aside', ph: 'тег',
-            hint: 'Побочное содержимое',
-            explain: '<code>&lt;aside&gt;</code> — содержимое, связанное с основным лишь косвенно: боковая колонка, ' +
-              'блок «Читайте также», справка на полях, реклама. Ключевой признак — материал можно ' +
-              'убрать, и основной текст не потеряет смысла. Это не «правая колонка» как место ' +
-              'на макете: элемент говорит о роли содержимого, а положение задаётся стилями.',
-            refs: ['HTML Living Standard (WHATWG), § 4.3 — sections (the aside element)',
-                   'WAI-ARIA: роль complementary — соответствие элементу aside'] } ] },
-        { t: 'row', items: [
-          { t: 'text', text: 'Копирайт, адрес и ссылки на соцсети внизу', cls: 'b-small' },
-          { t: 'slot', id: 'h2-footer', answer: 'c-footer', ph: 'тег',
-            hint: 'Завершающая часть страницы',
-            explain: '<code>&lt;footer&gt;</code> — завершающая часть страницы или раздела: копирайт, контакты, ' +
-              'служебные ссылки, сведения об авторе, дата публикации. Как и <code>&lt;header&gt;</code>, ' +
-              'может встречаться несколько раз — свой подвал допустим внутри статьи. ' +
-              'Вкладывать <code>&lt;footer&gt;</code> в другой <code>&lt;footer&gt;</code> ' +
-              'или в <code>&lt;header&gt;</code> нельзя.',
-            refs: ['HTML Living Standard (WHATWG), § 4.3 — sections (the footer element)',
-                   'WAI-ARIA: роль contentinfo — соответствие элементу footer'] } ] }
-      ],
-      cards: [
-        { id: 'c-header',  text: '<header>',  code: true },
-        { id: 'c-nav',     text: '<nav>',     code: true },
-        { id: 'c-main',    text: '<main>',    code: true },
-        { id: 'c-article', text: '<article>', code: true },
-        { id: 'c-aside',   text: '<aside>',   code: true },
-        { id: 'c-footer',  text: '<footer>',  code: true },
-        { id: 'c-x-div2',  text: '<div>',     code: true, note: '<div> не несёт смысла — его берут, когда подходящего семантического тега нет.' },
-        { id: 'c-x-span',  text: '<span>',    code: true, note: '<span> — строчный контейнер для куска текста, не для области страницы.' },
-        { id: 'c-x-fig',   text: '<figure>',  code: true, note: '<figure> — иллюстрация с подписью, а не структурная область.' },
-        { id: 'c-x-table', text: '<table>',   code: true, note: '<table> — таблица данных; вёрстку макета на таблицах давно не делают.' }
-      ]
-    },
-
-    /* ---------------------------------------------------------------- */
-    {
-      id: 'html-3',
-      name: 'Форма обратной связи',
-      desc: 'Поля ввода, список и кнопка отправки',
-      task: 'Собери рабочую форму: под каждой подписью должно стоять подходящее поле.',
-      theory:
-        '<p>Форма отправляет данные на сервер. Ключевые элементы:</p>' +
-        '<ul>' +
-        '<li><code>&lt;form action="…" method="post"&gt;</code> — куда и каким методом уходят данные;</li>' +
-        '<li><code>&lt;input type="email"&gt;</code> — однострочное поле с проверкой адреса;</li>' +
-        '<li><code>&lt;textarea&gt;</code> — многострочный текст, тег обязательно парный;</li>' +
-        '<li><code>&lt;select&gt;</code> — выпадающий список с <code>&lt;option&gt;</code> внутри;</li>' +
-        '<li><code>&lt;button type="submit"&gt;</code> — отправка формы.</li>' +
-        '</ul>' +
-        '<p>Атрибут <code>for</code> у <code>&lt;label&gt;</code> должен совпадать с <code>id</code> поля.</p>',
-      boardType: 'code',
-      blocks: [
-        { t: 'line', items: [ { t: 'slot', id: 'h3-form', answer: 'c-form', ph: 'поле 1',
-            hint: 'Открывающий тег формы с адресом и методом',
-            explain: '<code>&lt;form&gt;</code> объединяет поля и определяет, куда и как уйдут данные: ' +
-              '<code>action</code> — адрес обработчика, <code>method</code> — метод HTTP. ' +
-              '<code>post</code> передаёт данные в теле запроса и подходит для действий, ' +
-              'изменяющих состояние на сервере; <code>get</code> дописывает их в строку адреса ' +
-              'и годится только для поиска и фильтров. Вкладывать форму в форму нельзя. ' +
-              'Отправляются лишь те поля, у которых задан атрибут <code>name</code>.',
-            refs: ['HTML Living Standard (WHATWG), § 4.10.3 — the form element',
-                   'HTML Living Standard, § 4.10.21 — form submission',
-                   'RFC 9110, § 9.3 — семантика методов GET и POST'] } ] },
-        { t: 'line', items: [ { t: 'text', text: '  <label for="mail">Электронная почта</label>' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h3-input', answer: 'c-input', ph: 'поле 2',
-            hint: 'Однострочное поле для адреса почты',
-            explain: '<code>&lt;input type="email"&gt;</code> — однострочное поле для адреса электронной почты. ' +
-              'Браузер сам проверяет формат перед отправкой и на мобильных показывает клавиатуру ' +
-              'со знаком @. Атрибут <code>required</code> делает поле обязательным, ' +
-              '<code>id</code> связывает его с подписью <code>&lt;label for&gt;</code>. ' +
-              'Проверка на стороне браузера не отменяет проверку на сервере: её легко обойти.',
-            refs: ['HTML Living Standard (WHATWG), § 4.10.5 — the input element',
-                   'HTML Living Standard, § 4.10.5.1.5 — email state',
-                   'WCAG 2.2, критерий успеха 3.3.1 — Error Identification'] } ] },
-        { t: 'line', items: [ { t: 'text', text: '' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  <label for="topic">Тема обращения</label>' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h3-select', answer: 'c-select', ph: 'поле 3',
-            hint: 'Выбор одного варианта из списка',
-            explain: '<code>&lt;select&gt;</code> — выпадающий список для выбора из заранее известного набора. ' +
-              'Варианты задаются вложенными <code>&lt;option&gt;</code>, их можно группировать ' +
-              'через <code>&lt;optgroup&gt;</code>. Атрибут <code>multiple</code> разрешает выбрать ' +
-              'несколько значений. Отправляется значение атрибута <code>value</code> выбранного варианта, ' +
-              'а если его нет — текст внутри <code>&lt;option&gt;</code>.',
-            refs: ['HTML Living Standard (WHATWG), § 4.10.7 — the select element',
-                   'HTML Living Standard, § 4.10.10 — the option element'] } ] },
-        { t: 'line', items: [ { t: 'text', text: '' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  <label for="msg">Сообщение</label>' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h3-textarea', answer: 'c-textarea', ph: 'поле 4',
-            hint: 'Многострочный ввод текста',
-            explain: '<code>&lt;textarea&gt;</code> — многострочное текстовое поле. Тег обязательно парный, ' +
-              'и начальное значение задаётся текстом между тегами, а не атрибутом <code>value</code>. ' +
-              'Видимый размер задают атрибутами <code>rows</code> и <code>cols</code> или стилями; ' +
-              'ограничить длину ввода можно атрибутом <code>maxlength</code>. ' +
-              'Переносы строк внутри сохраняются и уходят на сервер как есть.',
-            refs: ['HTML Living Standard (WHATWG), § 4.10.11 — the textarea element'] } ] },
-        { t: 'line', items: [ { t: 'text', text: '' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h3-button', answer: 'c-button', ph: 'поле 5',
-            hint: 'Кнопка отправки формы',
-            explain: '<code>&lt;button type="submit"&gt;</code> отправляет форму по адресу из атрибута ' +
-              '<code>action</code>. Указывать <code>type</code> явно важно: у кнопки внутри формы ' +
-              'это значение по умолчанию, и кнопка, задуманная как вспомогательная, ' +
-              'случайно отправит форму. Другие значения — <code>reset</code> (сброс полей) ' +
-              'и <code>button</code> (никаких действий, только обработчик в скрипте). ' +
-              'В отличие от <code>&lt;input type="submit"&gt;</code>, внутрь можно положить разметку.',
-            refs: ['HTML Living Standard (WHATWG), § 4.10.6 — the button element',
-                   'HTML Living Standard, § 4.10.21 — form submission'] } ] },
-        { t: 'line', items: [ { t: 'text', text: '</form>' } ] }
-      ],
-      cards: [
-        { id: 'c-form',     text: '<form action="/feedback" method="post">', code: true },
-        { id: 'c-input',    text: '<input type="email" id="mail" required>', code: true },
-        { id: 'c-select',   text: '<select id="topic">...</select>', code: true },
-        { id: 'c-textarea', text: '<textarea id="msg" rows="4"></textarea>', code: true },
-        { id: 'c-button',   text: '<button type="submit">Отправить</button>', code: true },
-        { id: 'c-x-pass',   text: '<input type="password" id="mail">', code: true, note: 'Тип password скрывает ввод точками — для адреса почты не подходит.' },
-        { id: 'c-x-reset',  text: '<button type="reset">Очистить</button>', code: true, note: 'type="reset" очищает форму, но не отправляет её.' },
-        { id: 'c-x-link',   text: '<a href="/feedback">Отправить</a>', code: true, note: 'Ссылка выполняет переход, а не отправку данных формы.' },
-        { id: 'c-x-img',    text: '<img src="mail.png" alt="почта">', code: true, note: 'Картинка ничего не вводит и не отправляет.' }
-      ]
-    }
-
-  ]
-};
-
-  </script>
-  <script>
-/* js/data/css-topic.js */
-/* ==========================================================================
-   Тема 2 — CSS
-   ========================================================================== */
-
-window.TOPIC_CSS = {
-  id: 'css',
-  name: 'CSS',
-  icon: '#',
-  color: '#2f66c8',        // акцент темы на светлом фоне
-  colorDark: '#7ea9ff',    // он же на тёмном
-  desc: 'Свойства оформления, селекторы и флексбокс. Собери правила из отдельных объявлений.',
-
-  levels: [
-
-    /* ---------------------------------------------------------------- */
-    {
-      id: 'css-1',
-      name: 'Оформление карточки',
-      desc: 'Цвет, отступы, рамка, шрифт',
-      task: 'Подставь свойство, которое даёт описанный в комментарии результат.',
-      theory:
-        '<p>Правило CSS состоит из селектора и объявлений <code>свойство: значение;</code></p>' +
-        '<ul>' +
-        '<li><code>background-color</code> — заливка фона, <code>color</code> — цвет текста;</li>' +
-        '<li><code>padding</code> — внутренний отступ (между рамкой и содержимым);</li>' +
-        '<li><code>margin</code> — внешний отступ (между этим блоком и соседями);</li>' +
-        '<li><code>border</code> — рамка, <code>border-radius</code> — скругление её углов;</li>' +
-        '<li><code>font-size</code> — размер шрифта.</li>' +
-        '</ul>',
-      boardType: 'code',
-      blocks: [
-        { t: 'line', items: [ { t: 'text', text: '.card {' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-bg', answer: 'p-bg', ph: 'свойство' , w: 190,
-            hint: 'Отвечает за заливку фона',
-            explain: '<code>background-color</code> задаёт цвет фона элемента. Фон закрашивает область содержимого ' +
-              'вместе с внутренними отступами и заходит под рамку, но не под внешние отступы: ' +
-              'увеличение <code>padding</code> увеличивает закрашенную площадь, а <code>margin</code> — нет. ' +
-              'Значение по умолчанию — <code>transparent</code>, поэтому сквозь элемент виден фон родителя.',
-            refs: ['CSS Backgrounds and Borders Module Level 3 (W3C), § 3.10 — background-color',
-                   'CSS Box Model Module Level 3 (W3C) — области блока'] },
-          { t: 'text', text: ': #ffffff;' }, { t: 'text', text: '            /* белая заливка */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-color', answer: 'p-color', ph: 'свойство', w: 190,
-            hint: 'Отвечает за цвет текста',
-            explain: '<code>color</code> задаёт цвет текста. Свойство наследуется, поэтому достаточно объявить его ' +
-              'на родителе — вложенные элементы подхватят значение сами. К нему же по умолчанию ' +
-              'привязаны цвет рамки и <code>currentColor</code>, которым удобно красить значки. ' +
-              'Контраст текста к фону должен быть не ниже 4.5:1 для обычного размера.',
-            refs: ['CSS Color Module Level 4 (W3C) — свойство color',
-                   'WCAG 2.2, критерий успеха 1.4.3 — Contrast (Minimum)'] },
-          { t: 'text', text: ': #16202e;' }, { t: 'text', text: '            /* тёмный текст */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-fs', answer: 'p-fs', ph: 'свойство', w: 190,
-            hint: 'Размер шрифта',
-            explain: '<code>font-size</code> задаёт размер шрифта. Свойство наследуется, а относительные единицы ' +
-              'считаются от родителя: <code>em</code> — от размера шрифта родителя, ' +
-              '<code>rem</code> — от корневого элемента, что предсказуемее при вложенности. ' +
-              'Жёстко фиксировать размер в пикселях не стоит: это мешает пользователю ' +
-              'увеличить текст настройками браузера.',
-            refs: ['CSS Fonts Module Level 4 (W3C) — свойство font-size',
-                   'CSS Values and Units Module Level 4 (W3C) — единицы em и rem',
-                   'WCAG 2.2, критерий успеха 1.4.4 — Resize Text'] },
-          { t: 'text', text: ': 16px;' }, { t: 'text', text: '               /* размер шрифта */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-padding', answer: 'p-padding', ph: 'свойство', w: 190,
-            hint: 'Отступ внутри рамки',
-            explain: '<code>padding</code> — внутренний отступ между содержимым и рамкой. Он окрашивается фоном ' +
-              'элемента и по умолчанию прибавляется к заданной ширине: блок шириной 200px ' +
-              'с отступом 20px займёт 240px. Правило <code>box-sizing: border-box</code> меняет это, ' +
-              'включая отступы и рамку в объявленную ширину. Отрицательных значений у padding не бывает.',
-            refs: ['CSS Box Model Module Level 3 (W3C), § 6 — padding',
-                   'CSS Box Sizing Module Level 3 (W3C) — свойство box-sizing'] },
-          { t: 'text', text: ': 20px;' }, { t: 'text', text: '               /* воздух внутри блока */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-margin', answer: 'p-margin', ph: 'свойство', w: 190,
-            hint: 'Отступ снаружи блока',
-            explain: '<code>margin</code> — внешний отступ, раздвигающий элемент и его соседей. Он прозрачен: ' +
-              'фон элемента на него не распространяется. Вертикальные отступы соседних блоков ' +
-              'схлопываются — из двух остаётся больший, а не их сумма; горизонтальные не схлопываются никогда. ' +
-              'Значение <code>auto</code> по горизонтали центрирует блок известной ширины. ' +
-              'Отрицательные значения допустимы.',
-            refs: ['CSS Box Model Module Level 3 (W3C), § 7 — margin',
-                   'CSS Box Model Module Level 3, § 7.1 — схлопывание отступов'] },
-          { t: 'text', text: ': 12px;' }, { t: 'text', text: '               /* отступ от соседей */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-border', answer: 'p-border', ph: 'свойство', w: 190,
-            hint: 'Рамка вокруг блока',
-            explain: '<code>border</code> — сокращённая запись сразу трёх свойств: <code>border-width</code>, ' +
-              '<code>border-style</code> и <code>border-color</code>. Стиль обязателен: ' +
-              'при значении <code>none</code> рамка не рисуется, какой бы ни была толщина. ' +
-              'Если цвет не указан, берётся текущий цвет текста. Рамка занимает место в потоке ' +
-              'и увеличивает размеры блока — в отличие от <code>outline</code>.',
-            refs: ['CSS Backgrounds and Borders Module Level 3 (W3C), § 4 — borders',
-                   'CSS Box Model Module Level 3 (W3C) — области блока'] },
-          { t: 'text', text: ': 1px solid #d8dfea;' }, { t: 'text', text: '  /* тонкая рамка */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-radius', answer: 'p-radius', ph: 'свойство', w: 190,
-            hint: 'Скругление углов',
-            explain: '<code>border-radius</code> скругляет углы блока. Одно значение применяется ко всем четырём углам, ' +
-              'через пробел можно задать каждый угол отдельно, а через косую черту — разные радиусы ' +
-              'по горизонтали и вертикали, получая эллиптическое скругление. ' +
-              'Значение <code>50%</code> у квадрата превращает его в круг. Скругление обрезает и фон, ' +
-              'и рамку, но содержимое — только при <code>overflow: hidden</code>.',
-            refs: ['CSS Backgrounds and Borders Module Level 3 (W3C), § 5 — border-radius'] },
-          { t: 'text', text: ': 12px;' }, { t: 'text', text: '               /* скруглённые углы */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '}' } ] }
-      ],
-      cards: [
-        { id: 'p-bg',      text: 'background-color', code: true },
-        { id: 'p-color',   text: 'color',            code: true },
-        { id: 'p-fs',      text: 'font-size',        code: true },
-        { id: 'p-padding', text: 'padding',          code: true },
-        { id: 'p-margin',  text: 'margin',           code: true },
-        { id: 'p-border',  text: 'border',           code: true },
-        { id: 'p-radius',  text: 'border-radius',    code: true },
-        { id: 'p-x-bgimg', text: 'background-image', code: true, note: 'Подставляет картинку, а не цвет.' },
-        { id: 'p-x-zi',    text: 'z-index',          code: true, note: 'Управляет порядком наложения слоёв, оформления не меняет.' },
-        { id: 'p-x-ff',    text: 'font-family',      code: true, note: 'Задаёт гарнитуру шрифта, а не его размер.' },
-        { id: 'p-x-os',    text: 'outline',          code: true, note: 'Обводка поверх рамки; место в потоке не занимает.' }
-      ]
-    },
-
-    /* ---------------------------------------------------------------- */
-    {
-      id: 'css-2',
-      name: 'Селекторы',
-      desc: 'Как выбрать нужные элементы',
-      task: 'Подбери селектор под каждую задачу.',
-      theory:
-        '<p>Селектор отвечает на вопрос «к чему применить стиль»:</p>' +
-        '<ul>' +
-        '<li><code>p</code> — по имени тега, все такие элементы;</li>' +
-        '<li><code>.btn</code> — по классу, <code>#menu</code> — по уникальному id;</li>' +
-        '<li><code>.card p</code> — потомки: абзацы где-то внутри <code>.card</code>;</li>' +
-        '<li><code>a:hover</code> — псевдокласс состояния (наведение мышью);</li>' +
-        '<li><code>li:first-child</code> — первый ребёнок своего родителя;</li>' +
-        '<li><code>input[type="text"]</code> — по значению атрибута.</li>' +
-        '</ul>',
-      boardType: 'layout',
-      blocks: [
-        { t: 'row', items: [
-          { t: 'text', text: 'Все абзацы на странице', cls: 'b-small' },
-          { t: 'slot', id: 'c2-tag', answer: 's-tag', ph: 'селектор',
-            hint: 'Выбор по имени тега',
-            explain: '<code>p</code> — селектор типа: выбирает все элементы с таким именем во всём документе. ' +
-              'Это самый слабый вид селектора, его специфичность 0-0-1, поэтому любое правило ' +
-              'с классом перебьёт его независимо от порядка в файле. Удобен для базовых стилей ' +
-              'типографики, которые потом уточняются классами.',
-            refs: ['Selectors Level 4 (W3C), § 5.1 — type selectors',
-                   'CSS Cascading and Inheritance Level 5 (W3C) — специфичность'] } ] },
-        { t: 'row', items: [
-          { t: 'text', text: 'Единственный блок с id="menu"', cls: 'b-small' },
-          { t: 'slot', id: 'c2-id', answer: 's-id', ph: 'селектор',
-            hint: 'Выбор по идентификатору',
-            explain: '<code>#menu</code> — селектор идентификатора. Значение <code>id</code> должно быть уникальным ' +
-              'в пределах документа, поэтому селектор выбирает ровно один элемент. ' +
-              'Его специфичность 1-0-0 — выше любого сочетания классов, и перебить такое правило ' +
-              'трудно. Для оформления обычно используют классы, а <code>id</code> оставляют ' +
-              'для якорных ссылок, атрибута <code>for</code> у подписей и обращения из скриптов.',
-            refs: ['Selectors Level 4 (W3C), § 6.7 — ID selectors',
-                   'CSS Cascading and Inheritance Level 5 (W3C) — специфичность'] } ] },
-        { t: 'row', items: [
-          { t: 'text', text: 'Все кнопки с классом btn', cls: 'b-small' },
-          { t: 'slot', id: 'c2-class', answer: 's-class', ph: 'селектор',
-            hint: 'Выбор по классу',
-            explain: '<code>.btn</code> — селектор класса. Один класс можно повесить на любое число элементов, ' +
-              'а одному элементу — назначить несколько классов через пробел. Специфичность 0-1-0. ' +
-              'Это основной инструмент оформления: он не привязан ни к имени тега, ни к месту ' +
-              'в дереве документа, поэтому вёрстку можно менять, не переписывая стили.',
-            refs: ['Selectors Level 4 (W3C), § 6.6 — class selectors'] } ] },
-        { t: 'row', items: [
-          { t: 'text', text: 'Ссылка в момент наведения курсора', cls: 'b-small' },
-          { t: 'slot', id: 'c2-hover', answer: 's-hover', ph: 'селектор',
-            hint: 'Псевдокласс состояния',
-            explain: '<code>a:hover</code> — псевдокласс состояния: правило действует, пока указатель находится ' +
-              'над элементом. На устройствах с сенсорным экраном такого состояния фактически нет, ' +
-              'поэтому важное поведение на него завязывать нельзя. Псевдоклассы ссылок пишут ' +
-              'в порядке <code>:link</code>, <code>:visited</code>, <code>:hover</code>, ' +
-              '<code>:active</code> — иначе более поздние правила перекроют предыдущие. ' +
-              'Наведение всегда дублируют состоянием <code>:focus-visible</code> для клавиатуры.',
-            refs: ['Selectors Level 4 (W3C), § 9 — user action pseudo-classes',
-                   'WCAG 2.2, критерий успеха 2.4.7 — Focus Visible'] } ] },
-        { t: 'row', items: [
-          { t: 'text', text: 'Только те абзацы, что лежат внутри .card', cls: 'b-small' },
-          { t: 'slot', id: 'c2-desc', answer: 's-desc', ph: 'селектор',
-            hint: 'Вложенность через пробел',
-            explain: '<code>.card p</code> — комбинатор потомка: пробел означает «любой абзац внутри .card», ' +
-              'на любой глубине вложенности. Если нужен только непосредственный ребёнок, ' +
-              'берут <code>&gt;</code>. Специфичность складывается из частей — здесь 0-1-1. ' +
-              'Браузер разбирает такие селекторы справа налево, поэтому длинные цепочки ' +
-              'и дороже в разборе, и хрупче при изменении вёрстки.',
-            refs: ['Selectors Level 4 (W3C), § 15 — combinators',
-                   'Selectors Level 4, § 15.1 — descendant combinator'] } ] },
-        { t: 'row', items: [
-          { t: 'text', text: 'Первый пункт в каждом списке', cls: 'b-small' },
-          { t: 'slot', id: 'c2-first', answer: 's-first', ph: 'селектор',
-            hint: 'Псевдокласс позиции',
-            explain: '<code>li:first-child</code> — структурный псевдокласс: элемент, стоящий первым среди ' +
-              'детей своего родителя. Важно, что условие проверяется по всем детям, а не только ' +
-              'по элементам того же типа: если перед списком внутри того же родителя окажется ' +
-              'другой элемент, правило не сработает — для такого случая есть ' +
-              '<code>:first-of-type</code>. Родственные псевдоклассы: <code>:last-child</code>, ' +
-              '<code>:nth-child()</code>.',
-            refs: ['Selectors Level 4 (W3C), § 10 — structural pseudo-classes'] } ] },
-        { t: 'row', items: [
-          { t: 'text', text: 'Текстовые поля ввода (но не чекбоксы)', cls: 'b-small' },
-          { t: 'slot', id: 'c2-attr', answer: 's-attr', ph: 'селектор',
-            hint: 'Выбор по атрибуту',
-            explain: '<code>input[type="text"]</code> — селектор атрибута: отбирает только поля с указанным ' +
-              'значением, не задевая чекбоксы, переключатели и кнопки. Кроме точного совпадения ' +
-              'есть проверки по началу строки (<code>^=</code>), по окончанию (<code>$=</code>) ' +
-              'и по вхождению подстроки (<code>*=</code>). Специфичность такая же, как у класса, — 0-1-0. ' +
-              'Значения атрибутов по умолчанию сравниваются с учётом регистра.',
-            refs: ['Selectors Level 4 (W3C), § 6.2 — attribute selectors'] } ] }
-      ],
-      cards: [
-        { id: 's-tag',    text: 'p',                     code: true },
-        { id: 's-id',     text: '#menu',                 code: true },
-        { id: 's-class',  text: '.btn',                  code: true },
-        { id: 's-hover',  text: 'a:hover',               code: true },
-        { id: 's-desc',   text: '.card p',               code: true },
-        { id: 's-first',  text: 'li:first-child',        code: true },
-        { id: 's-attr',   text: 'input[type="text"]',    code: true },
-        { id: 's-x-all',  text: '*',                     code: true, note: 'Универсальный селектор — попадают вообще все элементы страницы.' },
-        { id: 's-x-adj',  text: 'p + p',                 code: true, note: 'Соседний селектор: абзац сразу после другого абзаца.' },
-        { id: 's-x-last', text: 'li:last-child',         code: true, note: 'Это последний пункт списка, а не первый.' },
-        { id: 's-x-grp',  text: '.card, p',              code: true, note: 'Запятая — это группировка: «и .card, и все абзацы», а не вложенность.' }
-      ]
-    },
-
-    /* ---------------------------------------------------------------- */
-    {
-      id: 'css-3',
-      name: 'Флексбокс',
-      desc: 'Раскладка панели инструментов',
-      task: 'Собери правило так, чтобы элементы встали в строку с описанным поведением.',
-      theory:
-        '<p>Флексбокс включается на родителе и раскладывает его детей:</p>' +
-        '<ul>' +
-        '<li><code>display: flex</code> — включает режим;</li>' +
-        '<li><code>flex-direction</code> — направление главной оси (<code>row</code> / <code>column</code>);</li>' +
-        '<li><code>justify-content</code> — распределение вдоль главной оси;</li>' +
-        '<li><code>align-items</code> — выравнивание поперёк главной оси;</li>' +
-        '<li><code>gap</code> — расстояние между элементами;</li>' +
-        '<li><code>flex-wrap: wrap</code> — разрешает перенос на новую строку.</li>' +
-        '</ul>',
-      boardType: 'code',
-      blocks: [
-        { t: 'line', items: [ { t: 'text', text: '.toolbar {' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-display', answer: 'f-display', ph: 'свойство', w: 180,
-            hint: 'Включает флекс-раскладку',
-            explain: '<code>display: flex</code> превращает элемент во флекс-контейнер: его прямые дети становятся ' +
-              'флекс-элементами и выстраиваются вдоль главной оси. Без этой строки остальные ' +
-              'флекс-свойства просто не действуют. У детей при этом перестают работать ' +
-              '<code>float</code>, <code>clear</code> и <code>vertical-align</code>, ' +
-              'а вертикальные отступы больше не схлопываются. Сам контейнер остаётся блочным ' +
-              'элементом в общем потоке; <code>inline-flex</code> делает его строчным.',
-            refs: ['CSS Flexible Box Layout Module Level 1 (W3C), § 3 — flex containers',
-                   'CSS Flexible Box Layout Module Level 1, § 4 — flex items'] },
-          { t: 'text', text: ': flex;' }, { t: 'text', text: '                    /* включаем флексбокс */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-dir', answer: 'f-dir', ph: 'свойство', w: 180,
-            hint: 'Направление главной оси',
-            explain: '<code>flex-direction</code> задаёт направление главной оси: <code>row</code> — в строку ' +
-              'по направлению письма, <code>column</code> — в столбец, варианты с ' +
-              '<code>-reverse</code> разворачивают порядок. Свойство определяет, какая ось ' +
-              'считается главной, а какая поперечной, и тем самым меняет смысл ' +
-              '<code>justify-content</code> и <code>align-items</code>. ' +
-              'Визуальный порядок при этом расходится с порядком в разметке — навигация ' +
-              'с клавиатуры по-прежнему идёт по разметке.',
-            refs: ['CSS Flexible Box Layout Module Level 1 (W3C), § 5.1 — flex-direction',
-                   'WCAG 2.2, критерий успеха 1.3.2 — Meaningful Sequence'] },
-          { t: 'text', text: ': row;' }, { t: 'text', text: '                     /* элементы в строку */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-justify', answer: 'f-justify', ph: 'свойство', w: 180,
-            hint: 'Распределение вдоль строки',
-            explain: '<code>justify-content</code> распределяет элементы вдоль главной оси и работает со свободным ' +
-              'местом, оставшимся после их раскладки. <code>space-between</code> прижимает крайние ' +
-              'элементы к краям, а промежутки между остальными делает равными; ' +
-              '<code>space-around</code> и <code>space-evenly</code> распределяют место иначе. ' +
-              'Если свободного места нет, свойство ничего не изменит.',
-            refs: ['CSS Box Alignment Module Level 3 (W3C), § 8 — justify-content',
-                   'CSS Flexible Box Layout Module Level 1 (W3C), § 8.2 — выравнивание по главной оси'] },
-          { t: 'text', text: ': space-between;' }, { t: 'text', text: '  /* по краям, промежутки поровну */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-align', answer: 'f-align', ph: 'свойство', w: 180,
-            hint: 'Выравнивание поперёк строки',
-            explain: '<code>align-items</code> выравнивает элементы по поперечной оси — при строке это вертикаль. ' +
-              'Значение по умолчанию <code>stretch</code> растягивает их на всю высоту строки, ' +
-              'поэтому колонки разной длины выглядят одинаково высокими; <code>center</code> ' +
-              'центрирует по высоте, <code>baseline</code> выравнивает по базовой линии текста. ' +
-              'Отдельному элементу выравнивание переопределяют свойством <code>align-self</code>.',
-            refs: ['CSS Box Alignment Module Level 3 (W3C), § 6 — align-items и align-self',
-                   'CSS Flexible Box Layout Module Level 1 (W3C), § 8.3 — выравнивание по поперечной оси'] },
-          { t: 'text', text: ': center;' }, { t: 'text', text: '                  /* по центру по вертикали */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-gap', answer: 'f-gap', ph: 'свойство', w: 180,
-            hint: 'Расстояние между элементами',
-            explain: '<code>gap</code> задаёт промежутки между элементами — сокращение для ' +
-              '<code>row-gap</code> и <code>column-gap</code>. В отличие от отступов через ' +
-              '<code>margin</code>, промежуток появляется только между элементами и не добавляется ' +
-              'по внешним краям контейнера, поэтому не нужны приёмы вроде ' +
-              '<code>:last-child { margin: 0 }</code>. Свойство работает и во флексбоксе, ' +
-              'и в гриде, и в многоколоночной вёрстке.',
-            refs: ['CSS Box Alignment Module Level 3 (W3C), § 8.3 — gap, row-gap, column-gap'] },
-          { t: 'text', text: ': 12px;' }, { t: 'text', text: '                     /* просвет между кнопками */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-wrap', answer: 'f-wrap', ph: 'свойство', w: 180,
-            hint: 'Разрешение переноса',
-            explain: '<code>flex-wrap</code> разрешает перенос: по умолчанию стоит <code>nowrap</code>, ' +
-              'и элементы сжимаются, лишь бы уместиться в одну строку, вплоть до нечитаемого вида. ' +
-              'Со значением <code>wrap</code> не поместившиеся переходят на следующую строку, ' +
-              'и контейнер становится многострочным — только тогда начинает работать ' +
-              '<code>align-content</code>. Это основной способ сделать раскладку пригодной ' +
-              'для узких экранов.',
-            refs: ['CSS Flexible Box Layout Module Level 1 (W3C), § 5.2 — flex-wrap',
-                   'CSS Box Alignment Module Level 3 (W3C), § 7 — align-content',
-                   'WCAG 2.2, критерий успеха 1.4.10 — Reflow'] },
-          { t: 'text', text: ': wrap;' }, { t: 'text', text: '                    /* перенос на новую строку */', cls: 'b-comment' } ] },
-        { t: 'line', items: [ { t: 'text', text: '}' } ] }
-      ],
-      cards: [
-        { id: 'f-display', text: 'display',         code: true },
-        { id: 'f-dir',     text: 'flex-direction',  code: true },
-        { id: 'f-justify', text: 'justify-content', code: true },
-        { id: 'f-align',   text: 'align-items',     code: true },
-        { id: 'f-gap',     text: 'gap',             code: true },
-        { id: 'f-wrap',    text: 'flex-wrap',       code: true },
-        { id: 'f-x-float', text: 'float',           code: true, note: 'Старый способ раскладки; во флексбоксе float на детях игнорируется.' },
-        { id: 'f-x-ta',    text: 'text-align',      code: true, note: 'Выравнивает текст внутри строки, а не флекс-элементы.' },
-        { id: 'f-x-vert',  text: 'vertical-align',  code: true, note: 'Работает для строчных элементов и ячеек таблиц, на флекс-детей не влияет.' },
-        { id: 'f-x-pos',   text: 'position',        code: true, note: 'Вырывает элемент из потока — это другой механизм раскладки.' }
-      ]
-    }
-
-  ]
-};
-
-  </script>
   <script>
 /* js/data/docs-topic.js */
 /* ==========================================================================
@@ -2027,15 +1356,17 @@ window.TOPIC_DOCS = {
   icon: '§',
   color: '#1a8a55',        // акцент темы на светлом фоне
   colorDark: '#43cd85',    // он же на тёмном
-  desc: 'Реквизиты ОРД по ГОСТ Р 7.0.97-2025. Заполни бланк приказа, письма и акта правильными реквизитами.',
+  desc: 'Реквизиты организационно-распорядительных документов по ГОСТ Р 7.0.97-2025: ' +
+        'приказ, служебная записка, письмо, акт, протокол, отметки на входящем документе ' +
+        'и заверение копии. Каждый уровень открывается только после чистого прохождения предыдущего.',
 
   levels: [
 
     /* ================================================================
-       Уровень 1 — ПРИКАЗ
+       Уровень 1 — ПРИКАЗ ПО ОСНОВНОЙ ДЕЯТЕЛЬНОСТИ
        ================================================================ */
     {
-      id: 'docs-1',
+      id: 'doc-prikaz',
       name: 'Приказ по основной деятельности',
       desc: 'Распорядительный документ: 8 реквизитов',
       task: 'Перетащи реквизиты на их места на бланке приказа. Часть карточек в приказе не используется.',
@@ -2182,10 +1513,147 @@ window.TOPIC_DOCS = {
     },
 
     /* ================================================================
-       Уровень 2 — СЛУЖЕБНОЕ ПИСЬМО
+       Уровень 2 — СЛУЖЕБНАЯ ЗАПИСКА
        ================================================================ */
     {
-      id: 'docs-2',
+      id: 'doc-zapiska',
+      name: 'Служебная записка',
+      desc: 'Внутренний документ: 8 реквизитов',
+      task: 'Оформи служебную записку. Помни: это внутренний документ, а не письмо.',
+      theory:
+        '<p>Служебная записка — внутренний документ для переписки между подразделениями ' +
+        'одной организации. Оформляется на стандартном листе A4 или на бланке структурного ' +
+        'подразделения, а не на бланке письма.</p>' +
+        '<ul>' +
+        '<li><b>06</b> наименование структурного подразделения — автора документа (п. 4.6);</li>' +
+        '<li><b>09</b> наименование вида документа: СЛУЖЕБНАЯ ЗАПИСКА (п. 4.9);</li>' +
+        '<li><b>15</b> адресат — должностное лицо своей организации (п. 4.15);</li>' +
+        '<li><b>нет</b> реквизита 08: справочные данные нужны только в бланке письма (п. 4.8);</li>' +
+        '<li><b>нет</b> реквизита 13: место составления во внутренних документах не указывают (п. 4.13).</li>' +
+        '</ul>' +
+        '<p>Решение по записке руководитель оформляет резолюцией — отдельного грифа утверждения она не требует.</p>' +
+        '<p><i>Номера пунктов даны по структуре стандарта: раздел 4 описывает реквизиты, ' +
+        'номер пункта совпадает с номером реквизита. Сверьте с действующей редакцией.</i></p>',
+      boardType: 'doc',
+      blocks: [
+        { t: 'block', cls: 'b-al-left b-strong', items: [
+          { t: 'slot', id: 'z-org', answer: 'z05', ph: 'реквизит',
+            hint: 'Реквизит 05 — наименование организации',
+            explain: '<b>05 — наименование организации — автора документа.</b> Приводится полное наименование ' +
+              'по уставу. В бланке структурного подразделения наименование организации стоит выше ' +
+              'наименования подразделения: сначала указывают, чья это организация, и только потом — ' +
+              'какое подразделение внутри неё подготовило документ.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.5 — наименование организации — автора документа',
+                   'ГОСТ Р 7.0.97-2025, раздел 5 — бланки документов'] } ] },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'z-dep', answer: 'z06', ph: 'реквизит',
+            hint: 'Реквизит 06 — наименование структурного подразделения',
+            explain: '<b>06 — наименование структурного подразделения — автора документа.</b> ' +
+              'Используется в бланках структурных подразделений и во внутренних документах. ' +
+              'Указывается под наименованием организации и в точном соответствии с положением ' +
+              'о подразделении или штатным расписанием. Именно этот реквизит показывает, ' +
+              'от кого внутри организации исходит записка.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.6 — наименование структурного подразделения — автора документа',
+                   'ГОСТ Р 7.0.97-2025, раздел 5 — бланки документов'] } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-right', items: [
+          { t: 'slot', id: 'z-to', answer: 'z15', ph: 'реквизит',
+            hint: 'Реквизит 15 — адресат',
+            explain: '<b>15 — адресат.</b> В служебной записке адресатом выступает должностное лицо ' +
+              'своей же организации. Наименование организации при этом не повторяют — достаточно ' +
+              'должности и фамилии в дательном падеже, инициалы ставят перед фамилией. ' +
+              'Размещается в правом верхнем углу.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.15 — адресат'] } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-center b-caps b-strong', items: [
+          { t: 'slot', id: 'z-kind', answer: 'z09', ph: 'реквизит',
+            hint: 'Реквизит 09 — наименование вида документа',
+            explain: '<b>09 — наименование вида документа.</b> Печатается прописными буквами: ' +
+              'СЛУЖЕБНАЯ ЗАПИСКА. В отличие от письма, здесь вид документа указывать обязательно: ' +
+              'записка оформляется не на бланке письма, и по одному только оформлению её вид ' +
+              'определить нельзя.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.9 — наименование вида документа'] } ] },
+        { t: 'spacer' },
+        { t: 'row', cls: 'b-row--split', items: [
+          { t: 'block', cls: 'b-al-left', items: [
+            { t: 'slot', id: 'z-date', answer: 'z10', ph: 'реквизит',
+              hint: 'Реквизит 10 — дата документа',
+              explain: '<b>10 — дата документа.</b> Дата подписания записки её автором. ' +
+                'Оформляется цифровым способом — 03.03.2026 — или словесно-цифровым. ' +
+                'Дата резолюции руководителя к этому реквизиту отношения не имеет: ' +
+                'она проставляется отдельно, в составе самой резолюции.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.10 — дата документа',
+                     'ГОСТ Р 7.0.97-2025, п. 4.28 — резолюция'] } ] },
+          { t: 'block', cls: 'b-al-right', items: [
+            { t: 'slot', id: 'z-num', answer: 'z11', ph: 'реквизит',
+              hint: 'Реквизит 11 — регистрационный номер',
+              explain: '<b>11 — регистрационный номер документа.</b> Внутренние документы регистрируют ' +
+                'отдельно от входящих и исходящих, в пределах своего вида и, как правило, ' +
+                'внутри подразделения-автора. Поэтому у служебной записки номер обычно простой — ' +
+                'порядковый в пределах года.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.11 — регистрационный номер документа',
+                     'Правила делопроизводства, утв. приказом Росархива от 22.05.2019 № 71 — регистрация документов'] } ] } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'z-head', answer: 'z17', ph: 'реквизит',
+            hint: 'Реквизит 17 — заголовок к тексту',
+            explain: '<b>17 — заголовок к тексту.</b> Отвечает на вопрос «о чём?»: ' +
+              '«О замене серверного оборудования». Размещается слева под реквизитами, ' +
+              'без кавычек и без точки в конце. Заголовок нужен, чтобы записку можно было ' +
+              'зарегистрировать и найти по существу вопроса, не читая текст целиком.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.17 — заголовок к тексту'] } ] },
+        { t: 'spacer' },
+        { t: 'text', text: 'Оборудование серверной комнаты эксплуатируется с 2018 года, гарантийный срок истёк, за последний квартал зафиксировано четыре отказа дисковых накопителей.', cls: 'b-al-left' },
+        { t: 'text', text: 'Прошу рассмотреть вопрос о закупке двух серверов в рамках бюджета отдела на 2026 год.', cls: 'b-al-left' },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'z-sign', answer: 'z22', ph: 'реквизит',
+            hint: 'Реквизит 22 — подпись',
+            explain: '<b>22 — подпись.</b> Записку подписывает руководитель подразделения-автора: ' +
+              'наименование должности, личная подпись, инициалы и фамилия. ' +
+              'Подпись автора и резолюция адресата — разные реквизиты: автор подписывает документ, ' +
+              'а адресат наносит на него поручение.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.22 — подпись'] } ] }
+      ],
+      cards: [
+        { id: 'z05', tag: '05 · наименование организации', text: 'Общество с ограниченной ответственностью «Гранит»' },
+        { id: 'z06', tag: '06 · структурное подразделение', text: 'Отдел информационных технологий' },
+        { id: 'z09', tag: '09 · вид документа', text: 'СЛУЖЕБНАЯ ЗАПИСКА' },
+        { id: 'z10', tag: '10 · дата документа', text: '03.03.2026' },
+        { id: 'z11', tag: '11 · регистрационный номер', text: '№ 27' },
+        { id: 'z15', tag: '15 · адресат', text: 'Генеральному директору\nП.С. Ковалёву' },
+        { id: 'z17', tag: '17 · заголовок к тексту', text: 'О замене серверного оборудования' },
+        { id: 'z22', tag: '22 · подпись', text: 'Начальник отдела информационных технологий            Д.В. Орехов' },
+
+        { id: 'zx-08', tag: '08 · справочные данные', text: 'ул. Малышева, д. 51, г. Екатеринбург, 620075\nтел. +7 (343) 200-15-40, info@granit.ru',
+          note: 'Справочные данные об организации оформляются только в бланке письма: они нужны, ' +
+                'чтобы внешний корреспондент знал, куда и как ответить. Служебная записка не покидает ' +
+                'организацию, поэтому почтовый адрес и банковские реквизиты в ней избыточны.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.8 — справочные данные об организации'] },
+        { id: 'zx-13', tag: '13 · место составления', text: 'г. Екатеринбург',
+          note: 'Место составления указывают во всех документах, кроме деловых писем и внутренних ' +
+                'документов организации. Служебная записка — внутренний документ, и населённый пункт ' +
+                'в ней не проставляется.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.13 — место составления (издания) документа'] },
+        { id: 'zx-12', tag: '12 · ссылка на поступивший документ', text: 'на № 3-15 от 12.01.2026',
+          note: 'Ссылка на регистрационный номер и дату поступившего документа оформляется только ' +
+                'в письмах-ответах на входящую корреспонденцию. Служебная записка инициативна: ' +
+                'она не отвечает на входящий документ.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.12 — ссылка на регистрационный номер и дату поступившего документа'] },
+        { id: 'zx-16', tag: '16 · гриф утверждения', text: 'УТВЕРЖДАЮ Генеральный директор ...',
+          note: 'Гриф утверждения ставят на документах, которые вступают в силу после утверждения: ' +
+                'на положениях, инструкциях, актах, планах. Служебная записка не утверждается — ' +
+                'решение по ней руководитель оформляет резолюцией (реквизит 28).',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.16 — гриф утверждения документа',
+                 'ГОСТ Р 7.0.97-2025, п. 4.28 — резолюция'] }
+      ]
+    },
+
+    /* ================================================================
+       Уровень 3 — СЛУЖЕБНОЕ ПИСЬМО
+       ================================================================ */
+    {
+      id: 'doc-pismo',
       name: 'Служебное письмо',
       desc: 'Бланк письма: 10 реквизитов',
       task: 'Заполни бланк служебного письма. Внимательно: часть реквизитов в письме не оформляется.',
@@ -2341,10 +1809,10 @@ window.TOPIC_DOCS = {
     },
 
     /* ================================================================
-       Уровень 3 — АКТ
+       Уровень 4 — АКТ
        ================================================================ */
     {
-      id: 'docs-3',
+      id: 'doc-akt',
       name: 'Акт с грифом утверждения',
       desc: 'Информационно-справочный документ: 9 реквизитов',
       task: 'Заполни бланк акта. Обрати внимание на верхний правый угол.',
@@ -2483,7 +1951,388 @@ window.TOPIC_DOCS = {
                 'Она относится к работе с поступившим документом, а не к оформлению составляемого акта.',
           refs: ['ГОСТ Р 7.0.97-2025, п. 4.29 — отметка о контроле'] }
       ]
+    },
+
+    /* ================================================================
+       Уровень 5 — ПРОТОКОЛ
+       ================================================================ */
+    {
+      id: 'doc-protokol',
+      name: 'Протокол заседания',
+      desc: 'Документ коллегиального органа: 8 реквизитов',
+      task: 'Оформи протокол заседания комиссии. Обрати внимание на подписи внизу.',
+      theory:
+        '<p>Протокол фиксирует ход обсуждения и решения коллегиального органа: ' +
+        'комиссии, совета, собрания.</p>' +
+        '<ul>' +
+        '<li><b>10</b> дата протокола — дата заседания, а не дата оформления текста (п. 4.10);</li>' +
+        '<li><b>17</b> заголовок к тексту отвечает на вопрос «чего?» и называет коллегиальный орган (п. 4.17);</li>' +
+        '<li>текст состоит из вводной части (председатель, секретарь, присутствовавшие, повестка дня) ' +
+        'и основной, построенной по схеме СЛУШАЛИ — ВЫСТУПИЛИ — РЕШИЛИ (п. 4.18);</li>' +
+        '<li><b>22</b> подпись — две: председателя и секретаря заседания (п. 4.22).</li>' +
+        '</ul>' +
+        '<p>Протокол — внутренний документ: он никому не адресуется и печатью не заверяется.</p>' +
+        '<p><i>Номера пунктов даны по структуре стандарта: раздел 4 описывает реквизиты, ' +
+        'номер пункта совпадает с номером реквизита. Сверьте с действующей редакцией.</i></p>',
+      boardType: 'doc',
+      blocks: [
+        { t: 'block', cls: 'b-al-center', items: [
+          { t: 'slot', id: 'p-org', answer: 'p05', ph: 'реквизит',
+            hint: 'Реквизит 05 — наименование организации',
+            explain: '<b>05 — наименование организации — автора документа.</b> Автором протокола ' +
+              'является организация, при которой действует коллегиальный орган, а не сам орган: ' +
+              'наименование комиссии или совета указывают не здесь, а в заголовке к тексту. ' +
+              'Протокол оформляют на общем бланке организации, поэтому реквизит центрируется вверху.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.5 — наименование организации — автора документа',
+                   'ГОСТ Р 7.0.97-2025, раздел 5 — бланки документов'] } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-center b-caps b-strong', items: [
+          { t: 'slot', id: 'p-kind', answer: 'p09', ph: 'реквизит',
+            hint: 'Реквизит 09 — наименование вида документа',
+            explain: '<b>09 — наименование вида документа.</b> Печатается прописными буквами ' +
+              'по центру: ПРОТОКОЛ. Вид документа задаёт и структуру текста: вводная часть ' +
+              'с составом участников и повесткой дня, затем по каждому вопросу — ' +
+              'СЛУШАЛИ, ВЫСТУПИЛИ, РЕШИЛИ.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.9 — наименование вида документа',
+                   'ГОСТ Р 7.0.97-2025, п. 4.18 — текст документа'] } ] },
+        { t: 'spacer' },
+        { t: 'row', cls: 'b-row--split', items: [
+          { t: 'block', cls: 'b-al-left', items: [
+            { t: 'slot', id: 'p-date', answer: 'p10', ph: 'реквизит',
+              hint: 'Реквизит 10 — дата документа',
+              explain: '<b>10 — дата документа.</b> Датой протокола является <b>дата заседания</b>, ' +
+                'а не день, когда текст был окончательно оформлен и подписан. ' +
+                'Если заседание продолжалось несколько дней, указывают даты начала и окончания ' +
+                'через тире. Это принципиально: протокол удостоверяет, когда решения были приняты.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.10 — дата документа'] } ] },
+          { t: 'block', cls: 'b-al-right', items: [
+            { t: 'slot', id: 'p-num', answer: 'p11', ph: 'реквизит',
+              hint: 'Реквизит 11 — регистрационный номер',
+              explain: '<b>11 — регистрационный номер документа.</b> Протоколы нумеруют ' +
+                'порядковыми номерами в пределах календарного года отдельно по каждому ' +
+                'коллегиальному органу: у аттестационной комиссии своя нумерация, ' +
+                'у совета директоров — своя.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.11 — регистрационный номер документа'] } ] } ] },
+        { t: 'block', cls: 'b-al-center', items: [
+          { t: 'slot', id: 'p-place', answer: 'p13', ph: 'реквизит',
+            hint: 'Реквизит 13 — место составления (издания) документа',
+            explain: '<b>13 — место составления (издания) документа.</b> В протоколе указывается ' +
+              'обязательно: он фиксирует факт проведения заседания, и место его проведения ' +
+              'входит в удостоверяемые сведения. Записывается с учётом административно-территориального ' +
+              'деления и общепринятых сокращений.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.13 — место составления (издания) документа'] } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'p-head', answer: 'p17', ph: 'реквизит',
+            hint: 'Реквизит 17 — заголовок к тексту',
+            explain: '<b>17 — заголовок к тексту.</b> В протоколе согласуется с наименованием вида ' +
+              'и отвечает на вопрос «чего?», называя коллегиальный орган: ' +
+              '«заседания аттестационной комиссии». Пишется со строчной буквы сразу под словом ПРОТОКОЛ ' +
+              'и составляет с ним единую конструкцию.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.17 — заголовок к тексту'] } ] },
+        { t: 'spacer' },
+        { t: 'text', text: 'Председатель — Н.Т. Белых', cls: 'b-al-left' },
+        { t: 'text', text: 'Секретарь — Е.А. Гром', cls: 'b-al-left' },
+        { t: 'text', text: 'Присутствовали: 7 человек (список прилагается)', cls: 'b-al-left' },
+        { t: 'spacer' },
+        { t: 'text', text: 'ПОВЕСТКА ДНЯ:', cls: 'b-al-left b-strong' },
+        { t: 'text', text: '1. Об аттестации работников отдела информационных технологий.', cls: 'b-al-left' },
+        { t: 'spacer' },
+        { t: 'text', text: '1. СЛУШАЛИ:', cls: 'b-al-left b-strong' },
+        { t: 'text', text: 'Орехова Д.В. — о результатах аттестации четырёх работников отдела.', cls: 'b-al-left' },
+        { t: 'text', text: 'РЕШИЛИ:', cls: 'b-al-left b-strong' },
+        { t: 'text', text: '1.1. Признать соответствующими занимаемой должности всех четырёх работников.', cls: 'b-al-left' },
+        { t: 'spacer' },
+        { t: 'row', cls: 'b-row--split', items: [
+          { t: 'block', cls: 'b-al-left', items: [
+            { t: 'slot', id: 'p-sign-chair', answer: 'p22a', ph: 'реквизит',
+              hint: 'Реквизит 22 — подпись председателя',
+              explain: '<b>22 — подпись (председатель).</b> Протокол подписывают двое, и первой ' +
+                'ставится подпись председателя заседания. Указывается его роль в коллегиальном органе — ' +
+                '«Председатель», — а не штатная должность в организации: подписывая протокол, ' +
+                'он выступает именно как председатель заседания.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.22 — подпись'] } ] },
+          { t: 'block', cls: 'b-al-right', items: [
+            { t: 'slot', id: 'p-sign-sec', answer: 'p22b', ph: 'реквизит',
+              hint: 'Реквизит 22 — подпись секретаря',
+              explain: '<b>22 — подпись (секретарь).</b> Вторая подпись протокола. Секретарь ведёт ' +
+                'запись хода заседания и своей подписью удостоверяет, что текст соответствует ' +
+                'тому, что обсуждалось. Без обеих подписей протокол не имеет силы.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.22 — подпись'] } ] } ] }
+      ],
+      cards: [
+        { id: 'p05', tag: '05 · наименование организации', text: 'Общество с ограниченной ответственностью «Гранит»' },
+        { id: 'p09', tag: '09 · вид документа', text: 'ПРОТОКОЛ' },
+        { id: 'p10', tag: '10 · дата документа', text: '17.03.2026' },
+        { id: 'p11', tag: '11 · регистрационный номер', text: '№ 4' },
+        { id: 'p13', tag: '13 · место составления', text: 'г. Екатеринбург' },
+        { id: 'p17', tag: '17 · заголовок к тексту', text: 'заседания аттестационной комиссии' },
+        { id: 'p22a', tag: '22 · подпись председателя', text: 'Председатель            Н.Т. Белых' },
+        { id: 'p22b', tag: '22 · подпись секретаря', text: 'Секретарь            Е.А. Гром' },
+
+        { id: 'px-15', tag: '15 · адресат', text: 'Генеральному директору ООО «Вектор» А.П. Ильину',
+          note: 'Протокол — внутренний документ коллегиального органа, он никому не адресуется. ' +
+                'Выписки из протокола направляют заинтересованным лицам отдельно, и адресат ' +
+                'оформляется уже на сопроводительном письме.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.15 — адресат'] },
+        { id: 'px-24', tag: '24 · печать', text: '(оттиск печати организации)',
+          note: 'Печать заверяет подлинность подписи на документах, удостоверяющих права ' +
+                'и связанных с финансовыми средствами. Протокол оформляется на бланке организации ' +
+                'и удостоверяется подписями председателя и секретаря; печатью его не заверяют.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.24 — печать'] },
+        { id: 'px-25', tag: '25 · отметка об исполнителе', text: 'Гром Елена Андреевна, +7 (343) 200-15-48',
+          note: 'Отметка об исполнителе нужна адресату, чтобы связаться с тем, кто готовил документ, — ' +
+                'то есть прежде всего в исходящей переписке. В протоколе её не оформляют: ' +
+                'ответственный за текст назван в самом документе как секретарь заседания.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.25 — отметка об исполнителе'] },
+        { id: 'px-16', tag: '16 · гриф утверждения', text: 'УТВЕРЖДАЮ Генеральный директор ...',
+          note: 'В этом протоколе гриф утверждения не нужен: решения аттестационной комиссии ' +
+                'вступают в силу с момента подписания протокола председателем и секретарём. ' +
+                'Гриф появляется лишь тогда, когда обязательность утверждения прямо установлена ' +
+                'положением о коллегиальном органе.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.16 — гриф утверждения документа'] }
+      ]
+    },
+
+    /* ================================================================
+       Уровень 6 — ОТМЕТКИ НА ПОСТУПИВШЕМ ДОКУМЕНТЕ
+       ================================================================ */
+    {
+      id: 'doc-otmetki',
+      name: 'Отметки на поступившем документе',
+      desc: 'Путь входящего письма: 4 реквизита',
+      task: 'Перед тобой поступившее письмо. Нанеси на него служебные отметки получателя.',
+      theory:
+        '<p>Реквизиты 26–30 наносит не автор документа, а <b>получатель</b> — по мере работы ' +
+        'с поступившим документом:</p>' +
+        '<ul>' +
+        '<li><b>27</b> отметка о поступлении — при регистрации, правый нижний угол первого листа (п. 4.27);</li>' +
+        '<li><b>28</b> резолюция — указание руководителя: исполнитель, поручение, срок, подпись, дата (п. 4.28);</li>' +
+        '<li><b>29</b> отметка о контроле — если документ поставлен на контроль исполнения (п. 4.29);</li>' +
+        '<li><b>30</b> отметка о направлении документа в дело — когда работа завершена (п. 4.30).</li>' +
+        '</ul>' +
+        '<p>Всё, что выше линии, — реквизиты автора письма, их трогать не нужно.</p>' +
+        '<p><i>Номера пунктов даны по структуре стандарта: раздел 4 описывает реквизиты, ' +
+        'номер пункта совпадает с номером реквизита. Сверьте с действующей редакцией.</i></p>',
+      boardType: 'doc',
+      blocks: [
+        { t: 'block', cls: 'b-al-left b-small', items: [
+          { t: 'slot', id: 'o-control', answer: 'o29', ph: 'реквизит',
+              hint: 'Реквизит 29 — отметка о контроле',
+              explain: '<b>29 — отметка о контроле.</b> Проставляется на документах, исполнение ' +
+                'которых поставлено на контроль. Оформляется штампом или словом «Контроль» ' +
+                'и размещается на верхнем поле документа. Это сигнал делопроизводителю: ' +
+                'по документу отслеживается срок и требуется отчёт об исполнении.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.29 — отметка о контроле',
+                     'Правила делопроизводства, утв. приказом Росархива от 22.05.2019 № 71 — контроль исполнения'] }
+        ] },
+        { t: 'spacer' },
+        { t: 'text', text: 'Общество с ограниченной ответственностью «Вектор»', cls: 'b-al-left b-strong' },
+        { t: 'text', text: 'ул. Ленина, д. 8, г. Челябинск, 454000, тел. +7 (351) 700-11-20', cls: 'b-al-left b-small' },
+        { t: 'rule' },
+        { t: 'text', text: '19.01.2026  № 3-15', cls: 'b-al-left' },
+        { t: 'spacer' },
+        { t: 'text', text: 'Генеральному директору ООО «Гранит» П.С. Ковалёву', cls: 'b-al-right' },
+        { t: 'block', cls: 'b-al-right', items: [
+          { t: 'slot', id: 'o-resolution', answer: 'o28', ph: 'реквизит',
+              hint: 'Реквизит 28 — резолюция',
+              explain: '<b>28 — резолюция.</b> Указание руководителя по исполнению документа. ' +
+                'Включает фамилию и инициалы исполнителя, содержание поручения, при необходимости — ' +
+                'срок исполнения, а также личную подпись руководителя и дату. ' +
+                'Наносится на свободном месте первого листа, обычно ниже реквизита «адресат», ' +
+                'либо оформляется на отдельном листе и прикрепляется к документу.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.28 — резолюция'] }
+        ] },
+        { t: 'spacer' },
+        { t: 'text', text: 'О заключении договора поставки', cls: 'b-al-left' },
+        { t: 'spacer' },
+        { t: 'text', text: 'Уважаемый Пётр Сергеевич! Просим направить в наш адрес проект договора поставки оборудования на 2026 год и прайс-лист действующих цен.', cls: 'b-al-left' },
+        { t: 'spacer' },
+        { t: 'text', text: 'Генеральный директор            А.П. Ильин', cls: 'b-al-left' },
+        { t: 'text', text: 'Сергеева Ольга Ивановна, +7 (351) 700-11-25', cls: 'b-al-left b-small' },
+        { t: 'rule' },
+        { t: 'row', cls: 'b-row--split', items: [
+          { t: 'block', cls: 'b-al-left', items: [
+            { t: 'slot', id: 'o-file', answer: 'o30', ph: 'реквизит',
+              hint: 'Реквизит 30 — отметка о направлении документа в дело',
+              explain: '<b>30 — отметка о направлении документа в дело.</b> Проставляется, когда работа ' +
+                'с документом завершена. Включает слова «В дело», индекс дела по номенклатуре ' +
+                'и год, при необходимости — краткие сведения об исполнении, а также должность, ' +
+                'подпись и дату. Именно эта отметка закрывает жизненный цикл документа ' +
+                'в делопроизводстве и передаёт его на архивное хранение.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.30 — отметка о направлении документа в дело',
+                     'Правила делопроизводства, утв. приказом Росархива от 22.05.2019 № 71 — формирование дел'] } ] },
+          { t: 'block', cls: 'b-al-right', items: [
+            { t: 'slot', id: 'o-incoming', answer: 'o27', ph: 'реквизит',
+              hint: 'Реквизит 27 — отметка о поступлении документа',
+              explain: '<b>27 — отметка о поступлении документа.</b> Проставляется получателем ' +
+                'при регистрации входящего документа и содержит дату поступления ' +
+                'и входящий регистрационный номер. Размещается в правом нижнем углу лицевой стороны ' +
+                'первого листа. Обрати внимание: номер и дата отправителя стоят выше, в верхней части ' +
+                'письма, — это другой реквизит и другая организация.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.27 — отметка о поступлении документа',
+                     'ГОСТ Р 7.0.97-2025, пп. 4.10, 4.11 — дата и регистрационный номер автора'] } ] } ] }
+      ],
+      cards: [
+        { id: 'o27', tag: '27 · отметка о поступлении', text: 'ООО «Гранит»\nвх. № 112 от 21.01.2026' },
+        { id: 'o28', tag: '28 · резолюция', text: 'Лебедевой М.В.\nПодготовить проект договора до 28.01.2026\n________ П.С. Ковалёв\n21.01.2026' },
+        { id: 'o29', tag: '29 · отметка о контроле', text: 'Контроль' },
+        { id: 'o30', tag: '30 · отметка о направлении в дело', text: 'В дело № 14-07 за 2026 г.\nОтвет направлен письмом от 27.01.2026 № 14-07/218\n________ А.И. Смирнова  29.01.2026' },
+
+        { id: 'ox-22', tag: '22 · подпись', text: 'Генеральный директор            П.С. Ковалёв',
+          note: 'Подпись — реквизит автора документа, и на этом письме она уже стоит: его подписал ' +
+                'директор организации-отправителя. Получатель своей подписи на чужом документе ' +
+                'не ставит — его волеизъявление оформляется резолюцией (реквизит 28).',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.22 — подпись',
+                 'ГОСТ Р 7.0.97-2025, п. 4.28 — резолюция'] },
+        { id: 'ox-25', tag: '25 · отметка об исполнителе', text: 'Сергеева Ольга Ивановна, +7 (351) 700-11-25',
+          note: 'Отметку об исполнителе проставляет автор письма, и здесь она уже есть — внизу, ' +
+                'с телефоном сотрудника ООО «Вектор». Получатель её не дублирует: ' +
+                'своего исполнителя он назначает резолюцией.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.25 — отметка об исполнителе'] },
+        { id: 'ox-26', tag: '26 · отметка о заверении копии', text: 'Верно\nСпециалист по кадрам ________ А.И. Смирнова\n21.01.2026',
+          note: 'Отметка о заверении копии ставится на копии документа, чтобы подтвердить ' +
+                'её соответствие подлиннику. Перед вами подлинник поступившего письма, ' +
+                'а не копия, — заверять здесь нечего.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.26 — отметка о заверении копии'] },
+        { id: 'ox-16', tag: '16 · гриф утверждения', text: 'УТВЕРЖДАЮ Генеральный директор ...',
+          note: 'Гриф утверждения проставляют на собственных документах организации, которые ' +
+                'вступают в силу после утверждения. Утверждать письмо, поступившее от другой ' +
+                'организации, нельзя: оно уже вступило в силу с момента подписания его автором.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.16 — гриф утверждения документа'] }
+      ]
+    },
+
+    /* ================================================================
+       Уровень 7 — ЭЛЕКТРОННАЯ ПОДПИСЬ И ЗАВЕРЕНИЕ КОПИИ
+       ================================================================ */
+    {
+      id: 'doc-kopiya',
+      name: 'Электронная подпись и копия',
+      desc: 'Копия электронного приказа: 7 реквизитов',
+      task: 'Перед тобой бумажная копия приказа, подписанного электронной подписью. Оформи её.',
+      theory:
+        '<p>Документ создан в электронном виде и подписан электронной подписью, а затем ' +
+        'изготовлена его копия на бумаге.</p>' +
+        '<ul>' +
+        '<li><b>23</b> отметка об электронной подписи занимает место собственноручной подписи ' +
+        'и включает надпись «Документ подписан электронной подписью», номер сертификата ключа ' +
+        'проверки, фамилию, имя, отчество владельца и срок действия сертификата (п. 4.23);</li>' +
+        '<li><b>26</b> отметка о заверении копии: слово «Верно», должность, подпись, расшифровка, дата. ' +
+        'Для копии, выдаваемой в другую организацию, добавляется надпись о месте хранения подлинника ' +
+        'и проставляется печать (п. 4.26);</li>' +
+        '<li><b>24</b> печать заверяет подпись лица, заверившего копию (п. 4.24).</li>' +
+        '</ul>' +
+        '<p>Собственноручной подписи в электронном документе нет — и в его копии тоже.</p>' +
+        '<p><i>Номера пунктов даны по структуре стандарта: раздел 4 описывает реквизиты, ' +
+        'номер пункта совпадает с номером реквизита. Сверьте с действующей редакцией.</i></p>',
+      boardType: 'doc',
+      blocks: [
+        { t: 'block', cls: 'b-al-center', items: [
+          { t: 'slot', id: 'k-org', answer: 'k05', ph: 'реквизит',
+            hint: 'Реквизит 05 — наименование организации',
+            explain: '<b>05 — наименование организации — автора документа.</b> В копии реквизиты ' +
+              'подлинника воспроизводятся полностью и без изменений: копия должна повторять ' +
+              'документ, а собственные отметки заверяющего добавляются к ней отдельно.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.5 — наименование организации — автора документа',
+                   'ГОСТ Р 7.0.97-2025, п. 4.26 — отметка о заверении копии'] } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-center b-caps b-strong', items: [
+          { t: 'slot', id: 'k-kind', answer: 'k09', ph: 'реквизит',
+            hint: 'Реквизит 09 — наименование вида документа',
+            explain: '<b>09 — наименование вида документа.</b> ПРИКАЗ — вид документа-подлинника. ' +
+              'Изготовление копии вида документа не меняет: копия приказа остаётся приказом, ' +
+              'а её копийность обозначается отдельным реквизитом — отметкой о заверении копии.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.9 — наименование вида документа'] } ] },
+        { t: 'spacer' },
+        { t: 'row', cls: 'b-row--split', items: [
+          { t: 'block', cls: 'b-al-left', items: [
+            { t: 'slot', id: 'k-date', answer: 'k10', ph: 'реквизит',
+              hint: 'Реквизит 10 — дата документа',
+              explain: '<b>10 — дата документа.</b> Воспроизводится дата подлинника — день подписания ' +
+                'приказа электронной подписью. Дата изготовления копии указывается отдельно, ' +
+                'в составе отметки о заверении копии, и с этой датой не совпадает.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.10 — дата документа',
+                     'ГОСТ Р 7.0.97-2025, п. 4.26 — отметка о заверении копии'] } ] },
+          { t: 'block', cls: 'b-al-right', items: [
+            { t: 'slot', id: 'k-num', answer: 'k11', ph: 'реквизит',
+              hint: 'Реквизит 11 — регистрационный номер',
+              explain: '<b>11 — регистрационный номер документа.</b> Копия сохраняет регистрационный ' +
+                'номер подлинника: именно по нему документ разыскивается в деле. ' +
+                'Собственного регистрационного номера у копии не возникает.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.11 — регистрационный номер документа'] } ] } ] },
+        { t: 'block', cls: 'b-al-center', items: [
+          { t: 'text', text: 'г. Екатеринбург' } ] },
+        { t: 'spacer' },
+        { t: 'text', text: 'О переводе на дистанционный режим работы', cls: 'b-al-left' },
+        { t: 'spacer' },
+        { t: 'text', text: 'В связи с проведением ремонтных работ в офисном помещении ПРИКАЗЫВАЮ:', cls: 'b-al-left' },
+        { t: 'text', text: '1. Перевести работников отдела информационных технологий на дистанционный режим работы с 13.04.2026 по 24.04.2026.', cls: 'b-al-left' },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'k-esign', answer: 'k23', ph: 'реквизит',
+            hint: 'Реквизит 23 — отметка об электронной подписи',
+            explain: '<b>23 — отметка об электронной подписи.</b> Используется при визуализации ' +
+              'электронного документа и размещается там, где в бумажном документе стоит ' +
+              'собственноручная подпись. Включает надпись «Документ подписан электронной подписью», ' +
+              'номер сертификата ключа проверки электронной подписи, фамилию, имя и отчество ' +
+              'владельца сертификата и срок его действия. Отметка не должна перекрывать текст документа.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.23 — отметка об электронной подписи',
+                   'Федеральный закон от 06.04.2011 № 63-ФЗ «Об электронной подписи»'] } ] },
+        { t: 'spacer' },
+        { t: 'rule' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'k-copy', answer: 'k26', ph: 'реквизит',
+            hint: 'Реквизит 26 — отметка о заверении копии',
+            explain: '<b>26 — отметка о заверении копии.</b> Подтверждает соответствие копии подлиннику. ' +
+              'Проставляется ниже реквизита «подпись» и включает слово «Верно», наименование должности ' +
+              'лица, заверившего копию, его личную подпись, расшифровку и дату заверения. ' +
+              'Если копия выдаётся в другую организацию, отметку дополняют надписью о том, ' +
+              'где хранится подлинник, и заверяют печатью.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.26 — отметка о заверении копии'] } ] },
+        { t: 'spacer' },
+        { t: 'block', cls: 'b-al-left', items: [
+          { t: 'slot', id: 'k-seal', answer: 'k24', ph: 'реквизит',
+            hint: 'Реквизит 24 — печать',
+            explain: '<b>24 — печать.</b> В заверенной копии печать удостоверяет подлинность подписи ' +
+              'не автора документа, а того, кто заверил копию. Оттиск проставляют, не захватывая ' +
+              'личную подпись, либо в специально отведённом месте с отметкой «МП». ' +
+              'Для копии, остающейся внутри организации, печать не обязательна.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.24 — печать',
+                   'ГОСТ Р 7.0.97-2025, п. 4.26 — отметка о заверении копии'] } ] }
+      ],
+      cards: [
+        { id: 'k05', tag: '05 · наименование организации', text: 'Общество с ограниченной ответственностью «Гранит»' },
+        { id: 'k09', tag: '09 · вид документа', text: 'ПРИКАЗ' },
+        { id: 'k10', tag: '10 · дата документа', text: '05.04.2026' },
+        { id: 'k11', tag: '11 · регистрационный номер', text: '№ 21-ОД' },
+        { id: 'k23', tag: '23 · отметка об электронной подписи', text: 'ДОКУМЕНТ ПОДПИСАН ЭЛЕКТРОННОЙ ПОДПИСЬЮ\nСертификат 1а2б3в4г5д6е7ж8з\nВладелец: Ковалёв Пётр Сергеевич\nДействителен с 12.01.2026 по 12.04.2027' },
+        { id: 'k26', tag: '26 · отметка о заверении копии', text: 'Верно\nСпециалист по кадрам ________ А.И. Смирнова\n06.04.2026\nПодлинник документа находится в ООО «Гранит» в деле № 02-05 за 2026 г.' },
+        { id: 'k24', tag: '24 · печать', text: '(оттиск печати организации)' },
+
+        { id: 'kx-22', tag: '22 · подпись', text: 'Генеральный директор            П.С. Ковалёв',
+          note: 'Собственноручной подписи в электронном документе не существует: её функцию выполняет ' +
+                'электронная подпись, а при визуализации документа на её месте размещается отметка ' +
+                'об электронной подписи (реквизит 23). Дорисовать подпись в копии электронного ' +
+                'документа нельзя — это исказит подлинник.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.22 — подпись',
+                 'ГОСТ Р 7.0.97-2025, п. 4.23 — отметка об электронной подписи',
+                 'Федеральный закон от 06.04.2011 № 63-ФЗ «Об электронной подписи»'] },
+        { id: 'kx-16', tag: '16 · гриф утверждения', text: 'УТВЕРЖДАЮ Генеральный директор ...',
+          note: 'Приказ — распорядительный документ, он вступает в силу с момента подписания ' +
+                'и в утверждении не нуждается. Перевод документа в электронный вид этого не меняет.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.16 — гриф утверждения документа'] },
+        { id: 'kx-27', tag: '27 · отметка о поступлении', text: 'ООО «Гранит» вх. № 112 от 13.01.2026',
+          note: 'Отметку о поступлении проставляет получатель на входящем документе при регистрации. ' +
+                'Приказ — собственный документ организации, он никуда не поступал.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.27 — отметка о поступлении документа'] },
+        { id: 'kx-28', tag: '28 · резолюция', text: 'Ореховой Д.В. Обеспечить доступ к сети\n________ 06.04.2026',
+          note: 'Резолюция наносится на поступивший документ и содержит поручение по его исполнению. ' +
+                'Поручения приказа излагаются в его собственном тексте, после слова ПРИКАЗЫВАЮ.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.28 — резолюция'] }
+      ]
     }
+
 
   ]
 };
@@ -2498,7 +2347,7 @@ window.TOPIC_DOCS = {
 window.Store = (function () {
   'use strict';
 
-  var KEY = 'sim-trainer-v1';
+  var KEY = 'sim-trainer-v2';   // v2: другой набор уровней, старый прогресс неприменим
 
   var empty = { name: '', results: {} };   // results: { 'html-1': {score, max, percent, grade, mistakes, date} }
 
@@ -3397,7 +3246,7 @@ window.Game = (function () {
 (function () {
   'use strict';
 
-  var TOPICS = [window.TOPIC_HTML, window.TOPIC_CSS, window.TOPIC_DOCS];
+  var TOPIC = window.TOPIC_DOCS;
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -3411,7 +3260,6 @@ window.Game = (function () {
 
     screens: {
       welcome: $('screen-welcome'),
-      topics:  $('screen-topics'),
       levels:  $('screen-levels'),
       game:    $('screen-game'),
       result:  $('screen-result')
@@ -3422,21 +3270,26 @@ window.Game = (function () {
     nameError: $('name-error'),
     greeting:  $('greeting'),
 
-    topicsGrid: $('topics-grid'),
+    levelsSub:  $('levels-sub'),
+    levelsGrid: $('levels-grid'),
     overall:    $('overall'),
-
-    levelsTitle: $('levels-title'),
-    levelsSub:   $('levels-sub'),
-    levelsGrid:  $('levels-grid'),
 
     result: $('result')
   };
 
-  /* Уровень считается пройденным начиная с оценки 3. Ниже — конфетти не летит. */
-  var PASS_GRADE = 3;
+  /* Уровень засчитывается и открывает следующий только при прохождении
+     без единой ошибки. Оценка ниже пятёрки следующий уровень не открывает. */
+  function isCleared(levelId) {
+    var r = Store.getResult(levelId);
+    return !!r && r.mistakes === 0;
+  }
 
-  var current = { topic: null, level: null, lastResult: null };
-  var history = [];
+  /** Первый уровень открыт всегда, остальные — после чистого прохождения предыдущего */
+  function isUnlocked(index) {
+    return index === 0 || isCleared(TOPIC.levels[index - 1].id);
+  }
+
+  var current = { level: null, index: 0, lastResult: null };
 
   /* ============================ ЭКРАНЫ ============================ */
 
@@ -3445,21 +3298,13 @@ window.Game = (function () {
       ui.screens[k].classList.toggle('is-active', k === name);
     });
     ui.topbar.hidden = (name === 'welcome');
-    ui.back.hidden = (name === 'topics');
+    ui.back.hidden = (name === 'levels');          // список уровней — главный экран
     if (title) ui.topbarTitle.textContent = title;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function goto(name, title) {
-    if (history[history.length - 1] !== name) history.push(name);
-    show(name, title);
-  }
-
-  ui.back.addEventListener('click', function () {
-    var from = history.pop();
-    if (from === 'result' || from === 'game') openLevels(current.topic);
-    else openTopics();
-  });
+  /* Из игры и с экрана результата возвращаемся к списку уровней */
+  ui.back.addEventListener('click', openLevels);
 
   /* ============================ ВХОД ============================== */
 
@@ -3474,7 +3319,7 @@ window.Game = (function () {
     ui.nameError.textContent = '';
     Store.setName(name);
     applyUser(name);
-    openTopics();
+    openLevels();
   });
 
   ui.nameInput.addEventListener('input', function () { ui.nameError.textContent = ''; });
@@ -3483,7 +3328,6 @@ window.Game = (function () {
     if (!window.confirm('Выйти и очистить сохранённый прогресс?')) return;
     Store.reset();
     ui.nameInput.value = '';
-    history = [];
     show('welcome');
     ui.nameInput.focus();
   });
@@ -3494,106 +3338,120 @@ window.Game = (function () {
     ui.greeting.textContent = 'Привет, ' + name + '!';
   }
 
-  /* ========================== ВЫБОР ТЕМЫ ========================== */
+  /* ============================ УРОВНИ ============================ */
 
-  function openTopics() {
-    history = ['topics'];
-    renderTopics();
-    show('topics', 'Выбор темы');
+  function openLevels() {
+    renderLevels();
+    show('levels', 'Уровни');
   }
 
-  function renderTopics() {
-    ui.topicsGrid.innerHTML = '';
+  function renderLevels() {
+    ui.levelsSub.textContent = TOPIC.desc;
+    ui.levelsGrid.innerHTML = '';
 
-    TOPICS.forEach(function (topic, i) {
-      var st = topicStats(topic);
-
-      var card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'topic';
-      card.dataset.glyph = topic.icon;
-      card.style.animationDelay = (i * 70) + 'ms';
-      card.style.setProperty('--tc-light', topic.color);
-      card.style.setProperty('--tc-dark', topic.colorDark);
-
-      var icon = document.createElement('div');
-      icon.className = 'topic__icon';
-      icon.textContent = topic.icon;
-
-      var name = document.createElement('div');
-      name.className = 'topic__name';
-      name.textContent = topic.name;
-
-      var desc = document.createElement('p');
-      desc.className = 'topic__desc';
-      desc.textContent = topic.desc;
-
-      var bar = document.createElement('div');
-      bar.className = 'bar';
-      var fill = document.createElement('div');
-      fill.className = 'bar__fill';
-      fill.style.width = (st.done / st.count * 100) + '%';
-      bar.appendChild(fill);
-
-      var foot = document.createElement('div');
-      foot.className = 'topic__foot';
-      var count = document.createElement('span');
-      count.className = 'topic__count';
-      count.textContent = 'Пройдено ' + st.done + ' из ' + st.count;
-      foot.appendChild(count);
-      if (st.done) foot.appendChild(gradeChip(st.grade));
-
-      card.appendChild(icon);
-      card.appendChild(name);
-      card.appendChild(desc);
-      card.appendChild(bar);
-      card.appendChild(foot);
-
-      card.addEventListener('click', function () { openLevels(topic); });
-      ui.topicsGrid.appendChild(card);
+    TOPIC.levels.forEach(function (level, i) {
+      ui.levelsGrid.appendChild(levelCard(level, i));
     });
 
     renderOverall();
   }
 
+  function levelCard(level, i) {
+    var res = Store.getResult(level.id);
+    var open = isUnlocked(i);
+    var cleared = isCleared(level.id);
+
+    var card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'level' + (open ? '' : ' is-locked');
+    card.style.animationDelay = (i * 60) + 'ms';
+    card.disabled = !open;
+
+    var top = document.createElement('div');
+    top.className = 'level__top';
+    var num = document.createElement('span');
+    num.className = 'level__num';
+    num.textContent = 'Уровень ' + (i + 1);
+    top.appendChild(num);
+    top.appendChild(open ? gradeChip(res ? res.grade : null) : lockChip());
+
+    var name = document.createElement('div');
+    name.className = 'level__name';
+    name.textContent = level.name;
+
+    var desc = document.createElement('p');
+    desc.className = 'level__desc';
+    desc.textContent = level.desc;
+
+    var meta = document.createElement('div');
+    meta.className = 'level__meta';
+    meta.textContent = levelStatus(level, i, res, open, cleared);
+
+    card.appendChild(top);
+    card.appendChild(name);
+    card.appendChild(desc);
+    card.appendChild(meta);
+
+    if (cleared) {
+      card.classList.add('has-stamp');          // освобождаем место под штамп
+      var stamp = document.createElement('span');
+      stamp.className = 'passed-stamp';
+      stamp.textContent = 'без ошибок';
+      card.appendChild(stamp);
+    }
+
+    if (open) {
+      card.addEventListener('click', function () { openGame(level, i); });
+    } else {
+      card.title = 'Пройдите уровень ' + i + ' без ошибок, чтобы открыть этот';
+    }
+    return card;
+  }
+
+  /** Строка состояния под описанием уровня */
+  function levelStatus(level, i, res, open, cleared) {
+    if (!open) return 'Закрыт · откроется, когда уровень ' + i + ' будет пройден без ошибок';
+    if (cleared) return res.score + ' из ' + res.max + ' очков';
+    if (res) return 'Лучший результат: ' + res.percent + '% · ошибок было ' + res.mistakes +
+                    ' — пройди начисто, чтобы открыть следующий';
+    return 'Ещё не пройден';
+  }
+
+  function lockChip() {
+    var chip = document.createElement('span');
+    chip.className = 'grade-chip grade-chip--locked';
+    chip.textContent = '🔒';
+    chip.title = 'Уровень закрыт';
+    return chip;
+  }
+
   function renderOverall() {
-    var done = 0, count = 0, sum = 0;
-    TOPICS.forEach(function (t) {
-      var s = topicStats(t);
-      done += s.done; count += s.count; sum += s.percentSum;
+    var cleared = 0, done = 0, percentSum = 0;
+    TOPIC.levels.forEach(function (lvl) {
+      var r = Store.getResult(lvl.id);
+      if (r) { done++; percentSum += r.percent; }
+      if (isCleared(lvl.id)) cleared++;
     });
 
     ui.overall.innerHTML = '';
+
     if (!done) {
-      ui.overall.textContent = 'Пройди уровни — здесь появится итоговая оценка по всем темам.';
+      ui.overall.textContent = 'Пройди первый уровень — здесь появится твоя оценка.';
       return;
     }
 
-    var percent = Math.round(sum / done);
+    var percent = Math.round(percentSum / done);
+
     var chip = document.createElement('div');
     chip.className = 'overall__grade';
     chip.textContent = Game.gradeOf(percent);
 
     var text = document.createElement('div');
-    text.innerHTML = '<b>Общий результат:</b> пройдено ' + done + ' из ' + count +
-      ' уровней, средний результат ' + percent + '%.';
+    text.innerHTML = '<b>Итог:</b> пройдено без ошибок ' + cleared + ' из ' +
+      TOPIC.levels.length + ' уровней, средний результат ' + percent + '%.';
 
     ui.overall.appendChild(chip);
     ui.overall.appendChild(text);
-  }
-
-  function topicStats(topic) {
-    var done = 0, percentSum = 0;
-    topic.levels.forEach(function (lvl) {
-      var r = Store.getResult(lvl.id);
-      if (r) { done++; percentSum += r.percent; }
-    });
-    return {
-      done: done,
-      count: topic.levels.length,
-      percentSum: percentSum,
-      grade: done ? Game.gradeOf(Math.round(percentSum / done)) : null
-    };
   }
 
   function gradeChip(grade) {
@@ -3604,74 +3462,15 @@ window.Game = (function () {
     return chip;
   }
 
-  /* ========================= ВЫБОР УРОВНЯ ========================= */
-
-  function openLevels(topic) {
-    current.topic = topic;
-    history = ['topics', 'levels'];
-
-    ui.levelsTitle.textContent = topic.name;
-    ui.levelsSub.textContent = topic.desc;
-    ui.levelsGrid.innerHTML = '';
-
-    topic.levels.forEach(function (level, i) {
-      var res = Store.getResult(level.id);
-
-      var card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'level';
-      card.style.animationDelay = (i * 70) + 'ms';
-
-      var top = document.createElement('div');
-      top.className = 'level__top';
-      var num = document.createElement('span');
-      num.className = 'level__num';
-      num.textContent = 'Уровень ' + (i + 1);
-      top.appendChild(num);
-      top.appendChild(gradeChip(res ? res.grade : null));
-
-      var name = document.createElement('div');
-      name.className = 'level__name';
-      name.textContent = level.name;
-
-      var desc = document.createElement('p');
-      desc.className = 'level__desc';
-      desc.textContent = level.desc;
-
-      var meta = document.createElement('div');
-      meta.className = 'level__meta';
-      meta.textContent = res
-        ? 'Лучший результат: ' + res.score + ' из ' + res.max + ' (' + res.percent + '%)'
-        : 'Ещё не пройден';
-
-      card.appendChild(top);
-      card.appendChild(name);
-      card.appendChild(desc);
-      card.appendChild(meta);
-
-      if (res && res.grade >= PASS_GRADE) {
-        var stamp = document.createElement('span');
-        stamp.className = 'passed-stamp';
-        stamp.textContent = 'пройдено';
-        card.appendChild(stamp);
-      }
-
-      card.addEventListener('click', function () { openGame(topic, level); });
-      ui.levelsGrid.appendChild(card);
-    });
-
-    show('levels', topic.name);
-  }
-
   /* ============================= ИГРА ============================= */
 
-  function openGame(topic, level) {
-    current.topic = topic;
+  function openGame(level, index) {
     current.level = level;
-    $('hud').style.setProperty('--tc-light', topic.color);
-    $('hud').style.setProperty('--tc-dark', topic.colorDark);
-    Game.start(topic, level);
-    goto('game', topic.name + ' · ' + level.name);
+    current.index = index;
+    $('hud').style.setProperty('--tc-light', TOPIC.color);
+    $('hud').style.setProperty('--tc-dark', TOPIC.colorDark);
+    Game.start(TOPIC, level);
+    show('game', 'Уровень ' + (index + 1) + ' · ' + level.name);
   }
 
   /* =========================== РЕЗУЛЬТАТ ========================== */
@@ -3685,25 +3484,31 @@ window.Game = (function () {
 
     ui.result.innerHTML = '';
 
-    var passed = res.grade >= PASS_GRADE;
+    /* Уровень зачтён только без единой ошибки — это же открывает следующий */
+    var clean = res.mistakes === 0;
+    var next = TOPIC.levels[current.index + 1];
 
-    var praise = {
-      5: { title: 'Отлично!',            sub: 'Уровень пройден почти без ошибок.' },
-      4: { title: 'Хорошо',              sub: 'Пара неточностей — разбери их ниже.' },
-      3: { title: 'Уровень пройден',     sub: 'Основное понятно, но ошибок многовато.' },
-      2: { title: 'Уровень не пройден',  sub: 'Открой подсказку по теме и попробуй ещё раз.' }
-    }[res.grade];
+    var title, sub;
+    if (clean) {
+      title = 'Безупречно!';
+      sub = next ? 'Уровень зачтён. Следующий уровень открыт.'
+                 : 'Уровень зачтён. Это был последний уровень тренажёра.';
+    } else {
+      title = 'Уровень не зачтён';
+      sub = 'Ошибок: ' + res.mistakes + '. Чтобы открыть следующий уровень, ' +
+            'пройди этот без единой ошибки — разбор ниже.';
+    }
 
     var head = document.createElement('div');
     head.className = 'result__head';
-    var title = document.createElement('h2');
-    title.className = 'result__title';
-    title.textContent = praise.title;
-    var sub = document.createElement('p');
-    sub.className = 'result__sub';
-    sub.textContent = praise.sub;
-    head.appendChild(title);
-    head.appendChild(sub);
+    var h = document.createElement('h2');
+    h.className = 'result__title';
+    h.textContent = title;
+    var p = document.createElement('p');
+    p.className = 'result__sub';
+    p.textContent = sub;
+    head.appendChild(h);
+    head.appendChild(p);
     ui.result.appendChild(head);
 
     ui.result.appendChild(gradeRing(res));
@@ -3766,29 +3571,26 @@ window.Game = (function () {
     var actions = document.createElement('div');
     actions.className = 'result__actions';
 
-    actions.appendChild(button('Пройти заново', 'btn--soft', function () {
-      openGame(current.topic, current.level);
-    }));
+    var again = button(clean ? 'Пройти заново' : 'Попробовать ещё раз',
+                       clean ? 'btn--soft' : 'btn--primary', function () {
+      openGame(current.level, current.index);
+    });
+    actions.appendChild(again);
 
-    var next = nextLevel();
-    if (next) {
+    if (clean && next) {
       actions.appendChild(button('Следующий уровень →', 'btn--primary', function () {
-        openGame(current.topic, next);
+        openGame(next, current.index + 1);
       }));
-    } else {
-      actions.appendChild(button('К списку тем', 'btn--primary', openTopics));
     }
-    actions.appendChild(button('К уровням', 'btn--ghost', function () { openLevels(current.topic); }));
+    actions.appendChild(button('К уровням', 'btn--ghost', openLevels));
 
     ui.result.appendChild(actions);
 
-    goto('result', 'Результат: ' + current.level.name);
+    show('result', 'Результат · ' + current.level.name);
 
-    /* Конфетти только за пройденный уровень. За двойку не летит ничего. */
-    if (passed) {
-      window.setTimeout(function () {
-        Confetti.fire(confettiColors(current.topic), res.grade === 5 ? 1.5 : 1);
-      }, 260);
+    /* Конфетти только за уровень, пройденный без ошибок */
+    if (clean) {
+      window.setTimeout(function () { Confetti.fire(confettiColors(), 1.5); }, 260);
     }
   }
 
@@ -3836,15 +3638,9 @@ window.Game = (function () {
   }
 
   /** Цвета бумажек: акцент темы плюс нейтральные праздничные */
-  function confettiColors(topic) {
-    var themed = (Theme.get() === 'dark') ? topic.colorDark : topic.color;
+  function confettiColors() {
+    var themed = (Theme.get() === 'dark') ? TOPIC.colorDark : TOPIC.color;
     return [themed, '#5044d4', '#ffc93c', '#1a8a55', '#e8556d', '#3ec2e0'];
-  }
-
-  function nextLevel() {
-    var list = current.topic.levels;
-    var i = list.indexOf(current.level);
-    return (i >= 0 && i < list.length - 1) ? list[i + 1] : null;
   }
 
   function statBox(value, label) {
@@ -3909,7 +3705,7 @@ window.Game = (function () {
   if (saved) {
     ui.nameInput.value = saved;
     applyUser(saved);
-    openTopics();
+    openLevels();
   } else {
     show('welcome');
     ui.nameInput.focus();

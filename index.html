@@ -18,7 +18,7 @@
     <button class="topbar__back" id="btn-back" type="button">
       <span aria-hidden="true">←</span> Назад
     </button>
-    <div class="topbar__title" id="topbar-title">Выбор темы</div>
+    <div class="topbar__title" id="topbar-title">Уровни</div>
     <button class="theme-toggle" type="button" aria-pressed="false" aria-label="Переключить тему оформления">
       <span class="theme-toggle__opt theme-toggle__opt--sun" aria-hidden="true">☀</span>
       <span class="theme-toggle__opt theme-toggle__opt--moon" aria-hidden="true">☾</span>
@@ -60,9 +60,9 @@
         <div class="welcome__badge">учебный тренажёр</div>
         <h1 class="welcome__title">Собери правильно</h1>
         <p class="welcome__lead">
-          Симулятор-сопоставление по трём темам: <b>HTML</b>, <b>CSS</b> и
-          <b>документооборот РФ</b>. Перетаскивай карточки в пустые поля,
-          получай очки и оценку по пятибалльной шкале.
+          Тренажёр по оформлению организационно-распорядительных документов:
+          приказ, служебная записка, письмо, акт, протокол. Перетаскивай
+          реквизиты на бланк и ставь каждый на своё место по ГОСТ Р 7.0.97-2025.
         </p>
 
         <form class="welcome__form" id="form-login" novalidate>
@@ -77,33 +77,24 @@
         </form>
 
         <ul class="welcome__facts">
-          <li><b>9</b> уровней</li>
-          <li><b>3</b> темы</li>
+          <li><b>7</b> уровней</li>
+          <li><b>30</b> реквизитов</li>
           <li><b>2–5</b> оценка</li>
         </ul>
       </div>
     </section>
 
-    <!-- ============ ЭКРАН 2: ВЫБОР ТЕМЫ ============ -->
-    <section class="screen screen--topics" id="screen-topics">
-      <div class="section-head">
-        <h2 class="section-head__title" id="greeting">Привет!</h2>
-        <p class="section-head__sub">Выбери тему, по которой хочешь пройти уровни.</p>
-      </div>
-      <div class="topics" id="topics-grid"></div>
-      <div class="overall" id="overall"></div>
-    </section>
-
-    <!-- ============ ЭКРАН 3: ВЫБОР УРОВНЯ ============ -->
+    <!-- ============ ЭКРАН 2: УРОВНИ (главный экран) ============ -->
     <section class="screen screen--levels" id="screen-levels">
       <div class="section-head">
-        <h2 class="section-head__title" id="levels-title">Уровни</h2>
+        <h2 class="section-head__title" id="greeting">Привет!</h2>
         <p class="section-head__sub" id="levels-sub"></p>
       </div>
       <div class="levels" id="levels-grid"></div>
+      <div class="overall" id="overall"></div>
     </section>
 
-    <!-- ============ ЭКРАН 4: ИГРА ============ -->
+    <!-- ============ ЭКРАН 3: ИГРА ============ -->
     <section class="screen screen--game" id="screen-game">
       <div class="hud" id="hud">
         <div class="hud__info">
@@ -157,7 +148,7 @@
       </section>
     </section>
 
-    <!-- ============ ЭКРАН 5: РЕЗУЛЬТАТ ============ -->
+    <!-- ============ ЭКРАН 4: РЕЗУЛЬТАТ ============ -->
     <section class="screen screen--result" id="screen-result">
       <div class="result" id="result"></div>
     </section>
@@ -175,8 +166,6 @@
 
   <div class="rgb-glow" aria-hidden="true"></div>
 
-  <script src="js/data/html-topic.js"></script>
-  <script src="js/data/css-topic.js"></script>
   <script src="js/data/docs-topic.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/confetti.js"></script>

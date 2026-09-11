@@ -381,53 +381,8 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
   font-family: var(--display); letter-spacing: -.02em; text-transform: none;
 }
 
-/* ============================== ТЕМЫ ==================================== */
-
-.topics { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 20px; }
-
-.topic {
-  --topic-color: var(--tc-light, var(--accent));
-  text-align: left; font: inherit; cursor: pointer;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: 26px;
-  box-shadow: var(--shadow-sm);
-  transition: transform .18s cubic-bezier(.2,.7,.3,1), box-shadow .18s, border-color .18s;
-  display: flex; flex-direction: column; gap: 16px;
-  position: relative; overflow: hidden;
-  color: var(--ink);
-}
-:root[data-theme="dark"] .topic { --topic-color: var(--tc-dark, var(--accent)); }
-
-.topic::before {
-  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
-  background: var(--topic-color);
-}
-.topic:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--topic-color);
-}
-
-.topic__icon {
-  width: 50px; height: 50px; border-radius: var(--r-md);
-  display: grid; place-items: center;
-  font-family: var(--mono); font-size: 20px; font-weight: 500;
-  color: var(--topic-color);
-  background: color-mix(in srgb, var(--topic-color) 13%, transparent);
-  border: 1px solid color-mix(in srgb, var(--topic-color) 26%, transparent);
-}
-.topic__name { font-family: var(--display); font-weight: 600; font-size: 19px; letter-spacing: -.02em; }
-.topic__desc { color: var(--ink-soft); font-size: 14px; flex: 1; margin: 0; }
-.topic__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.topic__count { font-size: 13px; color: var(--ink-faint); }
-
 .bar { height: 6px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
-.bar__fill {
-  height: 100%; background: var(--topic-color); border-radius: 999px;
-  transition: width .6s cubic-bezier(.2,.7,.3,1);
-}
+.bar__fill { height: 100%; border-radius: 999px; background: var(--accent); transition: width .6s cubic-bezier(.2,.7,.3,1); }
 
 .overall {
   margin-top: 28px; padding: 20px 24px;
@@ -981,23 +936,6 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 
 .welcome { overflow: hidden; }
 
-/* ------------------- крупный знак на карточке темы ---------------------- */
-
-.topic::after {
-  content: attr(data-glyph);
-  position: absolute;
-  right: -8px; bottom: -46px;
-  font-family: var(--mono);
-  font-size: 150px; font-weight: 500; line-height: 1;
-  color: var(--topic-color);
-  opacity: .08;
-  pointer-events: none;
-  user-select: none;
-  transition: transform .4s cubic-bezier(.2,.7,.3,1), opacity .3s;
-}
-.topic:hover::after { transform: translate(-6px, -8px) rotate(-6deg); opacity: .13; }
-.topic > * { position: relative; z-index: 1; }
-
 /* --------------------- отметка на пройденном уровне --------------------- */
 
 .level { position: relative; overflow: hidden; }
@@ -1152,3 +1090,29 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 
 /* в разборе ошибок блок чуть плотнее */
 .mis .refs { margin-top: 9px; }
+
+/* =========================== ЗАКРЫТЫЕ УРОВНИ ============================ */
+
+.level.is-locked {
+  cursor: not-allowed;
+  opacity: .62;
+  background:
+    repeating-linear-gradient(135deg,
+      transparent 0 10px,
+      color-mix(in srgb, var(--ink-faint) 7%, transparent) 10px 11px),
+    var(--surface-2);
+  border-style: dashed;
+}
+.level.is-locked:hover { transform: none; box-shadow: var(--shadow-sm); border-color: var(--line); }
+.level.is-locked .level__name { color: var(--ink-soft); }
+
+.grade-chip--locked {
+  background: var(--surface-3);
+  border-color: var(--line-strong);
+  font-size: 13px;
+}
+
+/* отметка «без ошибок» на зачтённом уровне: под неё отводится своя полоса,
+   иначе штамп ложится поверх строки состояния */
+.level.has-stamp { padding-bottom: 52px; }
+.passed-stamp { letter-spacing: .12em; bottom: 14px; }

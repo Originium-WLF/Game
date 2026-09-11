@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  var TOPICS = [window.TOPIC_HTML, window.TOPIC_CSS, window.TOPIC_DOCS];
+  var TOPIC = window.TOPIC_DOCS;
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -19,7 +19,6 @@
 
     screens: {
       welcome: $('screen-welcome'),
-      topics:  $('screen-topics'),
       levels:  $('screen-levels'),
       game:    $('screen-game'),
       result:  $('screen-result')
@@ -30,21 +29,26 @@
     nameError: $('name-error'),
     greeting:  $('greeting'),
 
-    topicsGrid: $('topics-grid'),
+    levelsSub:  $('levels-sub'),
+    levelsGrid: $('levels-grid'),
     overall:    $('overall'),
-
-    levelsTitle: $('levels-title'),
-    levelsSub:   $('levels-sub'),
-    levelsGrid:  $('levels-grid'),
 
     result: $('result')
   };
 
-  /* Уровень считается пройденным начиная с оценки 3. Ниже — конфетти не летит. */
-  var PASS_GRADE = 3;
+  /* Уровень засчитывается и открывает следующий только при прохождении
+     без единой ошибки. Оценка ниже пятёрки следующий уровень не открывает. */
+  function isCleared(levelId) {
+    var r = Store.getResult(levelId);
+    return !!r && r.mistakes === 0;
+  }
 
-  var current = { topic: null, level: null, lastResult: null };
-  var history = [];
+  /** Первый уровень открыт всегда, остальные — после чистого прохождения предыдущего */
+  function isUnlocked(index) {
+    return index === 0 || isCleared(TOPIC.levels[index - 1].id);
+  }
+
+  var current = { level: null, index: 0, lastResult: null };
 
   /* ============================ ЭКРАНЫ ============================ */
 
@@ -53,21 +57,13 @@
       ui.screens[k].classList.toggle('is-active', k === name);
     });
     ui.topbar.hidden = (name === 'welcome');
-    ui.back.hidden = (name === 'topics');
+    ui.back.hidden = (name === 'levels');          // список уровней — главный экран
     if (title) ui.topbarTitle.textContent = title;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function goto(name, title) {
-    if (history[history.length - 1] !== name) history.push(name);
-    show(name, title);
-  }
-
-  ui.back.addEventListener('click', function () {
-    var from = history.pop();
-    if (from === 'result' || from === 'game') openLevels(current.topic);
-    else openTopics();
-  });
+  /* Из игры и с экрана результата возвращаемся к списку уровней */
+  ui.back.addEventListener('click', openLevels);
 
   /* ============================ ВХОД ============================== */
 
@@ -82,7 +78,7 @@
     ui.nameError.textContent = '';
     Store.setName(name);
     applyUser(name);
-    openTopics();
+    openLevels();
   });
 
   ui.nameInput.addEventListener('input', function () { ui.nameError.textContent = ''; });
@@ -91,7 +87,6 @@
     if (!window.confirm('Выйти и очистить сохранённый прогресс?')) return;
     Store.reset();
     ui.nameInput.value = '';
-    history = [];
     show('welcome');
     ui.nameInput.focus();
   });
@@ -102,106 +97,120 @@
     ui.greeting.textContent = 'Привет, ' + name + '!';
   }
 
-  /* ========================== ВЫБОР ТЕМЫ ========================== */
+  /* ============================ УРОВНИ ============================ */
 
-  function openTopics() {
-    history = ['topics'];
-    renderTopics();
-    show('topics', 'Выбор темы');
+  function openLevels() {
+    renderLevels();
+    show('levels', 'Уровни');
   }
 
-  function renderTopics() {
-    ui.topicsGrid.innerHTML = '';
+  function renderLevels() {
+    ui.levelsSub.textContent = TOPIC.desc;
+    ui.levelsGrid.innerHTML = '';
 
-    TOPICS.forEach(function (topic, i) {
-      var st = topicStats(topic);
-
-      var card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'topic';
-      card.dataset.glyph = topic.icon;
-      card.style.animationDelay = (i * 70) + 'ms';
-      card.style.setProperty('--tc-light', topic.color);
-      card.style.setProperty('--tc-dark', topic.colorDark);
-
-      var icon = document.createElement('div');
-      icon.className = 'topic__icon';
-      icon.textContent = topic.icon;
-
-      var name = document.createElement('div');
-      name.className = 'topic__name';
-      name.textContent = topic.name;
-
-      var desc = document.createElement('p');
-      desc.className = 'topic__desc';
-      desc.textContent = topic.desc;
-
-      var bar = document.createElement('div');
-      bar.className = 'bar';
-      var fill = document.createElement('div');
-      fill.className = 'bar__fill';
-      fill.style.width = (st.done / st.count * 100) + '%';
-      bar.appendChild(fill);
-
-      var foot = document.createElement('div');
-      foot.className = 'topic__foot';
-      var count = document.createElement('span');
-      count.className = 'topic__count';
-      count.textContent = 'Пройдено ' + st.done + ' из ' + st.count;
-      foot.appendChild(count);
-      if (st.done) foot.appendChild(gradeChip(st.grade));
-
-      card.appendChild(icon);
-      card.appendChild(name);
-      card.appendChild(desc);
-      card.appendChild(bar);
-      card.appendChild(foot);
-
-      card.addEventListener('click', function () { openLevels(topic); });
-      ui.topicsGrid.appendChild(card);
+    TOPIC.levels.forEach(function (level, i) {
+      ui.levelsGrid.appendChild(levelCard(level, i));
     });
 
     renderOverall();
   }
 
+  function levelCard(level, i) {
+    var res = Store.getResult(level.id);
+    var open = isUnlocked(i);
+    var cleared = isCleared(level.id);
+
+    var card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'level' + (open ? '' : ' is-locked');
+    card.style.animationDelay = (i * 60) + 'ms';
+    card.disabled = !open;
+
+    var top = document.createElement('div');
+    top.className = 'level__top';
+    var num = document.createElement('span');
+    num.className = 'level__num';
+    num.textContent = 'Уровень ' + (i + 1);
+    top.appendChild(num);
+    top.appendChild(open ? gradeChip(res ? res.grade : null) : lockChip());
+
+    var name = document.createElement('div');
+    name.className = 'level__name';
+    name.textContent = level.name;
+
+    var desc = document.createElement('p');
+    desc.className = 'level__desc';
+    desc.textContent = level.desc;
+
+    var meta = document.createElement('div');
+    meta.className = 'level__meta';
+    meta.textContent = levelStatus(level, i, res, open, cleared);
+
+    card.appendChild(top);
+    card.appendChild(name);
+    card.appendChild(desc);
+    card.appendChild(meta);
+
+    if (cleared) {
+      card.classList.add('has-stamp');          // освобождаем место под штамп
+      var stamp = document.createElement('span');
+      stamp.className = 'passed-stamp';
+      stamp.textContent = 'без ошибок';
+      card.appendChild(stamp);
+    }
+
+    if (open) {
+      card.addEventListener('click', function () { openGame(level, i); });
+    } else {
+      card.title = 'Пройдите уровень ' + i + ' без ошибок, чтобы открыть этот';
+    }
+    return card;
+  }
+
+  /** Строка состояния под описанием уровня */
+  function levelStatus(level, i, res, open, cleared) {
+    if (!open) return 'Закрыт · откроется, когда уровень ' + i + ' будет пройден без ошибок';
+    if (cleared) return res.score + ' из ' + res.max + ' очков';
+    if (res) return 'Лучший результат: ' + res.percent + '% · ошибок было ' + res.mistakes +
+                    ' — пройди начисто, чтобы открыть следующий';
+    return 'Ещё не пройден';
+  }
+
+  function lockChip() {
+    var chip = document.createElement('span');
+    chip.className = 'grade-chip grade-chip--locked';
+    chip.textContent = '🔒';
+    chip.title = 'Уровень закрыт';
+    return chip;
+  }
+
   function renderOverall() {
-    var done = 0, count = 0, sum = 0;
-    TOPICS.forEach(function (t) {
-      var s = topicStats(t);
-      done += s.done; count += s.count; sum += s.percentSum;
+    var cleared = 0, done = 0, percentSum = 0;
+    TOPIC.levels.forEach(function (lvl) {
+      var r = Store.getResult(lvl.id);
+      if (r) { done++; percentSum += r.percent; }
+      if (isCleared(lvl.id)) cleared++;
     });
 
     ui.overall.innerHTML = '';
+
     if (!done) {
-      ui.overall.textContent = 'Пройди уровни — здесь появится итоговая оценка по всем темам.';
+      ui.overall.textContent = 'Пройди первый уровень — здесь появится твоя оценка.';
       return;
     }
 
-    var percent = Math.round(sum / done);
+    var percent = Math.round(percentSum / done);
+
     var chip = document.createElement('div');
     chip.className = 'overall__grade';
     chip.textContent = Game.gradeOf(percent);
 
     var text = document.createElement('div');
-    text.innerHTML = '<b>Общий результат:</b> пройдено ' + done + ' из ' + count +
-      ' уровней, средний результат ' + percent + '%.';
+    text.innerHTML = '<b>Итог:</b> пройдено без ошибок ' + cleared + ' из ' +
+      TOPIC.levels.length + ' уровней, средний результат ' + percent + '%.';
 
     ui.overall.appendChild(chip);
     ui.overall.appendChild(text);
-  }
-
-  function topicStats(topic) {
-    var done = 0, percentSum = 0;
-    topic.levels.forEach(function (lvl) {
-      var r = Store.getResult(lvl.id);
-      if (r) { done++; percentSum += r.percent; }
-    });
-    return {
-      done: done,
-      count: topic.levels.length,
-      percentSum: percentSum,
-      grade: done ? Game.gradeOf(Math.round(percentSum / done)) : null
-    };
   }
 
   function gradeChip(grade) {
@@ -212,74 +221,15 @@
     return chip;
   }
 
-  /* ========================= ВЫБОР УРОВНЯ ========================= */
-
-  function openLevels(topic) {
-    current.topic = topic;
-    history = ['topics', 'levels'];
-
-    ui.levelsTitle.textContent = topic.name;
-    ui.levelsSub.textContent = topic.desc;
-    ui.levelsGrid.innerHTML = '';
-
-    topic.levels.forEach(function (level, i) {
-      var res = Store.getResult(level.id);
-
-      var card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'level';
-      card.style.animationDelay = (i * 70) + 'ms';
-
-      var top = document.createElement('div');
-      top.className = 'level__top';
-      var num = document.createElement('span');
-      num.className = 'level__num';
-      num.textContent = 'Уровень ' + (i + 1);
-      top.appendChild(num);
-      top.appendChild(gradeChip(res ? res.grade : null));
-
-      var name = document.createElement('div');
-      name.className = 'level__name';
-      name.textContent = level.name;
-
-      var desc = document.createElement('p');
-      desc.className = 'level__desc';
-      desc.textContent = level.desc;
-
-      var meta = document.createElement('div');
-      meta.className = 'level__meta';
-      meta.textContent = res
-        ? 'Лучший результат: ' + res.score + ' из ' + res.max + ' (' + res.percent + '%)'
-        : 'Ещё не пройден';
-
-      card.appendChild(top);
-      card.appendChild(name);
-      card.appendChild(desc);
-      card.appendChild(meta);
-
-      if (res && res.grade >= PASS_GRADE) {
-        var stamp = document.createElement('span');
-        stamp.className = 'passed-stamp';
-        stamp.textContent = 'пройдено';
-        card.appendChild(stamp);
-      }
-
-      card.addEventListener('click', function () { openGame(topic, level); });
-      ui.levelsGrid.appendChild(card);
-    });
-
-    show('levels', topic.name);
-  }
-
   /* ============================= ИГРА ============================= */
 
-  function openGame(topic, level) {
-    current.topic = topic;
+  function openGame(level, index) {
     current.level = level;
-    $('hud').style.setProperty('--tc-light', topic.color);
-    $('hud').style.setProperty('--tc-dark', topic.colorDark);
-    Game.start(topic, level);
-    goto('game', topic.name + ' · ' + level.name);
+    current.index = index;
+    $('hud').style.setProperty('--tc-light', TOPIC.color);
+    $('hud').style.setProperty('--tc-dark', TOPIC.colorDark);
+    Game.start(TOPIC, level);
+    show('game', 'Уровень ' + (index + 1) + ' · ' + level.name);
   }
 
   /* =========================== РЕЗУЛЬТАТ ========================== */
@@ -293,25 +243,31 @@
 
     ui.result.innerHTML = '';
 
-    var passed = res.grade >= PASS_GRADE;
+    /* Уровень зачтён только без единой ошибки — это же открывает следующий */
+    var clean = res.mistakes === 0;
+    var next = TOPIC.levels[current.index + 1];
 
-    var praise = {
-      5: { title: 'Отлично!',            sub: 'Уровень пройден почти без ошибок.' },
-      4: { title: 'Хорошо',              sub: 'Пара неточностей — разбери их ниже.' },
-      3: { title: 'Уровень пройден',     sub: 'Основное понятно, но ошибок многовато.' },
-      2: { title: 'Уровень не пройден',  sub: 'Открой подсказку по теме и попробуй ещё раз.' }
-    }[res.grade];
+    var title, sub;
+    if (clean) {
+      title = 'Безупречно!';
+      sub = next ? 'Уровень зачтён. Следующий уровень открыт.'
+                 : 'Уровень зачтён. Это был последний уровень тренажёра.';
+    } else {
+      title = 'Уровень не зачтён';
+      sub = 'Ошибок: ' + res.mistakes + '. Чтобы открыть следующий уровень, ' +
+            'пройди этот без единой ошибки — разбор ниже.';
+    }
 
     var head = document.createElement('div');
     head.className = 'result__head';
-    var title = document.createElement('h2');
-    title.className = 'result__title';
-    title.textContent = praise.title;
-    var sub = document.createElement('p');
-    sub.className = 'result__sub';
-    sub.textContent = praise.sub;
-    head.appendChild(title);
-    head.appendChild(sub);
+    var h = document.createElement('h2');
+    h.className = 'result__title';
+    h.textContent = title;
+    var p = document.createElement('p');
+    p.className = 'result__sub';
+    p.textContent = sub;
+    head.appendChild(h);
+    head.appendChild(p);
     ui.result.appendChild(head);
 
     ui.result.appendChild(gradeRing(res));
@@ -374,29 +330,26 @@
     var actions = document.createElement('div');
     actions.className = 'result__actions';
 
-    actions.appendChild(button('Пройти заново', 'btn--soft', function () {
-      openGame(current.topic, current.level);
-    }));
+    var again = button(clean ? 'Пройти заново' : 'Попробовать ещё раз',
+                       clean ? 'btn--soft' : 'btn--primary', function () {
+      openGame(current.level, current.index);
+    });
+    actions.appendChild(again);
 
-    var next = nextLevel();
-    if (next) {
+    if (clean && next) {
       actions.appendChild(button('Следующий уровень →', 'btn--primary', function () {
-        openGame(current.topic, next);
+        openGame(next, current.index + 1);
       }));
-    } else {
-      actions.appendChild(button('К списку тем', 'btn--primary', openTopics));
     }
-    actions.appendChild(button('К уровням', 'btn--ghost', function () { openLevels(current.topic); }));
+    actions.appendChild(button('К уровням', 'btn--ghost', openLevels));
 
     ui.result.appendChild(actions);
 
-    goto('result', 'Результат: ' + current.level.name);
+    show('result', 'Результат · ' + current.level.name);
 
-    /* Конфетти только за пройденный уровень. За двойку не летит ничего. */
-    if (passed) {
-      window.setTimeout(function () {
-        Confetti.fire(confettiColors(current.topic), res.grade === 5 ? 1.5 : 1);
-      }, 260);
+    /* Конфетти только за уровень, пройденный без ошибок */
+    if (clean) {
+      window.setTimeout(function () { Confetti.fire(confettiColors(), 1.5); }, 260);
     }
   }
 
@@ -444,15 +397,9 @@
   }
 
   /** Цвета бумажек: акцент темы плюс нейтральные праздничные */
-  function confettiColors(topic) {
-    var themed = (Theme.get() === 'dark') ? topic.colorDark : topic.color;
+  function confettiColors() {
+    var themed = (Theme.get() === 'dark') ? TOPIC.colorDark : TOPIC.color;
     return [themed, '#5044d4', '#ffc93c', '#1a8a55', '#e8556d', '#3ec2e0'];
-  }
-
-  function nextLevel() {
-    var list = current.topic.levels;
-    var i = list.indexOf(current.level);
-    return (i >= 0 && i < list.length - 1) ? list[i + 1] : null;
   }
 
   function statBox(value, label) {
@@ -517,7 +464,7 @@
   if (saved) {
     ui.nameInput.value = saved;
     applyUser(saved);
-    openTopics();
+    openLevels();
   } else {
     show('welcome');
     ui.nameInput.focus();
