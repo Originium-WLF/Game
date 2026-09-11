@@ -1094,7 +1094,7 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   border: 1px solid var(--bad-line);
   font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
 }
-.mis__body { min-width: 0; }
+.mis__body { min-width: 0; max-width: 78ch; }   /* длинные пояснения не должны тянуться во всю ширину */
 
 .mis__what { margin: 0 0 6px; font-size: 14px; line-height: 1.45; }
 .mis__card {
@@ -1132,6 +1132,38 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   .mis { padding: 13px 16px; gap: 11px; }
   .board--doc::before { left: 14px; }
 }
+
+/* ============================ БЛОК «ОСНОВАНИЕ» =========================== */
+
+.refs {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line-strong);
+}
+.refs__label {
+  display: inline-block;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent-deep);
+  margin-bottom: 6px;
+}
+.refs__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.refs__item {
+  position: relative;
+  padding-left: 18px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+.refs__item::before {
+  content: "§";
+  position: absolute; left: 0; top: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* в разборе ошибок блок чуть плотнее */
+.mis .refs { margin-top: 9px; }
 
   </style>
   <script>
@@ -1386,26 +1418,61 @@ window.TOPIC_HTML = {
       blocks: [
         { t: 'line', items: [ { t: 'slot', id: 'h1-doctype', answer: 'c-doctype', ph: 'поле 1',
             hint: 'Объявление типа документа',
-            explain: '<code>&lt;!DOCTYPE html&gt;</code> — первая строка файла, включает стандартный режим отображения.' } ] },
+            explain: '<code>&lt;!DOCTYPE html&gt;</code> — объявление типа документа. Стоит самой первой строкой, ' +
+              'до тега <code>&lt;html&gt;</code>, и переключает браузер в стандартный режим отображения. ' +
+              'Без него страница рисуется в режиме совместимости (quirks mode), где иначе считаются ' +
+              'размеры блоков и работает наследование стилей. Это не тег и не элемент: у него нет ' +
+              'закрывающей пары и он ничего не выводит.',
+            refs: ['HTML Living Standard (WHATWG), § 13.1.1 — The DOCTYPE',
+                   'HTML Living Standard, § 4.1 — the document element'] } ] },
         { t: 'line', items: [ { t: 'text', text: '<html lang="ru">' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h1-head', answer: 'c-head', ph: 'поле 2',
             hint: 'Открывающий тег служебного раздела',
-            explain: '<code>&lt;head&gt;</code> — раздел с метаданными: кодировка, title, ссылки на CSS.' } ] },
+            explain: '<code>&lt;head&gt;</code> открывает раздел метаданных — сведений о странице, а не её содержимого. ' +
+              'Сюда помещают кодировку, заголовок вкладки, описание для поисковых систем, ' +
+              'настройку масштабирования на мобильных, подключение стилей и скриптов. ' +
+              'Ничего из этого пользователь в окне браузера не видит. Раздел идёт первым ' +
+              'внутри <code>&lt;html&gt;</code>, до <code>&lt;body&gt;</code>.',
+            refs: ['HTML Living Standard (WHATWG), § 4.2 — document metadata',
+                   'HTML Living Standard, § 4.2.1 — the head element'] } ] },
         { t: 'line', items: [ { t: 'text', text: '    ' }, { t: 'slot', id: 'h1-meta', answer: 'c-meta', ph: 'поле 3',
             hint: 'Кодировка документа',
-            explain: '<code>&lt;meta charset="UTF-8"&gt;</code> задаёт кодировку — без неё кириллица может превратиться в «кракозябры».' } ] },
+            explain: '<code>&lt;meta charset="UTF-8"&gt;</code> объявляет кодировку символов документа. ' +
+              'UTF-8 — единственная кодировка, которую предписывает современный стандарт: она покрывает ' +
+              'кириллицу, латиницу и любые другие письменности. Объявление должно попасть в первые 1024 байта ' +
+              'документа, поэтому его ставят сразу после открывающего <code>&lt;head&gt;</code>. ' +
+              'Без него браузер угадывает кодировку, и кириллица превращается в «кракозябры».',
+            refs: ['Encoding Standard (WHATWG) — UTF-8 как обязательная кодировка',
+                   'HTML Living Standard, § 4.2.5 — the meta element',
+                   'HTML Living Standard, § 4.2.5.5 — specifying the document character encoding'] } ] },
         { t: 'line', items: [ { t: 'text', text: '    ' }, { t: 'slot', id: 'h1-title', answer: 'c-title', ph: 'поле 4',
             hint: 'Заголовок вкладки браузера',
-            explain: '<code>&lt;title&gt;</code> — название страницы: показывается на вкладке и в результатах поиска.' } ] },
+            explain: '<code>&lt;title&gt;</code> задаёт название документа. Оно выводится на вкладке браузера, ' +
+              'подставляется в закладку и служит заголовком ссылки в результатах поиска. ' +
+              'Элемент обязателен: в каждом документе должен быть ровно один непустой ' +
+              '<code>&lt;title&gt;</code> внутри <code>&lt;head&gt;</code>. Разметка внутри него не работает — ' +
+              'допускается только текст.',
+            refs: ['HTML Living Standard (WHATWG), § 4.2.2 — the title element',
+                   'WCAG 2.2, критерий успеха 2.4.2 — Page Titled'] } ] },
         { t: 'line', items: [ { t: 'text', text: '  </head>' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h1-body', answer: 'c-body', ph: 'поле 5',
             hint: 'Открывающий тег видимой части',
-            explain: '<code>&lt;body&gt;</code> открывает содержимое, которое видит пользователь.' } ] },
+            explain: '<code>&lt;body&gt;</code> открывает тело документа — всё, что пользователь видит в окне браузера: ' +
+              'текст, изображения, таблицы, формы. В документе он ровно один и следует сразу за ' +
+              '<code>&lt;/head&gt;</code>. Именно к нему применяются глобальные стили страницы ' +
+              'и на нём обычно ловят события, всплывающие от вложенных элементов.',
+            refs: ['HTML Living Standard (WHATWG), § 4.3.1 — the body element'] } ] },
         { t: 'line', items: [ { t: 'text', text: '    <h1>Добро пожаловать</h1>' } ] },
         { t: 'line', items: [ { t: 'text', text: '    <p>Это моя первая страница.</p>' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h1-bodyend', answer: 'c-bodyend', ph: 'поле 6',
             hint: 'Закрывающий тег видимой части',
-            explain: '<code>&lt;/body&gt;</code> закрывается перед <code>&lt;/html&gt;</code>: вложенность соблюдается строго.' } ] },
+            explain: '<code>&lt;/body&gt;</code> закрывает тело документа и ставится перед <code>&lt;/html&gt;</code>. ' +
+              'Вложенность парных элементов строгая: что открыли последним — закрываем первым, ' +
+              'пересечение тегов недопустимо. Нарушение порядка браузер исправит по правилам ' +
+              'разбора ошибок, но дерево документа при этом получится не тем, которое задумано, ' +
+              'и стили со скриптами начнут работать непредсказуемо.',
+            refs: ['HTML Living Standard (WHATWG), § 13.2 — parsing HTML documents',
+                   'HTML Living Standard, § 13.1.2 — elements'] } ] },
         { t: 'line', items: [ { t: 'text', text: '</html>' } ] }
       ],
       cards: [
@@ -1443,32 +1510,69 @@ window.TOPIC_HTML = {
           { t: 'text', text: 'Логотип, название сайта и телефон вверху страницы', cls: 'b-small' },
           { t: 'slot', id: 'h2-header', answer: 'c-header', ph: 'тег',
             hint: 'Вводная часть страницы',
-            explain: '<code>&lt;header&gt;</code> — вводный блок: логотип, название, контакты.' } ] },
+            explain: '<code>&lt;header&gt;</code> — вводная часть страницы или отдельного раздела: логотип, ' +
+              'название, контакты, поиск. Элементов может быть несколько: свой <code>&lt;header&gt;</code> ' +
+              'допустим внутри <code>&lt;article&gt;</code> или <code>&lt;section&gt;</code>. ' +
+              'Нельзя вкладывать его в другой <code>&lt;header&gt;</code> или в <code>&lt;footer&gt;</code>. ' +
+              'Экранные читалки используют его как ориентир «banner» при навигации по странице.',
+            refs: ['HTML Living Standard (WHATWG), § 4.3 — sections',
+                   'WAI-ARIA: роль banner — соответствие элементу header',
+                   'WCAG 2.2, критерий успеха 1.3.1 — Info and Relationships'] } ] },
         { t: 'row', items: [
           { t: 'text', text: 'Горизонтальное меню со ссылками на разделы', cls: 'b-small' },
           { t: 'slot', id: 'h2-nav', answer: 'c-nav', ph: 'тег',
             hint: 'Навигация',
-            explain: '<code>&lt;nav&gt;</code> — блок основных навигационных ссылок.' } ] },
+            explain: '<code>&lt;nav&gt;</code> — блок навигационных ссылок: главное меню, «хлебные крошки», ' +
+              'оглавление. Размечать им нужно только основные группы ссылок, а не каждое скопление ' +
+              'ссылок на странице: ссылки в подвале обычно оставляют в <code>&lt;footer&gt;</code> ' +
+              'без обёртки. Внутри чаще всего лежит список <code>&lt;ul&gt;</code>: так читалка ' +
+              'объявит число пунктов меню.',
+            refs: ['HTML Living Standard (WHATWG), § 4.3 — sections',
+                   'WAI-ARIA: роль navigation — соответствие элементу nav'] } ] },
         { t: 'row', items: [
           { t: 'text', text: 'Основное содержимое, уникальное для этой страницы', cls: 'b-small' },
           { t: 'slot', id: 'h2-main', answer: 'c-main', ph: 'тег',
             hint: 'Главная область, одна на страницу',
-            explain: '<code>&lt;main&gt;</code> — основное содержимое; на странице должен быть только один такой тег.' } ] },
+            explain: '<code>&lt;main&gt;</code> — основное содержимое документа, уникальное для этой страницы. ' +
+              'Видимый элемент <code>&lt;main&gt;</code> на странице должен быть только один, ' +
+              'и в него не помещают то, что повторяется на всех страницах: шапку, меню, подвал, ' +
+              'боковую колонку. Он не должен быть потомком <code>&lt;article&gt;</code>, ' +
+              '<code>&lt;aside&gt;</code>, <code>&lt;header&gt;</code>, <code>&lt;footer&gt;</code> ' +
+              'или <code>&lt;nav&gt;</code>. Браузеры используют его как цель для перехода ' +
+              '«к основному содержимому».',
+            refs: ['HTML Living Standard (WHATWG), § 4.4 — grouping content (the main element)',
+                   'WCAG 2.2, критерий успеха 2.4.1 — Bypass Blocks'] } ] },
         { t: 'row', items: [
           { t: 'text', text: 'Текст новости, который можно опубликовать отдельно', cls: 'b-small' },
           { t: 'slot', id: 'h2-article', answer: 'c-article', ph: 'тег',
             hint: 'Самостоятельный материал',
-            explain: '<code>&lt;article&gt;</code> — законченный материал: новость, статья, отзыв.' } ] },
+            explain: '<code>&lt;article&gt;</code> — самостоятельная, законченная часть содержимого, которую можно ' +
+              'распространять отдельно от страницы: новость, статья блога, карточка товара, ' +
+              'комментарий, отзыв. Проверка простая: если фрагмент осмысленно читается в RSS-ленте ' +
+              'или на чужом сайте — это <code>&lt;article&gt;</code>. Элементы можно вкладывать: ' +
+              'комментарии внутри статьи тоже статьи.',
+            refs: ['HTML Living Standard (WHATWG), § 4.3 — sections (the article element)'] } ] },
         { t: 'row', items: [
           { t: 'text', text: 'Боковая колонка: «Читайте также» и реклама', cls: 'b-small' },
           { t: 'slot', id: 'h2-aside', answer: 'c-aside', ph: 'тег',
             hint: 'Побочное содержимое',
-            explain: '<code>&lt;aside&gt;</code> — содержимое, связанное с основным лишь косвенно.' } ] },
+            explain: '<code>&lt;aside&gt;</code> — содержимое, связанное с основным лишь косвенно: боковая колонка, ' +
+              'блок «Читайте также», справка на полях, реклама. Ключевой признак — материал можно ' +
+              'убрать, и основной текст не потеряет смысла. Это не «правая колонка» как место ' +
+              'на макете: элемент говорит о роли содержимого, а положение задаётся стилями.',
+            refs: ['HTML Living Standard (WHATWG), § 4.3 — sections (the aside element)',
+                   'WAI-ARIA: роль complementary — соответствие элементу aside'] } ] },
         { t: 'row', items: [
           { t: 'text', text: 'Копирайт, адрес и ссылки на соцсети внизу', cls: 'b-small' },
           { t: 'slot', id: 'h2-footer', answer: 'c-footer', ph: 'тег',
             hint: 'Завершающая часть страницы',
-            explain: '<code>&lt;footer&gt;</code> — подвал: копирайт, контакты, служебные ссылки.' } ] }
+            explain: '<code>&lt;footer&gt;</code> — завершающая часть страницы или раздела: копирайт, контакты, ' +
+              'служебные ссылки, сведения об авторе, дата публикации. Как и <code>&lt;header&gt;</code>, ' +
+              'может встречаться несколько раз — свой подвал допустим внутри статьи. ' +
+              'Вкладывать <code>&lt;footer&gt;</code> в другой <code>&lt;footer&gt;</code> ' +
+              'или в <code>&lt;header&gt;</code> нельзя.',
+            refs: ['HTML Living Standard (WHATWG), § 4.3 — sections (the footer element)',
+                   'WAI-ARIA: роль contentinfo — соответствие элементу footer'] } ] }
       ],
       cards: [
         { id: 'c-header',  text: '<header>',  code: true },
@@ -1504,25 +1608,58 @@ window.TOPIC_HTML = {
       blocks: [
         { t: 'line', items: [ { t: 'slot', id: 'h3-form', answer: 'c-form', ph: 'поле 1',
             hint: 'Открывающий тег формы с адресом и методом',
-            explain: '<code>&lt;form action="/feedback" method="post"&gt;</code> — адрес обработчика и метод отправки.' } ] },
+            explain: '<code>&lt;form&gt;</code> объединяет поля и определяет, куда и как уйдут данные: ' +
+              '<code>action</code> — адрес обработчика, <code>method</code> — метод HTTP. ' +
+              '<code>post</code> передаёт данные в теле запроса и подходит для действий, ' +
+              'изменяющих состояние на сервере; <code>get</code> дописывает их в строку адреса ' +
+              'и годится только для поиска и фильтров. Вкладывать форму в форму нельзя. ' +
+              'Отправляются лишь те поля, у которых задан атрибут <code>name</code>.',
+            refs: ['HTML Living Standard (WHATWG), § 4.10.3 — the form element',
+                   'HTML Living Standard, § 4.10.21 — form submission',
+                   'RFC 9110, § 9.3 — семантика методов GET и POST'] } ] },
         { t: 'line', items: [ { t: 'text', text: '  <label for="mail">Электронная почта</label>' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h3-input', answer: 'c-input', ph: 'поле 2',
             hint: 'Однострочное поле для адреса почты',
-            explain: '<code>&lt;input type="email" id="mail" required&gt;</code> — браузер сам проверит формат адреса.' } ] },
+            explain: '<code>&lt;input type="email"&gt;</code> — однострочное поле для адреса электронной почты. ' +
+              'Браузер сам проверяет формат перед отправкой и на мобильных показывает клавиатуру ' +
+              'со знаком @. Атрибут <code>required</code> делает поле обязательным, ' +
+              '<code>id</code> связывает его с подписью <code>&lt;label for&gt;</code>. ' +
+              'Проверка на стороне браузера не отменяет проверку на сервере: её легко обойти.',
+            refs: ['HTML Living Standard (WHATWG), § 4.10.5 — the input element',
+                   'HTML Living Standard, § 4.10.5.1.5 — email state',
+                   'WCAG 2.2, критерий успеха 3.3.1 — Error Identification'] } ] },
         { t: 'line', items: [ { t: 'text', text: '' } ] },
         { t: 'line', items: [ { t: 'text', text: '  <label for="topic">Тема обращения</label>' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h3-select', answer: 'c-select', ph: 'поле 3',
             hint: 'Выбор одного варианта из списка',
-            explain: '<code>&lt;select&gt;</code> — выпадающий список; варианты задаются тегами <code>&lt;option&gt;</code>.' } ] },
+            explain: '<code>&lt;select&gt;</code> — выпадающий список для выбора из заранее известного набора. ' +
+              'Варианты задаются вложенными <code>&lt;option&gt;</code>, их можно группировать ' +
+              'через <code>&lt;optgroup&gt;</code>. Атрибут <code>multiple</code> разрешает выбрать ' +
+              'несколько значений. Отправляется значение атрибута <code>value</code> выбранного варианта, ' +
+              'а если его нет — текст внутри <code>&lt;option&gt;</code>.',
+            refs: ['HTML Living Standard (WHATWG), § 4.10.7 — the select element',
+                   'HTML Living Standard, § 4.10.10 — the option element'] } ] },
         { t: 'line', items: [ { t: 'text', text: '' } ] },
         { t: 'line', items: [ { t: 'text', text: '  <label for="msg">Сообщение</label>' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h3-textarea', answer: 'c-textarea', ph: 'поле 4',
             hint: 'Многострочный ввод текста',
-            explain: '<code>&lt;textarea&gt;&lt;/textarea&gt;</code> — многострочное поле, тег парный, размер задаётся через rows/cols.' } ] },
+            explain: '<code>&lt;textarea&gt;</code> — многострочное текстовое поле. Тег обязательно парный, ' +
+              'и начальное значение задаётся текстом между тегами, а не атрибутом <code>value</code>. ' +
+              'Видимый размер задают атрибутами <code>rows</code> и <code>cols</code> или стилями; ' +
+              'ограничить длину ввода можно атрибутом <code>maxlength</code>. ' +
+              'Переносы строк внутри сохраняются и уходят на сервер как есть.',
+            refs: ['HTML Living Standard (WHATWG), § 4.10.11 — the textarea element'] } ] },
         { t: 'line', items: [ { t: 'text', text: '' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'h3-button', answer: 'c-button', ph: 'поле 5',
             hint: 'Кнопка отправки формы',
-            explain: '<code>&lt;button type="submit"&gt;</code> отправляет форму по адресу из атрибута action.' } ] },
+            explain: '<code>&lt;button type="submit"&gt;</code> отправляет форму по адресу из атрибута ' +
+              '<code>action</code>. Указывать <code>type</code> явно важно: у кнопки внутри формы ' +
+              'это значение по умолчанию, и кнопка, задуманная как вспомогательная, ' +
+              'случайно отправит форму. Другие значения — <code>reset</code> (сброс полей) ' +
+              'и <code>button</code> (никаких действий, только обработчик в скрипте). ' +
+              'В отличие от <code>&lt;input type="submit"&gt;</code>, внутрь можно положить разметку.',
+            refs: ['HTML Living Standard (WHATWG), § 4.10.6 — the button element',
+                   'HTML Living Standard, § 4.10.21 — form submission'] } ] },
         { t: 'line', items: [ { t: 'text', text: '</form>' } ] }
       ],
       cards: [
@@ -1578,31 +1715,70 @@ window.TOPIC_CSS = {
         { t: 'line', items: [ { t: 'text', text: '.card {' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-bg', answer: 'p-bg', ph: 'свойство' , w: 190,
             hint: 'Отвечает за заливку фона',
-            explain: '<code>background-color</code> задаёт цвет фона элемента.' },
+            explain: '<code>background-color</code> задаёт цвет фона элемента. Фон закрашивает область содержимого ' +
+              'вместе с внутренними отступами и заходит под рамку, но не под внешние отступы: ' +
+              'увеличение <code>padding</code> увеличивает закрашенную площадь, а <code>margin</code> — нет. ' +
+              'Значение по умолчанию — <code>transparent</code>, поэтому сквозь элемент виден фон родителя.',
+            refs: ['CSS Backgrounds and Borders Module Level 3 (W3C), § 3.10 — background-color',
+                   'CSS Box Model Module Level 3 (W3C) — области блока'] },
           { t: 'text', text: ': #ffffff;' }, { t: 'text', text: '            /* белая заливка */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-color', answer: 'p-color', ph: 'свойство', w: 190,
             hint: 'Отвечает за цвет текста',
-            explain: '<code>color</code> — цвет текста внутри элемента.' },
+            explain: '<code>color</code> задаёт цвет текста. Свойство наследуется, поэтому достаточно объявить его ' +
+              'на родителе — вложенные элементы подхватят значение сами. К нему же по умолчанию ' +
+              'привязаны цвет рамки и <code>currentColor</code>, которым удобно красить значки. ' +
+              'Контраст текста к фону должен быть не ниже 4.5:1 для обычного размера.',
+            refs: ['CSS Color Module Level 4 (W3C) — свойство color',
+                   'WCAG 2.2, критерий успеха 1.4.3 — Contrast (Minimum)'] },
           { t: 'text', text: ': #16202e;' }, { t: 'text', text: '            /* тёмный текст */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-fs', answer: 'p-fs', ph: 'свойство', w: 190,
             hint: 'Размер шрифта',
-            explain: '<code>font-size</code> — размер шрифта; в примере 16 пикселей.' },
+            explain: '<code>font-size</code> задаёт размер шрифта. Свойство наследуется, а относительные единицы ' +
+              'считаются от родителя: <code>em</code> — от размера шрифта родителя, ' +
+              '<code>rem</code> — от корневого элемента, что предсказуемее при вложенности. ' +
+              'Жёстко фиксировать размер в пикселях не стоит: это мешает пользователю ' +
+              'увеличить текст настройками браузера.',
+            refs: ['CSS Fonts Module Level 4 (W3C) — свойство font-size',
+                   'CSS Values and Units Module Level 4 (W3C) — единицы em и rem',
+                   'WCAG 2.2, критерий успеха 1.4.4 — Resize Text'] },
           { t: 'text', text: ': 16px;' }, { t: 'text', text: '               /* размер шрифта */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-padding', answer: 'p-padding', ph: 'свойство', w: 190,
             hint: 'Отступ внутри рамки',
-            explain: '<code>padding</code> — внутренний отступ: воздух между рамкой и содержимым.' },
+            explain: '<code>padding</code> — внутренний отступ между содержимым и рамкой. Он окрашивается фоном ' +
+              'элемента и по умолчанию прибавляется к заданной ширине: блок шириной 200px ' +
+              'с отступом 20px займёт 240px. Правило <code>box-sizing: border-box</code> меняет это, ' +
+              'включая отступы и рамку в объявленную ширину. Отрицательных значений у padding не бывает.',
+            refs: ['CSS Box Model Module Level 3 (W3C), § 6 — padding',
+                   'CSS Box Sizing Module Level 3 (W3C) — свойство box-sizing'] },
           { t: 'text', text: ': 20px;' }, { t: 'text', text: '               /* воздух внутри блока */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-margin', answer: 'p-margin', ph: 'свойство', w: 190,
             hint: 'Отступ снаружи блока',
-            explain: '<code>margin</code> — внешний отступ, раздвигает соседние блоки.' },
+            explain: '<code>margin</code> — внешний отступ, раздвигающий элемент и его соседей. Он прозрачен: ' +
+              'фон элемента на него не распространяется. Вертикальные отступы соседних блоков ' +
+              'схлопываются — из двух остаётся больший, а не их сумма; горизонтальные не схлопываются никогда. ' +
+              'Значение <code>auto</code> по горизонтали центрирует блок известной ширины. ' +
+              'Отрицательные значения допустимы.',
+            refs: ['CSS Box Model Module Level 3 (W3C), § 7 — margin',
+                   'CSS Box Model Module Level 3, § 7.1 — схлопывание отступов'] },
           { t: 'text', text: ': 12px;' }, { t: 'text', text: '               /* отступ от соседей */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-border', answer: 'p-border', ph: 'свойство', w: 190,
             hint: 'Рамка вокруг блока',
-            explain: '<code>border</code> — рамка: толщина, стиль и цвет одной строкой.' },
+            explain: '<code>border</code> — сокращённая запись сразу трёх свойств: <code>border-width</code>, ' +
+              '<code>border-style</code> и <code>border-color</code>. Стиль обязателен: ' +
+              'при значении <code>none</code> рамка не рисуется, какой бы ни была толщина. ' +
+              'Если цвет не указан, берётся текущий цвет текста. Рамка занимает место в потоке ' +
+              'и увеличивает размеры блока — в отличие от <code>outline</code>.',
+            refs: ['CSS Backgrounds and Borders Module Level 3 (W3C), § 4 — borders',
+                   'CSS Box Model Module Level 3 (W3C) — области блока'] },
           { t: 'text', text: ': 1px solid #d8dfea;' }, { t: 'text', text: '  /* тонкая рамка */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c1-radius', answer: 'p-radius', ph: 'свойство', w: 190,
             hint: 'Скругление углов',
-            explain: '<code>border-radius</code> скругляет углы блока.' },
+            explain: '<code>border-radius</code> скругляет углы блока. Одно значение применяется ко всем четырём углам, ' +
+              'через пробел можно задать каждый угол отдельно, а через косую черту — разные радиусы ' +
+              'по горизонтали и вертикали, получая эллиптическое скругление. ' +
+              'Значение <code>50%</code> у квадрата превращает его в круг. Скругление обрезает и фон, ' +
+              'и рамку, но содержимое — только при <code>overflow: hidden</code>.',
+            refs: ['CSS Backgrounds and Borders Module Level 3 (W3C), § 5 — border-radius'] },
           { t: 'text', text: ': 12px;' }, { t: 'text', text: '               /* скруглённые углы */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '}' } ] }
       ],
@@ -1643,37 +1819,76 @@ window.TOPIC_CSS = {
           { t: 'text', text: 'Все абзацы на странице', cls: 'b-small' },
           { t: 'slot', id: 'c2-tag', answer: 's-tag', ph: 'селектор',
             hint: 'Выбор по имени тега',
-            explain: '<code>p</code> — селектор тега: попадают все абзацы документа.' } ] },
+            explain: '<code>p</code> — селектор типа: выбирает все элементы с таким именем во всём документе. ' +
+              'Это самый слабый вид селектора, его специфичность 0-0-1, поэтому любое правило ' +
+              'с классом перебьёт его независимо от порядка в файле. Удобен для базовых стилей ' +
+              'типографики, которые потом уточняются классами.',
+            refs: ['Selectors Level 4 (W3C), § 5.1 — type selectors',
+                   'CSS Cascading and Inheritance Level 5 (W3C) — специфичность'] } ] },
         { t: 'row', items: [
           { t: 'text', text: 'Единственный блок с id="menu"', cls: 'b-small' },
           { t: 'slot', id: 'c2-id', answer: 's-id', ph: 'селектор',
             hint: 'Выбор по идентификатору',
-            explain: '<code>#menu</code> — селектор id; id на странице уникален.' } ] },
+            explain: '<code>#menu</code> — селектор идентификатора. Значение <code>id</code> должно быть уникальным ' +
+              'в пределах документа, поэтому селектор выбирает ровно один элемент. ' +
+              'Его специфичность 1-0-0 — выше любого сочетания классов, и перебить такое правило ' +
+              'трудно. Для оформления обычно используют классы, а <code>id</code> оставляют ' +
+              'для якорных ссылок, атрибута <code>for</code> у подписей и обращения из скриптов.',
+            refs: ['Selectors Level 4 (W3C), § 6.7 — ID selectors',
+                   'CSS Cascading and Inheritance Level 5 (W3C) — специфичность'] } ] },
         { t: 'row', items: [
           { t: 'text', text: 'Все кнопки с классом btn', cls: 'b-small' },
           { t: 'slot', id: 'c2-class', answer: 's-class', ph: 'селектор',
             hint: 'Выбор по классу',
-            explain: '<code>.btn</code> — селектор класса, один класс можно повесить на сколько угодно элементов.' } ] },
+            explain: '<code>.btn</code> — селектор класса. Один класс можно повесить на любое число элементов, ' +
+              'а одному элементу — назначить несколько классов через пробел. Специфичность 0-1-0. ' +
+              'Это основной инструмент оформления: он не привязан ни к имени тега, ни к месту ' +
+              'в дереве документа, поэтому вёрстку можно менять, не переписывая стили.',
+            refs: ['Selectors Level 4 (W3C), § 6.6 — class selectors'] } ] },
         { t: 'row', items: [
           { t: 'text', text: 'Ссылка в момент наведения курсора', cls: 'b-small' },
           { t: 'slot', id: 'c2-hover', answer: 's-hover', ph: 'селектор',
             hint: 'Псевдокласс состояния',
-            explain: '<code>a:hover</code> срабатывает, пока курсор находится над ссылкой.' } ] },
+            explain: '<code>a:hover</code> — псевдокласс состояния: правило действует, пока указатель находится ' +
+              'над элементом. На устройствах с сенсорным экраном такого состояния фактически нет, ' +
+              'поэтому важное поведение на него завязывать нельзя. Псевдоклассы ссылок пишут ' +
+              'в порядке <code>:link</code>, <code>:visited</code>, <code>:hover</code>, ' +
+              '<code>:active</code> — иначе более поздние правила перекроют предыдущие. ' +
+              'Наведение всегда дублируют состоянием <code>:focus-visible</code> для клавиатуры.',
+            refs: ['Selectors Level 4 (W3C), § 9 — user action pseudo-classes',
+                   'WCAG 2.2, критерий успеха 2.4.7 — Focus Visible'] } ] },
         { t: 'row', items: [
           { t: 'text', text: 'Только те абзацы, что лежат внутри .card', cls: 'b-small' },
           { t: 'slot', id: 'c2-desc', answer: 's-desc', ph: 'селектор',
             hint: 'Вложенность через пробел',
-            explain: '<code>.card p</code> — пробел означает «любой потомок внутри».' } ] },
+            explain: '<code>.card p</code> — комбинатор потомка: пробел означает «любой абзац внутри .card», ' +
+              'на любой глубине вложенности. Если нужен только непосредственный ребёнок, ' +
+              'берут <code>&gt;</code>. Специфичность складывается из частей — здесь 0-1-1. ' +
+              'Браузер разбирает такие селекторы справа налево, поэтому длинные цепочки ' +
+              'и дороже в разборе, и хрупче при изменении вёрстки.',
+            refs: ['Selectors Level 4 (W3C), § 15 — combinators',
+                   'Selectors Level 4, § 15.1 — descendant combinator'] } ] },
         { t: 'row', items: [
           { t: 'text', text: 'Первый пункт в каждом списке', cls: 'b-small' },
           { t: 'slot', id: 'c2-first', answer: 's-first', ph: 'селектор',
             hint: 'Псевдокласс позиции',
-            explain: '<code>li:first-child</code> — элемент, стоящий первым у своего родителя.' } ] },
+            explain: '<code>li:first-child</code> — структурный псевдокласс: элемент, стоящий первым среди ' +
+              'детей своего родителя. Важно, что условие проверяется по всем детям, а не только ' +
+              'по элементам того же типа: если перед списком внутри того же родителя окажется ' +
+              'другой элемент, правило не сработает — для такого случая есть ' +
+              '<code>:first-of-type</code>. Родственные псевдоклассы: <code>:last-child</code>, ' +
+              '<code>:nth-child()</code>.',
+            refs: ['Selectors Level 4 (W3C), § 10 — structural pseudo-classes'] } ] },
         { t: 'row', items: [
           { t: 'text', text: 'Текстовые поля ввода (но не чекбоксы)', cls: 'b-small' },
           { t: 'slot', id: 'c2-attr', answer: 's-attr', ph: 'селектор',
             hint: 'Выбор по атрибуту',
-            explain: '<code>input[type="text"]</code> — селектор атрибута, отбирает поля нужного типа.' } ] }
+            explain: '<code>input[type="text"]</code> — селектор атрибута: отбирает только поля с указанным ' +
+              'значением, не задевая чекбоксы, переключатели и кнопки. Кроме точного совпадения ' +
+              'есть проверки по началу строки (<code>^=</code>), по окончанию (<code>$=</code>) ' +
+              'и по вхождению подстроки (<code>*=</code>). Специфичность такая же, как у класса, — 0-1-0. ' +
+              'Значения атрибутов по умолчанию сравниваются с учётом регистра.',
+            refs: ['Selectors Level 4 (W3C), § 6.2 — attribute selectors'] } ] }
       ],
       cards: [
         { id: 's-tag',    text: 'p',                     code: true },
@@ -1711,27 +1926,68 @@ window.TOPIC_CSS = {
         { t: 'line', items: [ { t: 'text', text: '.toolbar {' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-display', answer: 'f-display', ph: 'свойство', w: 180,
             hint: 'Включает флекс-раскладку',
-            explain: '<code>display: flex</code> — без этой строки остальные флекс-свойства не работают.' },
+            explain: '<code>display: flex</code> превращает элемент во флекс-контейнер: его прямые дети становятся ' +
+              'флекс-элементами и выстраиваются вдоль главной оси. Без этой строки остальные ' +
+              'флекс-свойства просто не действуют. У детей при этом перестают работать ' +
+              '<code>float</code>, <code>clear</code> и <code>vertical-align</code>, ' +
+              'а вертикальные отступы больше не схлопываются. Сам контейнер остаётся блочным ' +
+              'элементом в общем потоке; <code>inline-flex</code> делает его строчным.',
+            refs: ['CSS Flexible Box Layout Module Level 1 (W3C), § 3 — flex containers',
+                   'CSS Flexible Box Layout Module Level 1, § 4 — flex items'] },
           { t: 'text', text: ': flex;' }, { t: 'text', text: '                    /* включаем флексбокс */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-dir', answer: 'f-dir', ph: 'свойство', w: 180,
             hint: 'Направление главной оси',
-            explain: '<code>flex-direction: row</code> выстраивает элементы в строку слева направо.' },
+            explain: '<code>flex-direction</code> задаёт направление главной оси: <code>row</code> — в строку ' +
+              'по направлению письма, <code>column</code> — в столбец, варианты с ' +
+              '<code>-reverse</code> разворачивают порядок. Свойство определяет, какая ось ' +
+              'считается главной, а какая поперечной, и тем самым меняет смысл ' +
+              '<code>justify-content</code> и <code>align-items</code>. ' +
+              'Визуальный порядок при этом расходится с порядком в разметке — навигация ' +
+              'с клавиатуры по-прежнему идёт по разметке.',
+            refs: ['CSS Flexible Box Layout Module Level 1 (W3C), § 5.1 — flex-direction',
+                   'WCAG 2.2, критерий успеха 1.3.2 — Meaningful Sequence'] },
           { t: 'text', text: ': row;' }, { t: 'text', text: '                     /* элементы в строку */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-justify', answer: 'f-justify', ph: 'свойство', w: 180,
             hint: 'Распределение вдоль строки',
-            explain: '<code>justify-content: space-between</code> прижимает крайние элементы к краям, промежутки делает равными.' },
+            explain: '<code>justify-content</code> распределяет элементы вдоль главной оси и работает со свободным ' +
+              'местом, оставшимся после их раскладки. <code>space-between</code> прижимает крайние ' +
+              'элементы к краям, а промежутки между остальными делает равными; ' +
+              '<code>space-around</code> и <code>space-evenly</code> распределяют место иначе. ' +
+              'Если свободного места нет, свойство ничего не изменит.',
+            refs: ['CSS Box Alignment Module Level 3 (W3C), § 8 — justify-content',
+                   'CSS Flexible Box Layout Module Level 1 (W3C), § 8.2 — выравнивание по главной оси'] },
           { t: 'text', text: ': space-between;' }, { t: 'text', text: '  /* по краям, промежутки поровну */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-align', answer: 'f-align', ph: 'свойство', w: 180,
             hint: 'Выравнивание поперёк строки',
-            explain: '<code>align-items: center</code> центрирует элементы по вертикали внутри строки.' },
+            explain: '<code>align-items</code> выравнивает элементы по поперечной оси — при строке это вертикаль. ' +
+              'Значение по умолчанию <code>stretch</code> растягивает их на всю высоту строки, ' +
+              'поэтому колонки разной длины выглядят одинаково высокими; <code>center</code> ' +
+              'центрирует по высоте, <code>baseline</code> выравнивает по базовой линии текста. ' +
+              'Отдельному элементу выравнивание переопределяют свойством <code>align-self</code>.',
+            refs: ['CSS Box Alignment Module Level 3 (W3C), § 6 — align-items и align-self',
+                   'CSS Flexible Box Layout Module Level 1 (W3C), § 8.3 — выравнивание по поперечной оси'] },
           { t: 'text', text: ': center;' }, { t: 'text', text: '                  /* по центру по вертикали */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-gap', answer: 'f-gap', ph: 'свойство', w: 180,
             hint: 'Расстояние между элементами',
-            explain: '<code>gap</code> задаёт промежутки между флекс-элементами без margin-хаков.' },
+            explain: '<code>gap</code> задаёт промежутки между элементами — сокращение для ' +
+              '<code>row-gap</code> и <code>column-gap</code>. В отличие от отступов через ' +
+              '<code>margin</code>, промежуток появляется только между элементами и не добавляется ' +
+              'по внешним краям контейнера, поэтому не нужны приёмы вроде ' +
+              '<code>:last-child { margin: 0 }</code>. Свойство работает и во флексбоксе, ' +
+              'и в гриде, и в многоколоночной вёрстке.',
+            refs: ['CSS Box Alignment Module Level 3 (W3C), § 8.3 — gap, row-gap, column-gap'] },
           { t: 'text', text: ': 12px;' }, { t: 'text', text: '                     /* просвет между кнопками */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '  ' }, { t: 'slot', id: 'c3-wrap', answer: 'f-wrap', ph: 'свойство', w: 180,
             hint: 'Разрешение переноса',
-            explain: '<code>flex-wrap: wrap</code> позволяет элементам перейти на следующую строку, если не помещаются.' },
+            explain: '<code>flex-wrap</code> разрешает перенос: по умолчанию стоит <code>nowrap</code>, ' +
+              'и элементы сжимаются, лишь бы уместиться в одну строку, вплоть до нечитаемого вида. ' +
+              'Со значением <code>wrap</code> не поместившиеся переходят на следующую строку, ' +
+              'и контейнер становится многострочным — только тогда начинает работать ' +
+              '<code>align-content</code>. Это основной способ сделать раскладку пригодной ' +
+              'для узких экранов.',
+            refs: ['CSS Flexible Box Layout Module Level 1 (W3C), § 5.2 — flex-wrap',
+                   'CSS Box Alignment Module Level 3 (W3C), § 7 — align-content',
+                   'WCAG 2.2, критерий успеха 1.4.10 — Reflow'] },
           { t: 'text', text: ': wrap;' }, { t: 'text', text: '                    /* перенос на новую строку */', cls: 'b-comment' } ] },
         { t: 'line', items: [ { t: 'text', text: '}' } ] }
       ],
@@ -1757,12 +2013,20 @@ window.TOPIC_CSS = {
 /* js/data/docs-topic.js */
 /* ==========================================================================
    Тема 3 — Документооборот в РФ
+
    Состав и нумерация реквизитов приведены по ГОСТ Р 7.0.97-2025
-   «Организационно-распорядительная документация. Требования к оформлению
-   документов» (перечень реквизитов 01–30).
+   «Система стандартов по информации, библиотечному и издательскому делу.
+   Организационно-распорядительная документация. Требования к оформлению
+   документов» (реквизиты 01–30).
+
+   Ссылки на пункты даны по структуре стандарта: раздел 3 — общие требования
+   к созданию документов, раздел 4 — оформление реквизитов (номер пункта
+   соответствует номеру реквизита: реквизит 22 «Подпись» — п. 4.22),
+   раздел 5 — бланки документов, приложение А — образцы бланков,
+   приложение Б — образцы оформления документов.
 
    ВНИМАНИЕ ПРЕПОДАВАТЕЛЮ: перед использованием в учебном процессе сверьте
-   формулировки и номера реквизитов с действующей редакцией стандарта —
+   формулировки и номера пунктов с действующей редакцией стандарта —
    правки вносятся только в этот файл.
    ========================================================================== */
 
@@ -1786,47 +2050,84 @@ window.TOPIC_DOCS = {
       task: 'Перетащи реквизиты на их места на бланке приказа. Часть карточек в приказе не используется.',
       theory:
         '<p>Приказ оформляется на бланке организации <b>продольным</b> способом: наименование организации, ' +
-        'вид документа и место составления — по центру.</p>' +
+        'вид документа и место составления — по центру (ГОСТ Р 7.0.97-2025, раздел 5, приложение А).</p>' +
         '<ul>' +
-        '<li><b>05</b> наименование организации — автора документа: вверху, полное наименование по уставу;</li>' +
-        '<li><b>09</b> наименование вида документа — прописными буквами: ПРИКАЗ;</li>' +
-        '<li><b>10</b> дата и <b>11</b> регистрационный номер — на одной строке под видом документа;</li>' +
-        '<li><b>13</b> место составления (издания) документа — населённый пункт;</li>' +
-        '<li><b>17</b> заголовок к тексту — отвечает на вопрос «о чём?»;</li>' +
-        '<li><b>22</b> подпись — должность, личная подпись, инициалы и фамилия;</li>' +
-        '<li><b>25</b> отметка об исполнителе — внизу листа, мелким шрифтом.</li>' +
+        '<li><b>05</b> наименование организации — автора документа (п. 4.5);</li>' +
+        '<li><b>09</b> наименование вида документа, прописными буквами: ПРИКАЗ (п. 4.9);</li>' +
+        '<li><b>10</b> дата и <b>11</b> регистрационный номер — на одной строке (пп. 4.10, 4.11);</li>' +
+        '<li><b>13</b> место составления (издания) документа (п. 4.13);</li>' +
+        '<li><b>17</b> заголовок к тексту — отвечает на вопрос «о чём?» (п. 4.17);</li>' +
+        '<li><b>22</b> подпись: должность, личная подпись, инициалы и фамилия (п. 4.22);</li>' +
+        '<li><b>25</b> отметка об исполнителе — внизу листа (п. 4.25).</li>' +
         '</ul>' +
-        '<p>Адресат, гриф утверждения и резолюция в бланке приказа не оформляются.</p>',
+        '<p>Адресат, гриф утверждения и резолюция в бланке приказа не оформляются.</p>' +
+        '<p><i>Номера пунктов даны по структуре стандарта: раздел 4 описывает реквизиты, ' +
+        'номер пункта совпадает с номером реквизита. Сверьте с действующей редакцией.</i></p>',
       boardType: 'doc',
       blocks: [
         { t: 'block', cls: 'b-al-center', items: [
           { t: 'slot', id: 'd1-org', answer: 'r05', ph: 'реквизит',
             hint: 'Реквизит 05 — наименование организации',
-            explain: '<b>05 — наименование организации — автора документа.</b> Указывается вверху бланка полностью, как в уставе.' } ] },
+            explain: '<b>05 — наименование организации — автора документа.</b> Приводится полное наименование ' +
+              'в точном соответствии с уставом или положением об организации; сокращённое наименование ' +
+              'указывают ниже полного и только тогда, когда оно закреплено учредительными документами. ' +
+              'Над реквизитом при необходимости размещают наименование вышестоящей организации. ' +
+              'В продольном бланке реквизит центрируется в верхнем поле листа.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.5 — наименование организации — автора документа',
+                   'ГОСТ Р 7.0.97-2025, раздел 5 — бланки документов',
+                   'ГОСТ Р 7.0.97-2025, приложение А — образцы бланков'] } ] },
         { t: 'spacer' },
         { t: 'block', cls: 'b-al-center b-caps b-strong', items: [
           { t: 'slot', id: 'd1-kind', answer: 'r09', ph: 'реквизит',
             hint: 'Реквизит 09 — наименование вида документа',
-            explain: '<b>09 — наименование вида документа.</b> В приказе печатается прописными буквами: ПРИКАЗ.' } ] },
+            explain: '<b>09 — наименование вида документа.</b> Указывается на всех документах, ' +
+              'кроме деловых писем, и должно соответствовать видам документов, предусмотренным ' +
+              'уставом и компетенцией организации. В распорядительных документах печатается ' +
+              'прописными буквами и располагается по центру под наименованием организации: ' +
+              'ПРИКАЗ, РАСПОРЯЖЕНИЕ, ПОСТАНОВЛЕНИЕ.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.9 — наименование вида документа',
+                   'ГОСТ Р 7.0.97-2025, приложение Б — образцы оформления документов'] } ] },
         { t: 'spacer' },
         { t: 'row', cls: 'b-row--split', items: [
           { t: 'block', cls: 'b-al-left', items: [
             { t: 'slot', id: 'd1-date', answer: 'r10', ph: 'реквизит',
               hint: 'Реквизит 10 — дата документа',
-              explain: '<b>10 — дата документа.</b> Дата подписания. Цифровой способ: 14.01.2026.' } ] },
+              explain: '<b>10 — дата документа.</b> Датой приказа является дата его подписания, ' +
+                'а не дата составления проекта. Оформляется цифровым способом — 14.01.2026 — ' +
+                'или словесно-цифровым — 14 января 2026 г. При цифровом способе день месяца и месяц ' +
+                'пишут двумя арабскими цифрами, год — четырьмя, элементы разделяют точкой. ' +
+                'Дату проставляют после подписания, от руки или средствами системы электронного документооборота.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.10 — дата документа',
+                     'ГОСТ Р 7.0.97-2025, раздел 3 — общие требования к созданию документов'] } ] },
           { t: 'block', cls: 'b-al-right', items: [
             { t: 'slot', id: 'd1-num', answer: 'r11', ph: 'реквизит',
               hint: 'Реквизит 11 — регистрационный номер',
-              explain: '<b>11 — регистрационный номер документа.</b> Порядковый номер, при необходимости с индексом дела.' } ] } ] },
+              explain: '<b>11 — регистрационный номер документа.</b> Присваивается при регистрации, ' +
+                'то есть уже после подписания. Состоит из порядкового номера, который в пределах ' +
+                'организации может дополняться индексом дела по номенклатуре, кодом подразделения ' +
+                'или буквенным кодом вида документа: № 5-ОД — приказ по основной деятельности, ' +
+                '№ 5-ЛС — по личному составу. Размещается на одной строке с датой.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.11 — регистрационный номер документа',
+                     'Правила делопроизводства, утв. приказом Росархива от 22.05.2019 № 71 — регистрация документов'] } ] } ] },
         { t: 'block', cls: 'b-al-center', items: [
           { t: 'slot', id: 'd1-place', answer: 'r13', ph: 'реквизит',
             hint: 'Реквизит 13 — место составления (издания) документа',
-            explain: '<b>13 — место составления (издания) документа.</b> Населённый пункт, где издан документ.' } ] },
+            explain: '<b>13 — место составления (издания) документа.</b> Указывается во всех документах, ' +
+              'кроме деловых писем и внутренних документов организации. Не проставляется, если ' +
+              'наименование организации уже включает название населённого пункта. Записывается ' +
+              'с учётом принятого административно-территориального деления и общепринятых сокращений: ' +
+              'г. Екатеринбург, пос. Пионерский, с. Мамонтово.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.13 — место составления (издания) документа'] } ] },
         { t: 'spacer' },
         { t: 'block', cls: 'b-al-left', items: [
           { t: 'slot', id: 'd1-head', answer: 'r17', ph: 'реквизит',
             hint: 'Реквизит 17 — заголовок к тексту',
-            explain: '<b>17 — заголовок к тексту.</b> Краткое содержание, отвечает на вопрос «о чём?»: «Об утверждении…».' } ] },
+            explain: '<b>17 — заголовок к тексту.</b> Краткое содержание документа, грамматически ' +
+              'согласованное с наименованием вида: у приказа отвечает на вопрос «о чём?» — ' +
+              '«Об утверждении графика отпусков». Размещается слева под реквизитами бланка, ' +
+              'печатается без кавычек и без точки в конце, выделение прописными буквами не применяется. ' +
+              'К документам небольшого объёма (до 4–5 строк текста) заголовок можно не составлять.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.17 — заголовок к тексту'] } ] },
         { t: 'spacer' },
         { t: 'text', text: 'В соответствии со статьёй 123 Трудового кодекса Российской Федерации и в целях соблюдения очерёдности предоставления ежегодных оплачиваемых отпусков', cls: 'b-al-left' },
         { t: 'text', text: 'ПРИКАЗЫВАЮ:', cls: 'b-al-left b-strong' },
@@ -1836,13 +2137,24 @@ window.TOPIC_DOCS = {
         { t: 'block', cls: 'b-al-left', items: [
           { t: 'slot', id: 'd1-sign', answer: 'r22', ph: 'реквизит',
             hint: 'Реквизит 22 — подпись',
-            explain: '<b>22 — подпись.</b> Наименование должности, личная подпись, инициалы и фамилия.' } ] },
+            explain: '<b>22 — подпись.</b> Включает наименование должности лица, подписавшего документ, ' +
+              'его собственноручную подпись и расшифровку подписи — инициалы и фамилию. ' +
+              'При оформлении на бланке должностного лица наименование должности не указывают. ' +
+              'Если документ подписывает лицо, исполняющее обязанности, указывают его фактическую должность; ' +
+              'ставить предлог «за» или косую черту перед наименованием должности не допускается.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.22 — подпись',
+                   'Методические рекомендации по применению ГОСТ Р 7.0.97 (ВНИИДАД) — оформление подписи'] } ] },
         { t: 'spacer' },
         { t: 'rule' },
         { t: 'block', cls: 'b-al-left b-small', items: [
           { t: 'slot', id: 'd1-exec', answer: 'r25', ph: 'реквизит',
             hint: 'Реквизит 25 — отметка об исполнителе',
-            explain: '<b>25 — отметка об исполнителе.</b> Фамилия, имя, отчество и телефон исполнителя; размещается на лицевой стороне последнего листа внизу.' } ] }
+            explain: '<b>25 — отметка об исполнителе.</b> Включает фамилию, имя и отчество исполнителя ' +
+              'и номер его служебного телефона; может дополняться наименованием должности, ' +
+              'структурного подразделения и адресом электронной почты. Размещается на лицевой стороне ' +
+              'последнего листа документа в левом нижнем углу, при необходимости — на обороте. ' +
+              'Печатается шрифтом на один-два размера меньше основного текста.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.25 — отметка об исполнителе'] } ] }
       ],
       cards: [
         { id: 'r05', tag: '05 · наименование организации', text: 'Общество с ограниченной ответственностью «Гранит»' },
@@ -1855,13 +2167,26 @@ window.TOPIC_DOCS = {
         { id: 'r25', tag: '25 · отметка об исполнителе', text: 'Смирнова Анна Игоревна, +7 (343) 200-15-40' },
 
         { id: 'rx-15', tag: '15 · адресат', text: 'Директору ООО «Вектор» А.П. Ильину',
-          note: 'Адресат оформляется в письмах и служебных записках. В приказе его нет: приказ адресован работникам организации.' },
+          note: 'Реквизит «адресат» оформляется в письмах, служебных записках и других документах, ' +
+                'направляемых конкретному получателю. Приказ адресата не имеет: он издаётся для внутреннего ' +
+                'применения и обязателен для работников организации, а до исполнителей доводится под роспись.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.15 — адресат'] },
         { id: 'rx-16', tag: '16 · гриф утверждения', text: 'УТВЕРЖДАЮ Генеральный директор ...',
-          note: 'Гриф утверждения ставят на документах, которые вводятся в действие другим документом или должностным лицом (акт, положение, инструкция). Приказ утверждения не требует — он сам распорядительный документ.' },
+          note: 'Гриф утверждения проставляют на документах, которые приобретают силу только после утверждения ' +
+                'должностным лицом или другим документом, — на актах, положениях, инструкциях, штатных расписаниях. ' +
+                'Приказ сам является распорядительным документом и вступает в силу с момента подписания, ' +
+                'поэтому в утверждении не нуждается.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.16 — гриф утверждения документа'] },
         { id: 'rx-28', tag: '28 · резолюция', text: 'Ивановой Т.С. Подготовить проект к 20.01.2026',
-          note: 'Резолюция наносится руководителем на поступивший документ и в бланк издаваемого приказа не входит.' },
+          note: 'Резолюция содержит указание руководителя по исполнению документа: исполнителя, поручение, ' +
+                'срок, подпись и дату. Её наносят на поступивший документ или оформляют на отдельном листе, ' +
+                'но в бланк издаваемого приказа она не входит — поручения приказа излагаются в его тексте.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.28 — резолюция'] },
         { id: 'rx-27', tag: '27 · отметка о поступлении', text: 'ООО «Гранит» вх. № 112 от 13.01.2026',
-          note: 'Отметка о поступлении проставляется на входящих документах при их регистрации.' }
+          note: 'Отметку о поступлении проставляет получатель на входящем документе при его регистрации: ' +
+                'она содержит дату поступления и входящий регистрационный номер. На собственном приказе ' +
+                'организации такой отметки быть не может.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.27 — отметка о поступлении документа'] }
       ]
     },
 
@@ -1871,52 +2196,88 @@ window.TOPIC_DOCS = {
     {
       id: 'docs-2',
       name: 'Служебное письмо',
-      desc: 'Бланк письма: 9 реквизитов',
+      desc: 'Бланк письма: 10 реквизитов',
       task: 'Заполни бланк служебного письма. Внимательно: часть реквизитов в письме не оформляется.',
       theory:
-        '<p>Письмо оформляется на <b>бланке письма</b>. Его отличия от бланка приказа:</p>' +
+        '<p>Письмо оформляется на <b>бланке письма</b> — отдельном виде бланка ' +
+        '(ГОСТ Р 7.0.97-2025, раздел 5, приложение А). Его отличия от бланка приказа:</p>' +
         '<ul>' +
-        '<li>есть <b>08</b> справочные данные об организации (адрес, телефон, e-mail, ОГРН, ИНН/КПП);</li>' +
-        '<li>есть <b>15</b> адресат — в правом верхнем углу;</li>' +
-        '<li>есть <b>12</b> ссылка на регистрационный номер и дату поступившего документа — заполняется только в письмах-ответах;</li>' +
-        '<li><b>нет</b> реквизита 09 (наименование вида документа) — слово «ПИСЬМО» не пишут;</li>' +
-        '<li><b>нет</b> реквизита 13 (место составления) — населённый пункт уже указан в справочных данных;</li>' +
-        '<li><b>19</b> отметка о приложении помещается после текста, перед подписью.</li>' +
-        '</ul>',
+        '<li>есть <b>08</b> справочные данные об организации: адрес, телефон, почта, ОГРН, ИНН/КПП (п. 4.8);</li>' +
+        '<li>есть <b>15</b> адресат — в правом верхнем углу (п. 4.15);</li>' +
+        '<li>есть <b>12</b> ссылка на регистрационный номер и дату поступившего документа — только в письмах-ответах (п. 4.12);</li>' +
+        '<li><b>нет</b> реквизита 09: слово «ПИСЬМО» не пишут (п. 4.9);</li>' +
+        '<li><b>нет</b> реквизита 13: населённый пункт уже указан в справочных данных (п. 4.13);</li>' +
+        '<li><b>19</b> отметка о приложении помещается после текста, перед подписью (п. 4.19).</li>' +
+        '</ul>' +
+        '<p><i>Номера пунктов даны по структуре стандарта: раздел 4 описывает реквизиты, ' +
+        'номер пункта совпадает с номером реквизита. Сверьте с действующей редакцией.</i></p>',
       boardType: 'doc',
       blocks: [
         { t: 'block', cls: 'b-al-left b-strong', items: [
           { t: 'slot', id: 'd2-org', answer: 'w05', ph: 'реквизит',
             hint: 'Реквизит 05 — наименование организации',
-            explain: '<b>05 — наименование организации — автора документа.</b> В бланке письма размещается в левом верхнем углу или по центру.' } ] },
+            explain: '<b>05 — наименование организации — автора документа.</b> Приводится полное наименование ' +
+              'по уставу; сокращённое — ниже полного, если закреплено учредительными документами. ' +
+              'В бланке письма размещается в левом верхнем углу (угловой бланк) либо по центру (продольный). ' +
+              'Именно этот реквизит вместе со справочными данными заменяет в письме наименование вида документа.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.5 — наименование организации — автора документа',
+                   'ГОСТ Р 7.0.97-2025, раздел 5 — бланки документов'] } ] },
         { t: 'block', cls: 'b-al-left b-small', items: [
           { t: 'slot', id: 'd2-ref', answer: 'w08', ph: 'реквизит',
             hint: 'Реквизит 08 — справочные данные об организации',
-            explain: '<b>08 — справочные данные об организации.</b> Почтовый адрес, телефон, электронная почта, ОГРН, ИНН/КПП. Оформляется только в бланке письма.' } ] },
+            explain: '<b>08 — справочные данные об организации.</b> Оформляется только в бланке письма. ' +
+              'Включает почтовый адрес организации, номер телефона, адрес электронной почты, ' +
+              'адрес сайта, а также коды и номера учётных данных: ОКПО, ОГРН, ИНН/КПП. ' +
+              'Поскольку почтовый адрес содержит населённый пункт, отдельный реквизит «место составления» ' +
+              'в письме не проставляется.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.8 — справочные данные об организации',
+                   'ГОСТ Р 7.0.97-2025, приложение А — образец бланка письма'] } ] },
         { t: 'rule' },
         { t: 'row', cls: 'b-row--split', items: [
           { t: 'block', cls: 'b-al-left', items: [
             { t: 'slot', id: 'd2-date', answer: 'w10', ph: 'реквизит',
               hint: 'Реквизит 10 — дата документа',
-              explain: '<b>10 — дата документа.</b> Дата подписания письма.' } ] },
+              explain: '<b>10 — дата документа.</b> Для письма это дата его подписания. ' +
+                'Оформляется цифровым способом — 20.01.2026 — или словесно-цифровым — 20 января 2026 г. ' +
+                'В письмах, адресованных зарубежным корреспондентам, допускается словесно-цифровой способ ' +
+                'с указанием года четырьмя цифрами. Проставляется после подписания.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.10 — дата документа'] } ] },
           { t: 'block', cls: 'b-al-left', items: [
             { t: 'slot', id: 'd2-num', answer: 'w11', ph: 'реквизит',
               hint: 'Реквизит 11 — регистрационный номер',
-              explain: '<b>11 — регистрационный номер документа.</b> Присваивается при регистрации исходящего письма.' } ] } ] },
+              explain: '<b>11 — регистрационный номер документа.</b> Присваивается исходящему письму ' +
+                'при регистрации. Для переписки номер обычно составной: индекс дела по номенклатуре ' +
+                'и порядковый номер — № 14-07/218. Размещается на одной строке с датой; ' +
+                'по этому номеру корреспондент ссылается на письмо в своём ответе.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.11 — регистрационный номер документа',
+                     'Правила делопроизводства, утв. приказом Росархива от 22.05.2019 № 71 — регистрация документов'] } ] } ] },
         { t: 'block', cls: 'b-al-left b-small', items: [
           { t: 'slot', id: 'd2-link', answer: 'w12', ph: 'реквизит',
             hint: 'Реквизит 12 — ссылка на номер и дату поступившего документа',
-            explain: '<b>12 — ссылка на регистрационный номер и дату поступившего документа.</b> Заполняется только в письме-ответе, по ней адресат находит свой запрос.' } ] },
+            explain: '<b>12 — ссылка на регистрационный номер и дату поступившего документа.</b> ' +
+              'Заполняется только в письме-ответе и содержит номер и дату инициативного письма: ' +
+              '«на № 3-15 от 12.01.2026». Именно по этому реквизиту адресат связывает ответ со своим запросом, ' +
+              'поэтому переносить сюда собственный номер организации нельзя.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.12 — ссылка на регистрационный номер и дату поступившего документа'] } ] },
         { t: 'spacer' },
         { t: 'block', cls: 'b-al-right', items: [
           { t: 'slot', id: 'd2-to', answer: 'w15', ph: 'реквизит',
             hint: 'Реквизит 15 — адресат',
-            explain: '<b>15 — адресат.</b> Правый верхний угол. Должность и Ф.И.О. — в дательном падеже, наименование организации — в именительном.' } ] },
+            explain: '<b>15 — адресат.</b> Размещается в правом верхнем углу или, при продольном бланке, ' +
+              'слева под реквизитами бланка. При адресовании должностному лицу наименование организации ' +
+              'входит в состав должности, а должность и фамилия ставятся в дательном падеже. ' +
+              'Инициалы указывают перед фамилией. Документ не должен содержать более четырёх адресатов; ' +
+              'при большем числе составляют список рассылки.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.15 — адресат'] } ] },
         { t: 'spacer' },
         { t: 'block', cls: 'b-al-left', items: [
           { t: 'slot', id: 'd2-head', answer: 'w17', ph: 'реквизит',
             hint: 'Реквизит 17 — заголовок к тексту',
-            explain: '<b>17 — заголовок к тексту.</b> В письме отвечает на вопрос «о чём?»: «О заключении договора…».' } ] },
+            explain: '<b>17 — заголовок к тексту.</b> В письме отвечает на вопрос «о чём?»: ' +
+              '«О направлении проекта договора». Размещается слева под реквизитами бланка, ' +
+              'печатается без кавычек и без точки в конце. К письмам объёмом до 4–5 строк ' +
+              'заголовок допускается не составлять.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.17 — заголовок к тексту'] } ] },
         { t: 'spacer' },
         { t: 'text', text: 'Уважаемый Алексей Петрович!', cls: 'b-al-left' },
         { t: 'text', text: 'Направляем Вам проект договора поставки оборудования на 2026 год. Просим рассмотреть проект и вернуть подписанный экземпляр в срок до 01.02.2026.', cls: 'b-al-left' },
@@ -1924,18 +2285,31 @@ window.TOPIC_DOCS = {
         { t: 'block', cls: 'b-al-left', items: [
           { t: 'slot', id: 'd2-app', answer: 'w19', ph: 'реквизит',
             hint: 'Реквизит 19 — отметка о приложении',
-            explain: '<b>19 — отметка о приложении.</b> Размещается после текста перед подписью: «Приложение: на 4 л. в 2 экз.».' } ] },
+            explain: '<b>19 — отметка о приложении.</b> Размещается после текста перед подписью. ' +
+              'Если приложение названо в тексте, указывают только количество листов и экземпляров: ' +
+              '«Приложение: на 4 л. в 2 экз.». Если не названо — приводят его наименование. ' +
+              'На самом приложении в правом верхнем углу первого листа делают отметку о том, ' +
+              'приложением к какому документу оно является.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.19 — отметка о приложении'] } ] },
         { t: 'spacer' },
         { t: 'block', cls: 'b-al-left', items: [
           { t: 'slot', id: 'd2-sign', answer: 'w22', ph: 'реквизит',
             hint: 'Реквизит 22 — подпись',
-            explain: '<b>22 — подпись.</b> Должность, личная подпись, инициалы и фамилия подписавшего.' } ] },
+            explain: '<b>22 — подпись.</b> Наименование должности, личная подпись и её расшифровка — ' +
+              'инициалы и фамилия. Письмо подписывает руководитель организации или иное уполномоченное лицо ' +
+              'в пределах предоставленных ему полномочий. При подписании несколькими лицами равных должностей ' +
+              'подписи располагают на одном уровне.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.22 — подпись'] } ] },
         { t: 'spacer' },
         { t: 'rule' },
         { t: 'block', cls: 'b-al-left b-small', items: [
           { t: 'slot', id: 'd2-exec', answer: 'w25', ph: 'реквизит',
             hint: 'Реквизит 25 — отметка об исполнителе',
-            explain: '<b>25 — отметка об исполнителе.</b> Ф.И.О. и телефон сотрудника, подготовившего письмо.' } ] }
+            explain: '<b>25 — отметка об исполнителе.</b> Фамилия, имя, отчество и служебный телефон ' +
+              'сотрудника, подготовившего письмо; может дополняться должностью, подразделением ' +
+              'и адресом электронной почты. Нужна адресату, чтобы обратиться напрямую к исполнителю. ' +
+              'Размещается в левом нижнем углу лицевой стороны последнего листа, шрифтом меньшего размера.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.25 — отметка об исполнителе'] } ] }
       ],
       cards: [
         { id: 'w05', tag: '05 · наименование организации', text: 'Общество с ограниченной ответственностью «Гранит»' },
@@ -1950,13 +2324,28 @@ window.TOPIC_DOCS = {
         { id: 'w25', tag: '25 · отметка об исполнителе', text: 'Смирнова Анна Игоревна, +7 (343) 200-15-42' },
 
         { id: 'wx-09', tag: '09 · вид документа', text: 'ПИСЬМО',
-          note: 'В бланке письма реквизит «наименование вида документа» не оформляется — слово «ПИСЬМО» не пишут. Вид документа понятен из бланка.' },
+          note: 'Наименование вида документа указывается на всех документах, кроме деловых писем. ' +
+                'В бланке письма слово «ПИСЬМО» не пишут: вид документа однозначно определяется самим бланком — ' +
+                'наличием справочных данных об организации и адресата.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.9 — наименование вида документа',
+                 'ГОСТ Р 7.0.97-2025, приложение А — образец бланка письма'] },
         { id: 'wx-13', tag: '13 · место составления', text: 'г. Екатеринбург',
-          note: 'Место составления в письме не указывают: населённый пункт уже входит в справочные данные об организации (реквизит 08).' },
+          note: 'Место составления не указывают в деловых письмах: населённый пункт уже входит ' +
+                'в почтовый адрес организации, который приведён в справочных данных (реквизит 08). ' +
+                'Дублировать его отдельной строкой — ошибка оформления.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.13 — место составления (издания) документа',
+                 'ГОСТ Р 7.0.97-2025, п. 4.8 — справочные данные об организации'] },
         { id: 'wx-16', tag: '16 · гриф утверждения', text: 'УТВЕРЖДАЮ Генеральный директор ...',
-          note: 'Гриф утверждения на письмах не проставляется — письмо вступает в силу с момента подписания.' },
+          note: 'Гриф утверждения ставят на документах, которые вступают в силу после утверждения ' +
+                'должностным лицом или другим документом: на актах, положениях, инструкциях, планах. ' +
+                'Письмо вступает в силу с момента подписания и утверждения не требует.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.16 — гриф утверждения документа'] },
         { id: 'wx-24', tag: '24 · печать', text: '(оттиск печати организации)',
-          note: 'Печатью заверяют документы, удостоверяющие права, факты и расход средств (доверенности, акты, справки). На обычном служебном письме печать не ставится.' }
+          note: 'Печать заверяет подлинность подписи должностного лица на документах, удостоверяющих ' +
+                'права, фиксирующих факты, связанные с финансовыми средствами, а также в иных случаях, ' +
+                'предусмотренных законодательством: на доверенностях, актах, справках, договорах. ' +
+                'На обычном служебном письме печать не проставляется.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.24 — печать'] }
       ]
     },
 
@@ -1969,50 +2358,83 @@ window.TOPIC_DOCS = {
       desc: 'Информационно-справочный документ: 9 реквизитов',
       task: 'Заполни бланк акта. Обрати внимание на верхний правый угол.',
       theory:
-        '<p>Акт составляется комиссией и, как правило, <b>утверждается</b> руководителем.</p>' +
+        '<p>Акт составляется комиссией и, как правило, <b>утверждается</b> руководителем ' +
+        '(ГОСТ Р 7.0.97-2025, приложение Б).</p>' +
         '<ul>' +
-        '<li><b>16</b> гриф утверждения документа — правый верхний угол первого листа: слово УТВЕРЖДАЮ без кавычек и двоеточия, должность, подпись, инициалы, фамилия, дата;</li>' +
-        '<li><b>09</b> наименование вида документа — АКТ;</li>' +
-        '<li><b>13</b> место составления обязательно, как и в приказе;</li>' +
-        '<li><b>22</b> подпись — подписывают все члены комиссии, первым председатель;</li>' +
-        '<li><b>24</b> печать заверяет подпись должностного лица и не должна её перекрывать;</li>' +
-        '<li><b>20</b> гриф согласования — если документ согласуется со сторонней организацией.</li>' +
-        '</ul>',
+        '<li><b>16</b> гриф утверждения — правый верхний угол первого листа: слово УТВЕРЖДАЮ ' +
+        'без кавычек и двоеточия, должность, подпись, инициалы, фамилия, дата (п. 4.16);</li>' +
+        '<li><b>09</b> наименование вида документа — АКТ (п. 4.9);</li>' +
+        '<li><b>13</b> место составления обязательно, как и в приказе (п. 4.13);</li>' +
+        '<li><b>22</b> подпись — подписывают все члены комиссии, первым председатель (п. 4.22);</li>' +
+        '<li><b>24</b> печать заверяет подпись должностного лица и не перекрывает её (п. 4.24).</li>' +
+        '</ul>' +
+        '<p><i>Номера пунктов даны по структуре стандарта: раздел 4 описывает реквизиты, ' +
+        'номер пункта совпадает с номером реквизита. Сверьте с действующей редакцией.</i></p>',
       boardType: 'doc',
       blocks: [
         { t: 'row', cls: 'b-row--split', items: [
           { t: 'block', cls: 'b-al-left b-strong', items: [
             { t: 'slot', id: 'd3-org', answer: 'a05', ph: 'реквизит',
               hint: 'Реквизит 05 — наименование организации',
-              explain: '<b>05 — наименование организации — автора документа.</b>' } ] },
+              explain: '<b>05 — наименование организации — автора документа.</b> Полное наименование ' +
+                'в соответствии с уставом, в левом верхнем углу или по центру — в зависимости от вида бланка. ' +
+                'Акт составляется на общем бланке организации или на чистом листе, но наименование автора ' +
+                'обязательно: именно оно определяет, чей это документ.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.5 — наименование организации — автора документа',
+                     'ГОСТ Р 7.0.97-2025, раздел 5 — бланки документов'] } ] },
           { t: 'block', cls: 'b-al-right', items: [
             { t: 'slot', id: 'd3-approve', answer: 'a16', ph: 'реквизит',
               hint: 'Реквизит 16 — гриф утверждения документа',
-              explain: '<b>16 — гриф утверждения документа.</b> Правый верхний угол: УТВЕРЖДАЮ, должность, подпись, инициалы и фамилия, дата.' } ] } ] },
+              explain: '<b>16 — гриф утверждения документа.</b> Располагается в правом верхнем углу ' +
+                'первого листа. При утверждении должностным лицом состоит из слова УТВЕРЖДАЮ ' +
+                '(без кавычек и без двоеточия), наименования должности, личной подписи, инициалов, ' +
+                'фамилии и даты утверждения. При утверждении другим документом — слово УТВЕРЖДЕН ' +
+                '(УТВЕРЖДЕНА, УТВЕРЖДЕНЫ) и ссылка на этот документ с его датой и номером.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.16 — гриф утверждения документа',
+                     'ГОСТ Р 7.0.97-2025, приложение Б — образцы оформления документов'] } ] } ] },
         { t: 'spacer' },
         { t: 'block', cls: 'b-al-center b-caps b-strong', items: [
           { t: 'slot', id: 'd3-kind', answer: 'a09', ph: 'реквизит',
             hint: 'Реквизит 09 — наименование вида документа',
-            explain: '<b>09 — наименование вида документа.</b> Печатается прописными буквами: АКТ.' } ] },
+            explain: '<b>09 — наименование вида документа.</b> Печатается прописными буквами ' +
+              'и располагается по центру: АКТ. Вид документа определяет и структуру текста: ' +
+              'у акта это основание для составления, состав комиссии, установленные факты ' +
+              'и количество составленных экземпляров с указанием их адресатов.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.9 — наименование вида документа'] } ] },
         { t: 'spacer' },
         { t: 'row', cls: 'b-row--split', items: [
           { t: 'block', cls: 'b-al-left', items: [
             { t: 'slot', id: 'd3-date', answer: 'a10', ph: 'реквизит',
               hint: 'Реквизит 10 — дата документа',
-              explain: '<b>10 — дата документа.</b> Для акта это дата события, а не дата подписания.' } ] },
+              explain: '<b>10 — дата документа.</b> Для акта датой является дата события — ' +
+                'дня, когда комиссия установила факты, а не дата подписания или утверждения. ' +
+                'Если работа комиссии длилась несколько дней, указывают дату её завершения. ' +
+                'Дата утверждения приводится отдельно, в составе грифа утверждения.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.10 — дата документа',
+                     'ГОСТ Р 7.0.97-2025, п. 4.16 — гриф утверждения документа'] } ] },
           { t: 'block', cls: 'b-al-right', items: [
             { t: 'slot', id: 'd3-num', answer: 'a11', ph: 'реквизит',
               hint: 'Реквизит 11 — регистрационный номер',
-              explain: '<b>11 — регистрационный номер документа.</b>' } ] } ] },
+              explain: '<b>11 — регистрационный номер документа.</b> Порядковый номер, присваиваемый ' +
+                'при регистрации акта в пределах организации и вида документа; может дополняться ' +
+                'индексом дела по номенклатуре. Размещается на одной строке с датой.',
+              refs: ['ГОСТ Р 7.0.97-2025, п. 4.11 — регистрационный номер документа'] } ] } ] },
         { t: 'block', cls: 'b-al-center', items: [
           { t: 'slot', id: 'd3-place', answer: 'a13', ph: 'реквизит',
             hint: 'Реквизит 13 — место составления (издания) документа',
-            explain: '<b>13 — место составления (издания) документа.</b> В акте оформляется обязательно.' } ] },
+            explain: '<b>13 — место составления (издания) документа.</b> В акте оформляется обязательно: ' +
+              'документ фиксирует факты, и место их установления имеет доказательное значение. ' +
+              'Указывается с учётом административно-территориального деления и общепринятых сокращений: ' +
+              'г. Екатеринбург.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.13 — место составления (издания) документа'] } ] },
         { t: 'spacer' },
         { t: 'block', cls: 'b-al-left', items: [
           { t: 'slot', id: 'd3-head', answer: 'a17', ph: 'реквизит',
             hint: 'Реквизит 17 — заголовок к тексту',
-            explain: '<b>17 — заголовок к тексту.</b> У акта отвечает на вопрос «чего?»: «Акт приёма-передачи…».' } ] },
+            explain: '<b>17 — заголовок к тексту.</b> Согласуется с наименованием вида документа: ' +
+              'у акта отвечает на вопрос «чего?» или «о чём?» — «Об инвентаризации складского оборудования», ' +
+              '«Приёма-передачи дел». Размещается слева под реквизитами бланка, без кавычек и точки в конце.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.17 — заголовок к тексту'] } ] },
         { t: 'spacer' },
         { t: 'text', text: 'Основание: приказ ООО «Гранит» от 10.02.2026 № 12-ОД «О проведении инвентаризации».', cls: 'b-al-left' },
         { t: 'text', text: 'Составлен комиссией в составе: председатель — начальник АХО В.Н. Гусев; члены комиссии — бухгалтер Л.И. Орлова, кладовщик Д.А. Шевчук.', cls: 'b-al-left' },
@@ -2022,12 +2444,21 @@ window.TOPIC_DOCS = {
         { t: 'block', cls: 'b-al-left', items: [
           { t: 'slot', id: 'd3-sign', answer: 'a22', ph: 'реквизит',
             hint: 'Реквизит 22 — подпись',
-            explain: '<b>22 — подпись.</b> В акте подписи членов комиссии; первым — председатель.' } ] },
+            explain: '<b>22 — подпись.</b> В акте подписи ставят все члены комиссии: первым — председатель ' +
+              'с указанием его статуса в комиссии, а не штатной должности, затем члены комиссии ' +
+              'в алфавитном порядке или по составу, указанному в распорядительном документе. ' +
+              'Член комиссии, не согласный с содержанием акта, подписывает его с отметкой об особом мнении.',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.22 — подпись',
+                   'Методические рекомендации по применению ГОСТ Р 7.0.97 (ВНИИДАД) — оформление подписи'] } ] },
         { t: 'spacer' },
         { t: 'block', cls: 'b-al-left', items: [
           { t: 'slot', id: 'd3-seal', answer: 'a24', ph: 'реквизит',
             hint: 'Реквизит 24 — печать',
-            explain: '<b>24 — печать.</b> Заверяет подлинность подписи должностного лица; оттиск не должен перекрывать саму подпись.' } ] }
+            explain: '<b>24 — печать.</b> Заверяет подлинность подписи должностного лица на документах, ' +
+              'удостоверяющих права, фиксирующих факты, связанные с финансовыми средствами, ' +
+              'и в иных случаях, установленных законодательством. Оттиск проставляют, не захватывая ' +
+              'личную подпись, либо в специально отведённом месте с отметкой «МП».',
+            refs: ['ГОСТ Р 7.0.97-2025, п. 4.24 — печать'] } ] }
       ],
       cards: [
         { id: 'a05', tag: '05 · наименование организации', text: 'Общество с ограниченной ответственностью «Гранит»' },
@@ -2041,13 +2472,25 @@ window.TOPIC_DOCS = {
         { id: 'a24', tag: '24 · печать', text: '(оттиск печати организации)' },
 
         { id: 'ax-15', tag: '15 · адресат', text: 'Генеральному директору ООО «Вектор» А.П. Ильину',
-          note: 'Акт не адресуется конкретному лицу — он фиксирует факт. Реквизит «адресат» используется в письмах и служебных записках.' },
+          note: 'Акт не адресуется конкретному лицу: он фиксирует установленные факты, а его получатели ' +
+                'определяются в тексте — указанием количества экземпляров и того, куда каждый направлен. ' +
+                'Реквизит «адресат» используется в письмах и служебных записках.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.15 — адресат'] },
         { id: 'ax-12', tag: '12 · ссылка на поступивший документ', text: 'на № 3-15 от 12.01.2026',
-          note: 'Ссылка на входящий номер оформляется только в письмах-ответах.' },
+          note: 'Ссылка на регистрационный номер и дату поступившего документа оформляется только ' +
+                'в письмах-ответах. Основание для составления акта указывают иначе — в первой строке текста, ' +
+                'со ссылкой на распорядительный документ: «Основание: приказ от 10.02.2026 № 12-ОД».',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.12 — ссылка на регистрационный номер и дату поступившего документа'] },
         { id: 'ax-27', tag: '27 · отметка о поступлении', text: 'ООО «Гранит» вх. № 112 от 13.01.2026',
-          note: 'Отметку о поступлении проставляет получатель на входящем документе; в собственном акте её нет.' },
+          note: 'Отметку о поступлении проставляет получатель на входящем документе при регистрации: ' +
+                'она содержит дату поступления и входящий номер. В акте, который организация составляет сама, ' +
+                'такой отметки быть не может.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.27 — отметка о поступлении документа'] },
         { id: 'ax-29', tag: '29 · отметка о контроле', text: 'Контроль',
-          note: 'Отметка о контроле ставится на документах, поставленных на контроль исполнения, и наносится штампом или словом «Контроль».' }
+          note: 'Отметка о контроле проставляется на документах, поставленных на контроль исполнения, ' +
+                'и оформляется штампом или словом «Контроль» в верхнем поле документа. ' +
+                'Она относится к работе с поступившим документом, а не к оформлению составляемого акта.',
+          refs: ['ГОСТ Р 7.0.97-2025, п. 4.29 — отметка о контроле'] }
       ]
     }
 
@@ -2804,12 +3247,48 @@ window.Game = (function () {
     body.appendChild(what);
     body.appendChild(why);
     body.appendChild(need);
+
+    var refs = mergeRefs(st.def.refs, cardDef.note ? cardDef.refs : null);
+    if (refs.length) body.appendChild(refsBlock(refs));
+
     item.appendChild(no);
     item.appendChild(body);
 
     el.mistakesList.insertBefore(item, el.mistakesList.firstChild);
     el.mistakesCount.textContent = state.logCount;
     el.mistakes.hidden = false;
+  }
+
+  /** Ссылки на пункты стандартов: сначала по полю, затем по самой карточке */
+  function mergeRefs(slotRefs, cardRefs) {
+    var out = [], seen = {};
+    [slotRefs || [], cardRefs || []].forEach(function (list) {
+      list.forEach(function (ref) {
+        if (!seen[ref]) { seen[ref] = true; out.push(ref); }
+      });
+    });
+    return out;
+  }
+
+  function refsBlock(refs) {
+    var wrap = document.createElement('div');
+    wrap.className = 'refs';
+
+    var label = document.createElement('span');
+    label.className = 'refs__label';
+    label.textContent = 'Основание';
+    wrap.appendChild(label);
+
+    var list = document.createElement('ul');
+    list.className = 'refs__list';
+    refs.forEach(function (ref) {
+      var li = document.createElement('li');
+      li.className = 'refs__item';
+      li.textContent = ref;
+      list.appendChild(li);
+    });
+    wrap.appendChild(list);
+    return wrap;
   }
 
   function chip(text) {
@@ -2861,7 +3340,8 @@ window.Game = (function () {
         review.push({
           name: st.def.hint || st.def.ph,
           attempts: st.attempts,
-          explain: st.def.explain
+          explain: st.def.explain,
+          refs: st.def.refs || []
         });
       }
     });
@@ -2913,7 +3393,7 @@ window.Game = (function () {
 
   /* ---------------------------------------------------------------- */
 
-  return { init: init, start: start, gradeOf: gradeOf };
+  return { init: init, start: start, gradeOf: gradeOf, refsBlock: refsBlock };
 })();
 
   </script>
@@ -3263,6 +3743,7 @@ window.Game = (function () {
           '<span class="review__name">' + escapeHtml(item.name) +
           ' — попыток: ' + item.attempts + '</span>' +
           '<span class="review__note">' + item.explain + '</span>';
+        if (item.refs && item.refs.length) li.appendChild(Game.refsBlock(item.refs));
         list.appendChild(li);
       });
       ui.result.appendChild(list);
@@ -3285,6 +3766,7 @@ window.Game = (function () {
         li.innerHTML =
           '<span class="review__name">' + escapeHtml(t.tag || t.text) + '</span>' +
           '<span class="review__note">' + escapeHtml(t.note) + '</span>';
+        if (t.refs && t.refs.length) li.appendChild(Game.refsBlock(t.refs));
         traps.appendChild(li);
       });
       ui.result.appendChild(traps);

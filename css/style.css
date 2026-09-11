@@ -1082,7 +1082,7 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   border: 1px solid var(--bad-line);
   font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
 }
-.mis__body { min-width: 0; }
+.mis__body { min-width: 0; max-width: 78ch; }   /* длинные пояснения не должны тянуться во всю ширину */
 
 .mis__what { margin: 0 0 6px; font-size: 14px; line-height: 1.45; }
 .mis__card {
@@ -1120,3 +1120,35 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   .mis { padding: 13px 16px; gap: 11px; }
   .board--doc::before { left: 14px; }
 }
+
+/* ============================ БЛОК «ОСНОВАНИЕ» =========================== */
+
+.refs {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line-strong);
+}
+.refs__label {
+  display: inline-block;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent-deep);
+  margin-bottom: 6px;
+}
+.refs__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.refs__item {
+  position: relative;
+  padding-left: 18px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+.refs__item::before {
+  content: "§";
+  position: absolute; left: 0; top: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* в разборе ошибок блок чуть плотнее */
+.mis .refs { margin-top: 9px; }

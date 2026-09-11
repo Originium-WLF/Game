@@ -339,12 +339,48 @@ window.Game = (function () {
     body.appendChild(what);
     body.appendChild(why);
     body.appendChild(need);
+
+    var refs = mergeRefs(st.def.refs, cardDef.note ? cardDef.refs : null);
+    if (refs.length) body.appendChild(refsBlock(refs));
+
     item.appendChild(no);
     item.appendChild(body);
 
     el.mistakesList.insertBefore(item, el.mistakesList.firstChild);
     el.mistakesCount.textContent = state.logCount;
     el.mistakes.hidden = false;
+  }
+
+  /** Ссылки на пункты стандартов: сначала по полю, затем по самой карточке */
+  function mergeRefs(slotRefs, cardRefs) {
+    var out = [], seen = {};
+    [slotRefs || [], cardRefs || []].forEach(function (list) {
+      list.forEach(function (ref) {
+        if (!seen[ref]) { seen[ref] = true; out.push(ref); }
+      });
+    });
+    return out;
+  }
+
+  function refsBlock(refs) {
+    var wrap = document.createElement('div');
+    wrap.className = 'refs';
+
+    var label = document.createElement('span');
+    label.className = 'refs__label';
+    label.textContent = 'Основание';
+    wrap.appendChild(label);
+
+    var list = document.createElement('ul');
+    list.className = 'refs__list';
+    refs.forEach(function (ref) {
+      var li = document.createElement('li');
+      li.className = 'refs__item';
+      li.textContent = ref;
+      list.appendChild(li);
+    });
+    wrap.appendChild(list);
+    return wrap;
   }
 
   function chip(text) {
@@ -396,7 +432,8 @@ window.Game = (function () {
         review.push({
           name: st.def.hint || st.def.ph,
           attempts: st.attempts,
-          explain: st.def.explain
+          explain: st.def.explain,
+          refs: st.def.refs || []
         });
       }
     });
@@ -448,5 +485,5 @@ window.Game = (function () {
 
   /* ---------------------------------------------------------------- */
 
-  return { init: init, start: start, gradeOf: gradeOf };
+  return { init: init, start: start, gradeOf: gradeOf, refsBlock: refsBlock };
 })();

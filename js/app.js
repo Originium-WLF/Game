@@ -342,6 +342,7 @@
           '<span class="review__name">' + escapeHtml(item.name) +
           ' — попыток: ' + item.attempts + '</span>' +
           '<span class="review__note">' + item.explain + '</span>';
+        if (item.refs && item.refs.length) li.appendChild(Game.refsBlock(item.refs));
         list.appendChild(li);
       });
       ui.result.appendChild(list);
@@ -364,6 +365,7 @@
         li.innerHTML =
           '<span class="review__name">' + escapeHtml(t.tag || t.text) + '</span>' +
           '<span class="review__note">' + escapeHtml(t.note) + '</span>';
+        if (t.refs && t.refs.length) li.appendChild(Game.refsBlock(t.refs));
         traps.appendChild(li);
       });
       ui.result.appendChild(traps);
