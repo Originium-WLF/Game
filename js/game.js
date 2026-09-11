@@ -38,8 +38,12 @@ window.Game = (function () {
       total: 0,
       mistakes: 0,
       unusedWrong: {},        // id лишних карточек, которые пытались поставить
+      logged: {},             // уже разобранные пары «карточка + поле»
+      logCount: 0,
       startedAt: Date.now()
     };
+
+    resetMistakes();
 
     el.hudLevel.textContent = level.name;
     el.hudTask.textContent = level.task;
@@ -237,7 +241,8 @@ window.Game = (function () {
     slot.appendChild(mark('✕'));
 
     card.classList.add('is-flying');
-    toast('Не подходит — попробуй другую карточку', 'bad');
+    logMistake(card._def, st);
+    toast('Не подходит — разбор внизу страницы', 'bad');
     updateHud();
 
     window.setTimeout(function () {
@@ -273,6 +278,99 @@ window.Game = (function () {
       empty.textContent = 'Все карточки разложены.';
       el.bank.appendChild(empty);
     }
+  }
+
+  /* --------------------------- разбор ошибок ----------------------- */
+
+  function resetMistakes() {
+    el.mistakes.hidden = true;
+    el.mistakesList.innerHTML = '';
+    el.mistakesCount.textContent = '0';
+  }
+
+  /**
+   * Добавляет в панель внизу разбор одной ошибки: что поставили,
+   * куда, почему не подходит и что сюда нужно на самом деле.
+   */
+  function logMistake(cardDef, st) {
+    var key = cardDef.id + '>' + st.def.id;
+
+    /* повтор той же пары не плодим — подсвечиваем уже записанный разбор */
+    if (state.logged[key]) {
+      var old = el.mistakesList.querySelector('[data-key="' + key + '"]');
+      if (old) {
+        old.classList.remove('is-repeat');
+        void old.offsetWidth;                    // перезапуск анимации
+        old.classList.add('is-repeat');
+      }
+      return;
+    }
+    state.logged[key] = true;
+    state.logCount++;
+
+    var item = document.createElement('li');
+    item.className = 'mis';
+    item.dataset.key = key;
+
+    var no = document.createElement('span');
+    no.className = 'mis__no';
+    no.textContent = state.logCount;
+
+    var body = document.createElement('div');
+    body.className = 'mis__body';
+
+    var what = document.createElement('p');
+    what.className = 'mis__what';
+    what.appendChild(chip(cardDef.tag || cardDef.text));
+    what.appendChild(document.createTextNode(' — не подходит в поле '));
+    var where = document.createElement('span');
+    where.className = 'mis__slot';
+    where.textContent = '«' + (st.def.hint || st.def.ph) + '»';
+    what.appendChild(where);
+
+    var why = document.createElement('p');
+    why.className = 'mis__why';
+    why.textContent = reason(cardDef);
+
+    var need = document.createElement('p');
+    need.className = 'mis__need';
+    need.innerHTML = st.def.explain;
+
+    body.appendChild(what);
+    body.appendChild(why);
+    body.appendChild(need);
+    item.appendChild(no);
+    item.appendChild(body);
+
+    el.mistakesList.insertBefore(item, el.mistakesList.firstChild);
+    el.mistakesCount.textContent = state.logCount;
+    el.mistakes.hidden = false;
+  }
+
+  function chip(text) {
+    var span = document.createElement('span');
+    span.className = 'mis__card';
+    span.textContent = text;
+    return span;
+  }
+
+  /** Почему карточка не подходит: либо она лишняя, либо её место в другом поле */
+  function reason(cardDef) {
+    if (cardDef.note) return cardDef.note;
+
+    var home = homeSlot(cardDef.id);
+    if (home) return 'Эта карточка нужна в другом месте — в поле «' + home + '».';
+    return 'Эта карточка относится к другому полю.';
+  }
+
+  /** Подсказка того поля, которому карточка принадлежит на самом деле */
+  function homeSlot(cardId) {
+    var ids = Object.keys(state.slots);
+    for (var i = 0; i < ids.length; i++) {
+      var st = state.slots[ids[i]];
+      if (st.answer === cardId) return st.def.hint || st.def.ph;
+    }
+    return null;
   }
 
   /* ------------------------------ HUD ------------------------------ */

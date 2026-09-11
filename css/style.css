@@ -64,6 +64,12 @@
   --aurora-1: rgba(80, 68, 212, .16);
   --aurora-2: rgba(226, 98, 47, .10);
 
+  /* разлиновка фона — отсылка к бланочной бумаге */
+  --grid:        rgba(80, 68, 212, .055);
+  --grid-strong: rgba(80, 68, 212, .075);
+  --stamp:       rgba(80, 68, 212, .16);
+  --margin-rule: rgba(195, 55, 43, .16);
+
   /* радиусы */
   --r-sm: 9px;
   --r-md: 14px;
@@ -127,6 +133,11 @@
 
   --aurora-1: rgba(141, 127, 255, .20);
   --aurora-2: rgba(226, 98, 47, .12);
+
+  --grid:        rgba(141, 127, 255, .065);
+  --grid-strong: rgba(141, 127, 255, .09);
+  --stamp:       rgba(141, 127, 255, .2);
+  --margin-rule: rgba(255, 114, 100, .18);
 }
 
 /* ============================== ОСНОВА ================================== */
@@ -146,7 +157,15 @@ body {
   font-size: 15px;
   line-height: 1.5;
   color: var(--ink);
-  background: var(--bg);
+  /* мелкая клетка плюс крупная — бумага для бланков */
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+    linear-gradient(var(--grid-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-strong) 1px, transparent 1px);
+  background-size: 28px 28px, 28px 28px, 140px 140px, 140px 140px;
+  background-attachment: fixed;
   display: flex;
   flex-direction: column;
   padding-bottom: 10px;                 /* место под RGB-подсветку */
@@ -820,7 +839,7 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 /* =============================== ТОСТ =================================== */
 
 .toast {
-  position: fixed; left: 50%; bottom: 34px; transform: translate(-50%, 20px);
+  position: fixed; left: 50%; top: 76px; transform: translate(-50%, -20px);
   background: var(--ink); color: var(--bg);
   padding: 12px 22px; border-radius: 999px;
   font-weight: 600; font-size: 14px; box-shadow: var(--shadow-lg);
@@ -927,3 +946,177 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 .board--code .slot__content { white-space: normal; }
 .board--doc .slot { overflow-wrap: anywhere; }
 .card { overflow-wrap: anywhere; }
+
+/* ==========================================================================
+   ДОПОЛНЕНИЯ ОФОРМЛЕНИЯ
+   ========================================================================== */
+
+/* ----------------------- печать на приветствии -------------------------- */
+
+.stamp {
+  position: absolute;
+  top: -34px; right: -38px;
+  width: 210px; height: 210px;
+  transform: rotate(-13deg);
+  color: var(--stamp);
+  pointer-events: none;
+}
+.stamp__edge { fill: none; stroke: currentColor; stroke-width: 3; }
+.stamp__edge--thin { stroke-width: 1.2; }
+.stamp__ring {
+  fill: currentColor;
+  font-family: var(--ui);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .09em;
+}
+.stamp__center {
+  fill: currentColor;
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 700;
+  text-anchor: middle;
+  letter-spacing: .04em;
+}
+
+.welcome { overflow: hidden; }
+
+/* ------------------- крупный знак на карточке темы ---------------------- */
+
+.topic::after {
+  content: attr(data-glyph);
+  position: absolute;
+  right: -8px; bottom: -46px;
+  font-family: var(--mono);
+  font-size: 150px; font-weight: 500; line-height: 1;
+  color: var(--topic-color);
+  opacity: .08;
+  pointer-events: none;
+  user-select: none;
+  transition: transform .4s cubic-bezier(.2,.7,.3,1), opacity .3s;
+}
+.topic:hover::after { transform: translate(-6px, -8px) rotate(-6deg); opacity: .13; }
+.topic > * { position: relative; z-index: 1; }
+
+/* --------------------- отметка на пройденном уровне --------------------- */
+
+.level { position: relative; overflow: hidden; }
+
+.passed-stamp {
+  position: absolute;
+  right: 14px; bottom: 12px;
+  transform: rotate(-7deg);
+  border: 2px solid var(--good);
+  color: var(--good);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase;
+  opacity: .55;
+  pointer-events: none;
+}
+
+/* ---------------- поле для подшивки на бланке документа ----------------- */
+
+.board--doc { position: relative; }
+.board--doc::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 34px;
+  width: 1px;
+  background: var(--margin-rule);
+  pointer-events: none;
+}
+
+/* ------------------- выход карточек с задержкой ------------------------- */
+
+.topic, .level { animation: rise .42s cubic-bezier(.2,.7,.3,1) both; }
+
+/* ========================== РАЗБОР ОШИБОК ================================ */
+
+.mistakes {
+  margin-top: 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--bad);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.mistakes__head {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.mistakes__title {
+  font-family: var(--display); font-weight: 600; font-size: 16px;
+  letter-spacing: -.02em;
+}
+.mistakes__count {
+  min-width: 26px; height: 26px; padding: 0 8px;
+  display: grid; place-items: center;
+  border-radius: 999px;
+  background: var(--bad); color: #fff;
+  font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.mistakes__hint { font-size: 13px; color: var(--ink-faint); }
+
+.mistakes__list { list-style: none; margin: 0; padding: 0; }
+
+.mis {
+  display: flex; gap: 14px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--line);
+  animation: slide-in .32s cubic-bezier(.2,.7,.3,1) both;
+}
+.mis:last-child { border-bottom: 0; }
+
+.mis__no {
+  flex: none;
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--bad-soft); color: var(--bad);
+  border: 1px solid var(--bad-line);
+  font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.mis__body { min-width: 0; }
+
+.mis__what { margin: 0 0 6px; font-size: 14px; line-height: 1.45; }
+.mis__card {
+  font-weight: 600;
+  background: var(--bad-soft); color: var(--bad);
+  border-radius: 5px; padding: 1px 7px;
+}
+.mis__slot { font-weight: 600; }
+
+.mis__why { margin: 0 0 6px; font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; }
+.mis__need { margin: 0; font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; }
+.mis__need::before {
+  content: "Сюда нужно: ";
+  color: var(--good); font-weight: 600;
+}
+.mis__why code, .mis__need code, .mis__what code {
+  font-family: var(--mono); font-size: 12.5px;
+  background: var(--surface-3); padding: 1px 6px; border-radius: 5px;
+}
+
+.mis.is-repeat { animation: flash-bad .7s ease; }
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes flash-bad {
+  0%, 100% { background: transparent; }
+  35%      { background: var(--bad-soft); }
+}
+
+@media (max-width: 720px) {
+  .stamp { width: 150px; height: 150px; top: -26px; right: -30px; }
+  .mistakes__head { padding: 13px 16px; }
+  .mis { padding: 13px 16px; gap: 11px; }
+  .board--doc::before { left: 14px; }
+}

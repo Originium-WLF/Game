@@ -41,6 +41,22 @@
       </button>
 
       <div class="welcome">
+        <svg class="stamp" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+          <defs>
+            <path id="stamp-ring" d="M 100 100 m -70 0 a 70 70 0 1 1 140 0 a 70 70 0 1 1 -140 0"></path>
+          </defs>
+          <circle class="stamp__edge" cx="100" cy="100" r="88"></circle>
+          <circle class="stamp__edge stamp__edge--thin" cx="100" cy="100" r="80"></circle>
+          <circle class="stamp__edge stamp__edge--thin" cx="100" cy="100" r="56"></circle>
+          <text class="stamp__ring">
+            <textPath href="#stamp-ring" startOffset="0">
+              ГОСТ Р 7.0.97-2025 · ОРГАНИЗАЦИОННО-РАСПОРЯДИТЕЛЬНАЯ ДОКУМЕНТАЦИЯ ·
+            </textPath>
+          </text>
+          <text class="stamp__center" x="100" y="95">УЧЕБНЫЙ</text>
+          <text class="stamp__center" x="100" y="116">ТРЕНАЖЁР</text>
+        </svg>
+
         <div class="welcome__badge">учебный тренажёр</div>
         <h1 class="welcome__title">Собери правильно</h1>
         <p class="welcome__lead">
@@ -130,6 +146,15 @@
           <div class="bank__items" id="bank"></div>
         </div>
       </div>
+
+      <section class="mistakes" id="mistakes" hidden aria-live="polite">
+        <div class="mistakes__head">
+          <span class="mistakes__title">Разбор ошибок</span>
+          <span class="mistakes__count" id="mistakes-count">0</span>
+          <span class="mistakes__hint">почему выбранная карточка сюда не подошла</span>
+        </div>
+        <ul class="mistakes__list" id="mistakes-list"></ul>
+      </section>
     </section>
 
     <!-- ============ ЭКРАН 5: РЕЗУЛЬТАТ ============ -->

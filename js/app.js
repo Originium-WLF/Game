@@ -113,12 +113,14 @@
   function renderTopics() {
     ui.topicsGrid.innerHTML = '';
 
-    TOPICS.forEach(function (topic) {
+    TOPICS.forEach(function (topic, i) {
       var st = topicStats(topic);
 
       var card = document.createElement('button');
       card.type = 'button';
       card.className = 'topic';
+      card.dataset.glyph = topic.icon;
+      card.style.animationDelay = (i * 70) + 'ms';
       card.style.setProperty('--tc-light', topic.color);
       card.style.setProperty('--tc-dark', topic.colorDark);
 
@@ -226,6 +228,7 @@
       var card = document.createElement('button');
       card.type = 'button';
       card.className = 'level';
+      card.style.animationDelay = (i * 70) + 'ms';
 
       var top = document.createElement('div');
       top.className = 'level__top';
@@ -253,6 +256,13 @@
       card.appendChild(name);
       card.appendChild(desc);
       card.appendChild(meta);
+
+      if (res && res.grade >= PASS_GRADE) {
+        var stamp = document.createElement('span');
+        stamp.className = 'passed-stamp';
+        stamp.textContent = 'пройдено';
+        card.appendChild(stamp);
+      }
 
       card.addEventListener('click', function () { openGame(topic, level); });
       ui.levelsGrid.appendChild(card);
@@ -492,7 +502,10 @@
     hudFilled:   $('hud-filled'),
     hudMistakes: $('hud-mistakes'),
     hudProgress: $('hud-progress'),
-    restart:     $('btn-restart')
+    restart:     $('btn-restart'),
+    mistakes:      $('mistakes'),
+    mistakesList:  $('mistakes-list'),
+    mistakesCount: $('mistakes-count')
   }, showResult);
 
   Theme.bind();
