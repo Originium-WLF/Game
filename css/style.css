@@ -890,6 +890,7 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: .01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
   }
@@ -965,10 +966,6 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   background: var(--margin-rule);
   pointer-events: none;
 }
-
-/* ------------------- выход карточек с задержкой ------------------------- */
-
-.topic, .level { animation: rise .42s cubic-bezier(.2,.7,.3,1) both; }
 
 /* ========================== РАЗБОР ОШИБОК ================================ */
 
@@ -1095,7 +1092,7 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 
 .level.is-locked {
   cursor: not-allowed;
-  opacity: .62;
+  opacity: .6;
   background:
     repeating-linear-gradient(135deg,
       transparent 0 10px,

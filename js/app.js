@@ -123,7 +123,6 @@
     var card = document.createElement('button');
     card.type = 'button';
     card.className = 'level' + (open ? '' : ' is-locked');
-    card.style.animationDelay = (i * 60) + 'ms';
     card.disabled = !open;
 
     var top = document.createElement('div');
