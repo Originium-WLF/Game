@@ -7,6 +7,23 @@ window.Game = (function () {
 
   /* Очки за поле в зависимости от номера попытки */
   var POINTS = [100, 60, 30, 10];
+
+  /* Хвалим за каждый верный реквизит: студенту важно видеть, что он молодец */
+  var PRAISE = [
+    'Правильно, молодец!',
+    'Верно! Отличная работа',
+    'Молодец, точно на месте!',
+    'Так держать!',
+    'В точку! Молодец',
+    'Верно! Хорошо разбираешься'
+  ];
+  var praiseAt = 0;
+
+  function nextPraise() {
+    var phrase = PRAISE[praiseAt % PRAISE.length];
+    praiseAt++;
+    return phrase;
+  }
   var MAX_PER_SLOT = POINTS[0];
 
   var el = {};            // ссылки на DOM
@@ -44,6 +61,7 @@ window.Game = (function () {
     };
 
     resetMistakes();
+    resetPraise();
 
     el.hudLevel.textContent = level.name;
     el.hudTask.textContent = level.task;
@@ -217,7 +235,9 @@ window.Game = (function () {
     card.parentNode.removeChild(card);
     checkBankEmpty();
 
-    toast(st.attempts === 1 ? 'Верно! +' + earned : 'Верно! +' + earned + ' (со ' + st.attempts + '-й попытки)', 'good');
+    var phrase = nextPraise();
+    showPraise(phrase, card._def, earned, st.attempts);
+    toast(phrase + '  +' + earned, 'good');
     updateHud();
 
     if (state.solved === state.total) {
@@ -278,6 +298,36 @@ window.Game = (function () {
       empty.textContent = 'Все карточки разложены.';
       el.bank.appendChild(empty);
     }
+  }
+
+  /* ---------------------------- похвала ---------------------------- */
+
+  function resetPraise() {
+    el.praise.hidden = true;
+    el.praiseText.textContent = '';
+    praiseAt = 0;
+  }
+
+  /** Зелёная полоса над бланком: что именно студент поставил верно */
+  function showPraise(phrase, cardDef, earned, attempts) {
+    var what = cardDef.tag || cardDef.text;
+    var tail = (attempts === 1)
+      ? ' с первой попытки'
+      : ' со ' + attempts + '-й попытки';
+
+    el.praiseText.innerHTML = '';
+
+    var strong = document.createElement('b');
+    strong.textContent = phrase;
+    el.praiseText.appendChild(strong);
+    el.praiseText.appendChild(document.createTextNode(
+      ' «' + what + '» на своём месте' + tail + '. +' + earned + ' очков.'
+    ));
+
+    el.praise.hidden = false;
+    el.praise.classList.remove('is-new');
+    void el.praise.offsetWidth;                 // перезапуск анимации
+    el.praise.classList.add('is-new');
   }
 
   /* --------------------------- разбор ошибок ----------------------- */

@@ -35,6 +35,20 @@ doc = doc.replace(/[ \t]*<script src="([^"]+)"><\/script>/g, (tag, src) => {
   return `  <script>\n/* ${src} */\n${read(src)}\n  </script>`;
 });
 
+/* Фотография разработчика подключается из скрипта по относительному пути.
+   В однофайловой сборке относительных путей нет — встраиваем её как data-URI. */
+const photoRel = 'img/developer.jpg';
+const photoAbs = path.join(root, photoRel);
+let photoNote = 'не найдена, останутся инициалы';
+
+if (fs.existsSync(photoAbs)) {
+  const ext = path.extname(photoAbs).slice(1).toLowerCase();
+  const mime = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+  const dataUri = `data:${mime};base64,${fs.readFileSync(photoAbs).toString('base64')}`;
+  doc = doc.split(`'${photoRel}'`).join(`'${dataUri}'`);
+  photoNote = `встроена, ${(fs.statSync(photoAbs).size / 1024).toFixed(0)} КБ`;
+}
+
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
 fs.writeFileSync(path.join(root, 'dist/index.html'), doc);
 
@@ -56,5 +70,6 @@ fs.writeFileSync(path.join(root, 'dist/embed.html'), `${embedHead}\n${body.trim(
 
 const kb = (f) => (fs.statSync(path.join(root, f)).size / 1024).toFixed(0);
 console.log(`Встроено: ${inlinedStyles} стилей, ${inlinedScripts} скриптов`);
+console.log(`  фотография разработчика — ${photoNote}`);
 console.log(`  dist/index.html — ${kb('dist/index.html')} КБ`);
 console.log(`  dist/embed.html — ${kb('dist/embed.html')} КБ`);

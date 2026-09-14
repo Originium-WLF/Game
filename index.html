@@ -79,11 +79,21 @@
         <h1 class="welcome__title">Формуляр</h1>
         <div class="welcome__badge">тренажёр реквизитов</div>
         <p class="welcome__lead">
-          Тренажёр по оформлению организационно-распорядительных документов:
-          от приказа и служебной записки до бланков, грифов согласования
-          и электронной подписи. Перетаскивай реквизиты на бланк и ставь
-          каждый на своё место по ГОСТ Р 7.0.97-2025.
+          Перетаскивай реквизиты на бланк и ставь каждый на своё место
+          по ГОСТ Р 7.0.97-2025: от приказа и служебной записки до бланков,
+          грифов согласования и электронной подписи.
         </p>
+
+        <div class="purpose">
+          <span class="purpose__label">Назначение ресурса</span>
+          <p class="purpose__text">
+            Электронный образовательный ресурс для обучающихся по профессии
+            <b>09.01.03 «Оператор информационных систем и ресурсов»</b>.
+            Предназначен для отработки практического навыка оформления
+            организационно-распорядительных документов: состава реквизитов,
+            их расположения на бланке и типичных ошибок.
+          </p>
+        </div>
 
         <form class="welcome__form" id="form-login" novalidate>
           <label class="field">
@@ -144,6 +154,11 @@
         <summary class="theory__summary">Подсказка по теме</summary>
         <div class="theory__body" id="theory-body"></div>
       </details>
+
+      <div class="praise" id="praise" hidden aria-live="polite">
+        <span class="praise__icon" aria-hidden="true">✓</span>
+        <span class="praise__text" id="praise-text"></span>
+      </div>
 
       <div class="playfield">
         <div class="board-wrap">

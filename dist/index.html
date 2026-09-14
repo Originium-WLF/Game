@@ -1197,6 +1197,123 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   .welcome__mark { width: 52px; height: 52px; }
 }
 
+/* ========================== НАЗНАЧЕНИЕ РЕСУРСА =========================== */
+
+.purpose {
+  text-align: left;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 28px;
+}
+.purpose__label {
+  display: block;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent-deep);
+  margin-bottom: 6px;
+}
+.purpose__text { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
+.purpose__text b { color: var(--ink); }
+
+/* ============================== ПОХВАЛА ================================== */
+
+.praise {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--good-soft);
+  border: 1px solid var(--good-line);
+  border-left: 4px solid var(--good);
+  border-radius: var(--r-md);
+  padding: 13px 18px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  color: var(--ink);
+}
+.praise__icon {
+  flex: none;
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--good); color: #fff;
+  font-size: 12px; font-weight: 700;
+}
+.praise__text { line-height: 1.45; }
+.praise__text b { color: var(--good); font-weight: 700; }
+
+.praise.is-new { animation: praise-in .34s cubic-bezier(.2,.7,.3,1); }
+
+@keyframes praise-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ======================== КАРТОЧКА РАЗРАБОТЧИКА ========================== */
+
+.dev {
+  /* Кадрирование «лицо и плечи» из полного снимка.
+     --dev-zoom: насколько приблизить (больше — крупнее лицо)
+     --dev-y:    вертикальное смещение кадра (меньше — кадр выше) */
+  --dev-zoom: 2.1;
+  --dev-y: 30%;
+
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  margin: 28px auto 0;
+  padding: 24px 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  max-width: 740px;
+}
+
+.dev__photo {
+  flex: none;
+  position: relative;
+  width: 116px; height: 116px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--accent-soft);
+  border: 3px solid var(--accent);
+  display: grid; place-items: center;
+}
+.dev__initials {
+  font-family: var(--display);
+  font-size: 34px; font-weight: 700;
+  color: var(--accent);
+  letter-spacing: .02em;
+}
+.dev__img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: 50% var(--dev-y);
+  transform: scale(var(--dev-zoom));
+  transform-origin: 50% var(--dev-y);
+}
+
+.dev__body { flex: 1 1 280px; min-width: 0; }
+.dev__label {
+  display: block;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+}
+.dev__name {
+  font-family: var(--display); font-weight: 700;
+  font-size: 19px; letter-spacing: -.02em;
+  margin-bottom: 10px;
+}
+.dev__text { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); }
+
+@media (max-width: 720px) {
+  .dev { gap: 18px; padding: 20px; justify-content: center; text-align: center; }
+  .dev__photo { width: 96px; height: 96px; }
+  .dev__body { flex-basis: 100%; }
+}
+
   </style>
   <script>
 /* js/theme.js */
@@ -1319,11 +1436,21 @@ window.Theme = (function () {
         <h1 class="welcome__title">Формуляр</h1>
         <div class="welcome__badge">тренажёр реквизитов</div>
         <p class="welcome__lead">
-          Тренажёр по оформлению организационно-распорядительных документов:
-          от приказа и служебной записки до бланков, грифов согласования
-          и электронной подписи. Перетаскивай реквизиты на бланк и ставь
-          каждый на своё место по ГОСТ Р 7.0.97-2025.
+          Перетаскивай реквизиты на бланк и ставь каждый на своё место
+          по ГОСТ Р 7.0.97-2025: от приказа и служебной записки до бланков,
+          грифов согласования и электронной подписи.
         </p>
+
+        <div class="purpose">
+          <span class="purpose__label">Назначение ресурса</span>
+          <p class="purpose__text">
+            Электронный образовательный ресурс для обучающихся по профессии
+            <b>09.01.03 «Оператор информационных систем и ресурсов»</b>.
+            Предназначен для отработки практического навыка оформления
+            организационно-распорядительных документов: состава реквизитов,
+            их расположения на бланке и типичных ошибок.
+          </p>
+        </div>
 
         <form class="welcome__form" id="form-login" novalidate>
           <label class="field">
@@ -1384,6 +1511,11 @@ window.Theme = (function () {
         <summary class="theory__summary">Подсказка по теме</summary>
         <div class="theory__body" id="theory-body"></div>
       </details>
+
+      <div class="praise" id="praise" hidden aria-live="polite">
+        <span class="praise__icon" aria-hidden="true">✓</span>
+        <span class="praise__text" id="praise-text"></span>
+      </div>
 
       <div class="playfield">
         <div class="board-wrap">
@@ -3497,6 +3629,23 @@ window.Game = (function () {
 
   /* Очки за поле в зависимости от номера попытки */
   var POINTS = [100, 60, 30, 10];
+
+  /* Хвалим за каждый верный реквизит: студенту важно видеть, что он молодец */
+  var PRAISE = [
+    'Правильно, молодец!',
+    'Верно! Отличная работа',
+    'Молодец, точно на месте!',
+    'Так держать!',
+    'В точку! Молодец',
+    'Верно! Хорошо разбираешься'
+  ];
+  var praiseAt = 0;
+
+  function nextPraise() {
+    var phrase = PRAISE[praiseAt % PRAISE.length];
+    praiseAt++;
+    return phrase;
+  }
   var MAX_PER_SLOT = POINTS[0];
 
   var el = {};            // ссылки на DOM
@@ -3534,6 +3683,7 @@ window.Game = (function () {
     };
 
     resetMistakes();
+    resetPraise();
 
     el.hudLevel.textContent = level.name;
     el.hudTask.textContent = level.task;
@@ -3707,7 +3857,9 @@ window.Game = (function () {
     card.parentNode.removeChild(card);
     checkBankEmpty();
 
-    toast(st.attempts === 1 ? 'Верно! +' + earned : 'Верно! +' + earned + ' (со ' + st.attempts + '-й попытки)', 'good');
+    var phrase = nextPraise();
+    showPraise(phrase, card._def, earned, st.attempts);
+    toast(phrase + '  +' + earned, 'good');
     updateHud();
 
     if (state.solved === state.total) {
@@ -3768,6 +3920,36 @@ window.Game = (function () {
       empty.textContent = 'Все карточки разложены.';
       el.bank.appendChild(empty);
     }
+  }
+
+  /* ---------------------------- похвала ---------------------------- */
+
+  function resetPraise() {
+    el.praise.hidden = true;
+    el.praiseText.textContent = '';
+    praiseAt = 0;
+  }
+
+  /** Зелёная полоса над бланком: что именно студент поставил верно */
+  function showPraise(phrase, cardDef, earned, attempts) {
+    var what = cardDef.tag || cardDef.text;
+    var tail = (attempts === 1)
+      ? ' с первой попытки'
+      : ' со ' + attempts + '-й попытки';
+
+    el.praiseText.innerHTML = '';
+
+    var strong = document.createElement('b');
+    strong.textContent = phrase;
+    el.praiseText.appendChild(strong);
+    el.praiseText.appendChild(document.createTextNode(
+      ' «' + what + '» на своём месте' + tail + '. +' + earned + ' очков.'
+    ));
+
+    el.praise.hidden = false;
+    el.praise.classList.remove('is-new');
+    void el.praise.offsetWidth;                 // перезапуск анимации
+    el.praise.classList.add('is-new');
   }
 
   /* --------------------------- разбор ошибок ----------------------- */
@@ -3990,6 +4172,11 @@ window.Game = (function () {
 
   var TOPIC = window.TOPIC_DOCS;
 
+  /* Фотография разработчика. Файла может не быть — тогда показываем инициалы.
+     Кадрирование «лицо и плечи» и круглая рамка делаются стилями. */
+  var DEV_PHOTO = 'img/developer.jpg';
+  var DEV_NAME  = 'Павлов Богдан Иванович';
+
   var $ = function (id) { return document.getElementById(id); };
 
   var ui = {
@@ -4115,6 +4302,12 @@ window.Game = (function () {
     });
 
     renderOverall();
+
+    /* Перерисовываем список при каждом возврате — старую карточку убираем,
+       иначе она добавлялась бы заново на каждый заход */
+    var oldDev = ui.screens.levels.querySelector('.dev');
+    if (oldDev) oldDev.remove();
+    if (allCleared()) ui.screens.levels.appendChild(developerCard());
   }
 
   function levelCard(level, i) {
@@ -4346,6 +4539,16 @@ window.Game = (function () {
 
     ui.result.appendChild(actions);
 
+    /* Тренажёр пройден целиком — знакомим студента с автором */
+    if (clean && allCleared()) {
+      var done = document.createElement('p');
+      done.className = 'result__record';
+      done.style.marginTop = '26px';
+      done.textContent = 'Все ' + TOPIC.levels.length + ' уровней пройдены без ошибок. Поздравляем!';
+      ui.result.appendChild(done);
+      ui.result.appendChild(developerCard());
+    }
+
     show('result', 'Результат · ' + current.level.name);
 
     /* Конфетти только за уровень, пройденный без ошибок */
@@ -4403,6 +4606,51 @@ window.Game = (function () {
     return [themed, '#5044d4', '#ffc93c', '#1a8a55', '#e8556d', '#3ec2e0'];
   }
 
+  /** Блок «об авторе»: круглое фото, имя и зачем создан ресурс */
+  function developerCard() {
+    var box = document.createElement('section');
+    box.className = 'dev';
+
+    var photo = document.createElement('div');
+    photo.className = 'dev__photo';
+
+    var initials = document.createElement('span');
+    initials.className = 'dev__initials';
+    initials.textContent = 'ПБ';
+    initials.setAttribute('aria-hidden', 'true');
+    photo.appendChild(initials);
+
+    var img = document.createElement('img');
+    img.className = 'dev__img';
+    img.src = DEV_PHOTO;
+    img.alt = 'Фотография разработчика: ' + DEV_NAME;
+    img.loading = 'lazy';
+    img.addEventListener('error', function () { img.remove(); });  // файла нет — остаются инициалы
+    photo.appendChild(img);
+
+    var body = document.createElement('div');
+    body.className = 'dev__body';
+    body.innerHTML =
+      '<span class="dev__label">Разработчик</span>' +
+      '<h3 class="dev__name">' + escapeHtml(DEV_NAME) + '</h3>' +
+      '<p class="dev__text">Ресурс создан как электронное средство обучения ' +
+      'для отработки практического навыка оформления организационно-распорядительных ' +
+      'документов. Перечень из тридцати реквизитов трудно удержать в голове, пока ' +
+      'не разложишь их по настоящему бланку руками, — поэтому тренажёр даёт именно ' +
+      'практику: студент сам собирает документ, сразу получает разбор каждой ошибки ' +
+      'со ссылкой на пункт стандарта, а следующий уровень открывается только после ' +
+      'безупречного прохождения предыдущего.</p>';
+
+    box.appendChild(photo);
+    box.appendChild(body);
+    return box;
+  }
+
+  /** Пройдены ли начисто все уровни */
+  function allCleared() {
+    return TOPIC.levels.every(function (lvl) { return isCleared(lvl.id); });
+  }
+
   function statBox(value, label) {
     var box = document.createElement('div');
     box.className = 'result__stat';
@@ -4453,6 +4701,8 @@ window.Game = (function () {
     hudMistakes: $('hud-mistakes'),
     hudProgress: $('hud-progress'),
     restart:     $('btn-restart'),
+    praise:      $('praise'),
+    praiseText:  $('praise-text'),
     mistakes:      $('mistakes'),
     mistakesList:  $('mistakes-list'),
     mistakesCount: $('mistakes-count')

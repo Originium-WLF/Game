@@ -1184,3 +1184,120 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   .brand__name { display: none; }      /* на телефоне остаётся только знак */
   .welcome__mark { width: 52px; height: 52px; }
 }
+
+/* ========================== НАЗНАЧЕНИЕ РЕСУРСА =========================== */
+
+.purpose {
+  text-align: left;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 28px;
+}
+.purpose__label {
+  display: block;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent-deep);
+  margin-bottom: 6px;
+}
+.purpose__text { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
+.purpose__text b { color: var(--ink); }
+
+/* ============================== ПОХВАЛА ================================== */
+
+.praise {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--good-soft);
+  border: 1px solid var(--good-line);
+  border-left: 4px solid var(--good);
+  border-radius: var(--r-md);
+  padding: 13px 18px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  color: var(--ink);
+}
+.praise__icon {
+  flex: none;
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--good); color: #fff;
+  font-size: 12px; font-weight: 700;
+}
+.praise__text { line-height: 1.45; }
+.praise__text b { color: var(--good); font-weight: 700; }
+
+.praise.is-new { animation: praise-in .34s cubic-bezier(.2,.7,.3,1); }
+
+@keyframes praise-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ======================== КАРТОЧКА РАЗРАБОТЧИКА ========================== */
+
+.dev {
+  /* Кадрирование «лицо и плечи» из полного снимка.
+     --dev-zoom: насколько приблизить (больше — крупнее лицо)
+     --dev-y:    вертикальное смещение кадра (меньше — кадр выше) */
+  --dev-zoom: 2.1;
+  --dev-y: 30%;
+
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  margin: 28px auto 0;
+  padding: 24px 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  max-width: 740px;
+}
+
+.dev__photo {
+  flex: none;
+  position: relative;
+  width: 116px; height: 116px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--accent-soft);
+  border: 3px solid var(--accent);
+  display: grid; place-items: center;
+}
+.dev__initials {
+  font-family: var(--display);
+  font-size: 34px; font-weight: 700;
+  color: var(--accent);
+  letter-spacing: .02em;
+}
+.dev__img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: 50% var(--dev-y);
+  transform: scale(var(--dev-zoom));
+  transform-origin: 50% var(--dev-y);
+}
+
+.dev__body { flex: 1 1 280px; min-width: 0; }
+.dev__label {
+  display: block;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+}
+.dev__name {
+  font-family: var(--display); font-weight: 700;
+  font-size: 19px; letter-spacing: -.02em;
+  margin-bottom: 10px;
+}
+.dev__text { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); }
+
+@media (max-width: 720px) {
+  .dev { gap: 18px; padding: 20px; justify-content: center; text-align: center; }
+  .dev__photo { width: 96px; height: 96px; }
+  .dev__body { flex-basis: 100%; }
+}

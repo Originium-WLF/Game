@@ -7,6 +7,11 @@
 
   var TOPIC = window.TOPIC_DOCS;
 
+  /* Фотография разработчика. Файла может не быть — тогда показываем инициалы.
+     Кадрирование «лицо и плечи» и круглая рамка делаются стилями. */
+  var DEV_PHOTO = 'img/developer.jpg';
+  var DEV_NAME  = 'Павлов Богдан Иванович';
+
   var $ = function (id) { return document.getElementById(id); };
 
   var ui = {
@@ -132,6 +137,12 @@
     });
 
     renderOverall();
+
+    /* Перерисовываем список при каждом возврате — старую карточку убираем,
+       иначе она добавлялась бы заново на каждый заход */
+    var oldDev = ui.screens.levels.querySelector('.dev');
+    if (oldDev) oldDev.remove();
+    if (allCleared()) ui.screens.levels.appendChild(developerCard());
   }
 
   function levelCard(level, i) {
@@ -363,6 +374,16 @@
 
     ui.result.appendChild(actions);
 
+    /* Тренажёр пройден целиком — знакомим студента с автором */
+    if (clean && allCleared()) {
+      var done = document.createElement('p');
+      done.className = 'result__record';
+      done.style.marginTop = '26px';
+      done.textContent = 'Все ' + TOPIC.levels.length + ' уровней пройдены без ошибок. Поздравляем!';
+      ui.result.appendChild(done);
+      ui.result.appendChild(developerCard());
+    }
+
     show('result', 'Результат · ' + current.level.name);
 
     /* Конфетти только за уровень, пройденный без ошибок */
@@ -420,6 +441,51 @@
     return [themed, '#5044d4', '#ffc93c', '#1a8a55', '#e8556d', '#3ec2e0'];
   }
 
+  /** Блок «об авторе»: круглое фото, имя и зачем создан ресурс */
+  function developerCard() {
+    var box = document.createElement('section');
+    box.className = 'dev';
+
+    var photo = document.createElement('div');
+    photo.className = 'dev__photo';
+
+    var initials = document.createElement('span');
+    initials.className = 'dev__initials';
+    initials.textContent = 'ПБ';
+    initials.setAttribute('aria-hidden', 'true');
+    photo.appendChild(initials);
+
+    var img = document.createElement('img');
+    img.className = 'dev__img';
+    img.src = DEV_PHOTO;
+    img.alt = 'Фотография разработчика: ' + DEV_NAME;
+    img.loading = 'lazy';
+    img.addEventListener('error', function () { img.remove(); });  // файла нет — остаются инициалы
+    photo.appendChild(img);
+
+    var body = document.createElement('div');
+    body.className = 'dev__body';
+    body.innerHTML =
+      '<span class="dev__label">Разработчик</span>' +
+      '<h3 class="dev__name">' + escapeHtml(DEV_NAME) + '</h3>' +
+      '<p class="dev__text">Ресурс создан как электронное средство обучения ' +
+      'для отработки практического навыка оформления организационно-распорядительных ' +
+      'документов. Перечень из тридцати реквизитов трудно удержать в голове, пока ' +
+      'не разложишь их по настоящему бланку руками, — поэтому тренажёр даёт именно ' +
+      'практику: студент сам собирает документ, сразу получает разбор каждой ошибки ' +
+      'со ссылкой на пункт стандарта, а следующий уровень открывается только после ' +
+      'безупречного прохождения предыдущего.</p>';
+
+    box.appendChild(photo);
+    box.appendChild(body);
+    return box;
+  }
+
+  /** Пройдены ли начисто все уровни */
+  function allCleared() {
+    return TOPIC.levels.every(function (lvl) { return isCleared(lvl.id); });
+  }
+
   function statBox(value, label) {
     var box = document.createElement('div');
     box.className = 'result__stat';
@@ -470,6 +536,8 @@
     hudMistakes: $('hud-mistakes'),
     hudProgress: $('hud-progress'),
     restart:     $('btn-restart'),
+    praise:      $('praise'),
+    praiseText:  $('praise-text'),
     mistakes:      $('mistakes'),
     mistakesList:  $('mistakes-list'),
     mistakesCount: $('mistakes-count')
