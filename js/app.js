@@ -26,8 +26,15 @@
       welcome: $('screen-welcome'),
       levels:  $('screen-levels'),
       game:    $('screen-game'),
+      profile: $('screen-profile'),
       result:  $('screen-result')
     },
+
+    profileBtn:  $('btn-profile'),
+    profileCard: $('profile-card'),
+    achGrid:     $('ach-grid'),
+    achCount:    $('ach-count'),
+    achBar:      $('ach-bar'),
 
     loginForm: $('form-login'),
     nameInput: $('input-name'),
@@ -85,8 +92,9 @@
     window.requestAnimationFrame(reset);
   }
 
-  /* Из игры и с экрана результата возвращаемся к списку уровней */
+  /* Из игры, профиля и с экрана результата возвращаемся к списку уровней */
   ui.back.addEventListener('click', openLevels);
+  ui.profileBtn.addEventListener('click', openProfile);
 
   /* ============================ ВХОД ============================== */
 
@@ -242,6 +250,104 @@
     return chip;
   }
 
+  /* ============================ ПРОФИЛЬ =========================== */
+
+  function openProfile() {
+    renderProfile();
+    show('profile', 'Профиль');
+  }
+
+  function renderProfile() {
+    var name = Store.getName() || 'Студент';
+    var cleared = clearedCount();
+    var done = 0, percentSum = 0;
+    TOPIC.levels.forEach(function (lvl) {
+      var r = Store.getResult(lvl.id);
+      if (r) { done++; percentSum += r.percent; }
+    });
+
+    /* --- карточка студента --- */
+    ui.profileCard.innerHTML = '';
+
+    var avatar = document.createElement('div');
+    avatar.className = 'profile__avatar';
+    avatar.textContent = name.charAt(0).toUpperCase();
+
+    var head = document.createElement('div');
+    head.className = 'profile__head';
+    head.innerHTML =
+      '<h3 class="profile__name">' + escapeHtml(name) + '</h3>' +
+      '<p class="profile__sub">Обучающийся по профессии 09.01.03 «Оператор информационных систем и ресурсов»</p>';
+
+    var stats = document.createElement('div');
+    stats.className = 'profile__stats';
+    stats.appendChild(statBox(cleared + ' / ' + TOPIC.levels.length, 'без ошибок'));
+    stats.appendChild(statBox(String(done), 'пройдено'));
+    stats.appendChild(statBox(done ? String(Game.gradeOf(Math.round(percentSum / done))) : '—', 'оценка'));
+    stats.appendChild(statBox(Achievements.count() + ' / ' + Achievements.LIST.length, 'достижений'));
+
+    var body = document.createElement('div');
+    body.className = 'profile__body';
+    body.appendChild(head);
+    body.appendChild(stats);
+
+    ui.profileCard.appendChild(avatar);
+    ui.profileCard.appendChild(body);
+
+    /* --- сетка достижений --- */
+    var earned = Achievements.earned();
+    var got = Achievements.count();
+
+    ui.achCount.textContent = got + ' из ' + Achievements.LIST.length;
+    ui.achBar.style.width = (got / Achievements.LIST.length * 100) + '%';
+
+    ui.achGrid.innerHTML = '';
+    Achievements.LIST.forEach(function (a) {
+      ui.achGrid.appendChild(achievementCard(a, earned[a.id]));
+    });
+  }
+
+  /** Полученное достижение — цветное, ещё не полученное — серое */
+  function achievementCard(a, when) {
+    var li = document.createElement('li');
+    li.className = 'ach__item' + (when ? ' is-earned' : ' is-locked');
+
+    var icon = document.createElement('span');
+    icon.className = 'ach__icon';
+    icon.textContent = a.icon;
+    icon.setAttribute('aria-hidden', 'true');
+
+    var body = document.createElement('div');
+    body.className = 'ach__body';
+
+    var name = document.createElement('div');
+    name.className = 'ach__name';
+    name.textContent = a.name;
+
+    var how = document.createElement('p');
+    how.className = 'ach__how';
+    how.textContent = a.how;
+
+    body.appendChild(name);
+    body.appendChild(how);
+
+    var mark = document.createElement('span');
+    mark.className = 'ach__mark';
+    mark.textContent = when ? 'получено ' + formatDate(when) : 'не получено';
+
+    body.appendChild(mark);
+    li.appendChild(icon);
+    li.appendChild(body);
+    return li;
+  }
+
+  function formatDate(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear();
+  }
+
   /* ============================= ИГРА ============================= */
 
   function openGame(level, index) {
@@ -377,6 +483,14 @@
 
     show('result', 'Результат · ' + current.level.name);
 
+    Achievements.onLevelDone({
+      clean: clean,
+      seconds: res.seconds,
+      theoryOpened: res.theoryOpened,
+      cleared: clearedCount(),
+      total: TOPIC.levels.length
+    });
+
     /* Конфетти только за уровень, пройденный без ошибок */
     if (clean) {
       window.setTimeout(function () { Confetti.fire(confettiColors(), 1.5); }, 260);
@@ -478,6 +592,10 @@
     return TOPIC.levels.every(function (lvl) { return isCleared(lvl.id); });
   }
 
+  function clearedCount() {
+    return TOPIC.levels.filter(function (lvl) { return isCleared(lvl.id); }).length;
+  }
+
   function statBox(value, label) {
     var box = document.createElement('div');
     box.className = 'result__stat';
@@ -538,6 +656,16 @@
 
   Theme.bind();
   Confetti.init($('confetti'));
+  Achievements.init($('ach-pop'));
+
+  /* Достижение «Ночная смена» — за осознанное переключение, а не за
+     тему, сохранённую с прошлого раза. Слушатель добавляется после
+     Theme.bind(), поэтому читает уже переключённое состояние. */
+  Array.prototype.forEach.call(document.querySelectorAll('.theme-toggle'), function (btn) {
+    btn.addEventListener('click', function () {
+      if (Theme.get() === 'dark') Achievements.onDarkTheme();
+    });
+  });
 
   /* Карточка разработчика открыта всегда и стоит первой на главном экране,
      выше приветствия. Собирается один раз: renderLevels её не трогает. */

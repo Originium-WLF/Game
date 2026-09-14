@@ -7,7 +7,15 @@ window.Store = (function () {
 
   var KEY = 'sim-trainer-v2';   // v2: другой набор уровней, старый прогресс неприменим
 
-  var empty = { name: '', results: {} };   // results: { 'html-1': {score, max, percent, grade, mistakes, date} }
+  // results:      { 'doc-prikaz': {score, max, percent, grade, mistakes, date} }
+  // achievements: { 'first-doc': '2026-09-14T10:00:00.000Z' }
+  // stats:        накопительные счётчики для достижений
+  var empty = {
+    name: '',
+    results: {},
+    achievements: {},
+    stats: { signs: 0, seals: 0, reviewed: 0, cleanStreak: 0 }
+  };
 
   function read() {
     try {
@@ -17,6 +25,12 @@ window.Store = (function () {
       if (!data || typeof data !== 'object') return clone(empty);
       if (typeof data.name !== 'string') data.name = '';
       if (!data.results || typeof data.results !== 'object') data.results = {};
+      /* Поля достижений появились позже — дополняем старые записи */
+      if (!data.achievements || typeof data.achievements !== 'object') data.achievements = {};
+      if (!data.stats || typeof data.stats !== 'object') data.stats = clone(empty.stats);
+      Object.keys(empty.stats).forEach(function (k) {
+        if (typeof data.stats[k] !== 'number') data.stats[k] = 0;
+      });
       return data;
     } catch (e) {
       return clone(empty);
@@ -55,6 +69,40 @@ window.Store = (function () {
     },
 
     getResult: function (levelId) { return read().results[levelId] || null; },
+
+    /* ----------------------- достижения ------------------------ */
+
+    getAchievements: function () { return read().achievements; },
+
+    hasAchievement: function (id) { return !!read().achievements[id]; },
+
+    /** Записывает достижение. Возвращает false, если оно уже было. */
+    addAchievement: function (id) {
+      var d = read();
+      if (d.achievements[id]) return false;
+      d.achievements[id] = new Date().toISOString();
+      write(d);
+      return true;
+    },
+
+    /* --------------- накопительные счётчики --------------------- */
+
+    getStat: function (key) { return read().stats[key] || 0; },
+
+    /** Увеличивает счётчик и возвращает новое значение */
+    bumpStat: function (key, by) {
+      var d = read();
+      d.stats[key] = (d.stats[key] || 0) + (by === undefined ? 1 : by);
+      write(d);
+      return d.stats[key];
+    },
+
+    setStat: function (key, value) {
+      var d = read();
+      d.stats[key] = value;
+      write(d);
+      return value;
+    },
 
     getAll: function () { return read().results; },
 

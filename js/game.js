@@ -45,6 +45,11 @@ window.Game = (function () {
     onFinish = finishHandler;
     DragDrop.init(el.dragLayer, handleDrop);
     el.restart.addEventListener('click', function () { start(state.topic, state.level); });
+
+    /* Достижение «Наизусть» требует пройти уровень, не заглядывая в подсказку */
+    el.theory.addEventListener('toggle', function () {
+      if (el.theory.open && state) state.theoryOpened = true;
+    });
   }
 
   /* ------------------------------ старт ---------------------------- */
@@ -64,6 +69,8 @@ window.Game = (function () {
       unusedWrong: {},        // id лишних карточек, которые пытались поставить
       logged: {},             // уже разобранные пары «карточка + поле»
       logCount: 0,
+      streak: 0,              // подряд верных реквизитов
+      theoryOpened: false,    // открывал ли студент подсказку по теме
       startedAt: Date.now()
     };
 
@@ -242,6 +249,9 @@ window.Game = (function () {
     card.parentNode.removeChild(card);
     checkBankEmpty();
 
+    state.streak++;
+    Achievements.onCorrect(state.streak, card._def.tag);
+
     var phrase = nextPraise();
     showGoodFeedback(phrase, card._def, earned, st.attempts);
     toast(phrase + '  +' + earned, 'good');
@@ -255,6 +265,7 @@ window.Game = (function () {
   function rejectCard(card, slot, st) {
     busy = true;
     state.mistakes++;
+    state.streak = 0;
     if (card._def.note) state.unusedWrong[card._def.id] = card._def;
 
     var backup = slot.innerHTML;
@@ -368,6 +379,7 @@ window.Game = (function () {
     }
     state.logged[key] = true;
     state.logCount++;
+    Achievements.onMistakeLogged();
 
     var item = document.createElement('li');
     item.className = 'mis';
@@ -511,6 +523,7 @@ window.Game = (function () {
       mistakes: state.mistakes,
       slots: state.total,
       seconds: Math.round((Date.now() - state.startedAt) / 1000),
+      theoryOpened: state.theoryOpened,
       review: review,
       traps: traps,
       date: new Date().toISOString()

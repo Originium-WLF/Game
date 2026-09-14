@@ -36,8 +36,10 @@
       <span class="theme-toggle__opt theme-toggle__opt--moon" aria-hidden="true">☾</span>
     </button>
     <div class="topbar__user">
-      <span class="topbar__avatar" id="user-avatar" aria-hidden="true">?</span>
-      <span class="topbar__name" id="user-name">Студент</span>
+      <button class="topbar__me" id="btn-profile" type="button" title="Профиль и достижения">
+        <span class="topbar__avatar" id="user-avatar" aria-hidden="true">?</span>
+        <span class="topbar__name" id="user-name">Студент</span>
+      </button>
       <button class="topbar__exit" id="btn-logout" type="button" title="Сменить пользователя">Выйти</button>
     </div>
   </header>
@@ -231,7 +233,28 @@
       </section>
     </section>
 
-    <!-- ============ ЭКРАН 4: РЕЗУЛЬТАТ ============ -->
+    <!-- ============ ЭКРАН 4: ПРОФИЛЬ ============ -->
+    <section class="screen screen--profile" id="screen-profile">
+      <div class="section-head">
+        <h2 class="section-head__title">Профиль</h2>
+        <p class="section-head__sub">
+          Достижения открываются по ходу тренажёра. Полученные горят цветом,
+          ещё не полученные остаются серыми — под каждым написано, за что его дают.
+        </p>
+      </div>
+
+      <div class="profile" id="profile-card"></div>
+
+      <div class="ach-head">
+        <h3 class="ach-head__title">Достижения</h3>
+        <span class="ach-head__count" id="ach-count">0 из 0</span>
+        <div class="bar ach-head__bar"><div class="bar__fill" id="ach-bar"></div></div>
+      </div>
+
+      <ul class="ach" id="ach-grid"></ul>
+    </section>
+
+    <!-- ============ ЭКРАН 5: РЕЗУЛЬТАТ ============ -->
     <section class="screen screen--result" id="screen-result">
       <div class="result" id="result"></div>
     </section>
@@ -241,6 +264,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="drag-layer" id="drag-layer" aria-hidden="true"></div>
   <canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
+  <div class="ach-pop" id="ach-pop" hidden role="status" aria-live="polite"></div>
 
   <footer class="footer">
     «Формуляр» · учебный тренажёр · реквизиты приведены по ГОСТ Р 7.0.97-2025 (ОРД) ·
@@ -251,6 +275,7 @@
 
   <script src="js/data/docs-topic.js"></script>
   <script src="js/storage.js"></script>
+  <script src="js/achievements.js"></script>
   <script src="js/confetti.js"></script>
   <script src="js/dragdrop.js"></script>
   <script src="js/game.js"></script>

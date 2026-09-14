@@ -1414,3 +1414,169 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 @media (max-width: 720px) {
   .why { gap: 20px; margin-bottom: 24px; }
 }
+
+/* ====================== ДОСТИЖЕНИЕ: ВСПЛЫВАЮЩЕЕ ОКНО ===================== */
+
+/* Появляется в правом нижнем углу, как в игровых клиентах. Над RGB-полосой,
+   чтобы не наезжать на неё. */
+.ach-pop {
+  position: fixed;
+  right: 22px; bottom: 26px;
+  z-index: 140;
+  display: flex; align-items: center; gap: 14px;
+  min-width: 264px; max-width: calc(100vw - 44px);
+  padding: 13px 20px 13px 14px;
+  border-radius: var(--r-md);
+  background: #17162a;
+  border: 1px solid #322f52;
+  border-left: 4px solid var(--accent);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .45);
+  opacity: 0;
+  transform: translateX(28px);
+  transition: opacity .3s, transform .34s cubic-bezier(.2, .7, .3, 1);
+  pointer-events: none;
+}
+.ach-pop.is-visible { opacity: 1; transform: none; }
+
+.ach-pop__icon {
+  flex: none;
+  width: 46px; height: 46px;
+  display: grid; place-items: center;
+  font-size: 26px; line-height: 1;
+  border-radius: 12px;
+  background: rgba(141, 127, 255, .16);
+  border: 1px solid rgba(141, 127, 255, .3);
+}
+.ach-pop__body { display: grid; gap: 2px; min-width: 0; }
+.ach-pop__label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: #9a8dff;
+}
+.ach-pop__name {
+  font-family: var(--display); font-weight: 700;
+  font-size: 15px; letter-spacing: -.02em;
+  color: #f2f0ff;
+}
+
+@media (max-width: 720px) {
+  .ach-pop { right: 12px; left: 12px; bottom: 18px; min-width: 0; }
+}
+
+/* ============================== ПРОФИЛЬ ================================= */
+
+.profile {
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  padding: 26px 28px;
+  margin-bottom: 34px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+.profile__avatar {
+  flex: none;
+  width: 84px; height: 84px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: linear-gradient(140deg, var(--accent), var(--accent-deep));
+  color: #fff;
+  font-family: var(--display); font-weight: 700; font-size: 34px;
+}
+.profile__body { flex: 1 1 320px; min-width: 0; display: grid; gap: 18px; }
+.profile__name {
+  font-family: var(--display); font-weight: 700;
+  font-size: 22px; letter-spacing: -.02em;
+}
+.profile__sub { margin: 4px 0 0; font-size: 13px; color: var(--ink-faint); }
+.profile__stats {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+}
+.profile__stats .result__stat { padding: 12px; }
+
+/* --------------------------- шапка списка ------------------------------ */
+
+.ach-head {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.ach-head__title {
+  font-family: var(--display); font-weight: 700;
+  font-size: 18px; letter-spacing: -.02em;
+}
+.ach-head__count {
+  font-size: 13px; font-weight: 600; color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.ach-head__bar { flex: 1 1 180px; min-width: 120px; }
+
+/* --------------------------- сетка достижений --------------------------- */
+
+.ach {
+  list-style: none; margin: 0 0 10px; padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.ach__item {
+  display: flex; align-items: flex-start; gap: 15px;
+  padding: 16px 18px;
+  border-radius: var(--r-md);
+  transition: transform .16s, box-shadow .16s;
+}
+
+/* Полученное — цветное и на подложке */
+.ach__item.is-earned {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+.ach__item.is-earned:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+/* Ещё не полученное — серое и приглушённое */
+.ach__item.is-locked {
+  background: transparent;
+  border: 1px dashed var(--line-strong);
+}
+.ach__item.is-locked .ach__icon {
+  filter: grayscale(1);
+  opacity: .4;
+}
+.ach__item.is-locked .ach__name { color: var(--ink-faint); }
+.ach__item.is-locked .ach__how  { color: var(--ink-faint); }
+
+.ach__icon {
+  flex: none;
+  width: 48px; height: 48px;
+  display: grid; place-items: center;
+  font-size: 26px; line-height: 1;
+  border-radius: 12px;
+  background: var(--accent-soft);
+}
+.ach__item.is-locked .ach__icon { background: var(--surface-3); }
+
+.ach__body { min-width: 0; }
+.ach__name {
+  font-weight: 650; font-size: 15px;
+  margin-bottom: 3px;
+}
+.ach__how { margin: 0 0 6px; font-size: 13px; line-height: 1.45; color: var(--ink-soft); }
+.ach__mark {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.ach__item.is-earned .ach__mark { color: var(--good); }
+
+/* ------------------------- кнопка профиля в шапке ----------------------- */
+
+.topbar__me {
+  display: flex; align-items: center; gap: 9px;
+  background: none; border: 0; padding: 3px 6px 3px 3px;
+  border-radius: 999px; cursor: pointer; font: inherit;
+  transition: background-color .16s;
+}
+.topbar__me:hover { background: var(--surface-2); }

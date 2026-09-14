@@ -1421,6 +1421,172 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   .why { gap: 20px; margin-bottom: 24px; }
 }
 
+/* ====================== ДОСТИЖЕНИЕ: ВСПЛЫВАЮЩЕЕ ОКНО ===================== */
+
+/* Появляется в правом нижнем углу, как в игровых клиентах. Над RGB-полосой,
+   чтобы не наезжать на неё. */
+.ach-pop {
+  position: fixed;
+  right: 22px; bottom: 26px;
+  z-index: 140;
+  display: flex; align-items: center; gap: 14px;
+  min-width: 264px; max-width: calc(100vw - 44px);
+  padding: 13px 20px 13px 14px;
+  border-radius: var(--r-md);
+  background: #17162a;
+  border: 1px solid #322f52;
+  border-left: 4px solid var(--accent);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .45);
+  opacity: 0;
+  transform: translateX(28px);
+  transition: opacity .3s, transform .34s cubic-bezier(.2, .7, .3, 1);
+  pointer-events: none;
+}
+.ach-pop.is-visible { opacity: 1; transform: none; }
+
+.ach-pop__icon {
+  flex: none;
+  width: 46px; height: 46px;
+  display: grid; place-items: center;
+  font-size: 26px; line-height: 1;
+  border-radius: 12px;
+  background: rgba(141, 127, 255, .16);
+  border: 1px solid rgba(141, 127, 255, .3);
+}
+.ach-pop__body { display: grid; gap: 2px; min-width: 0; }
+.ach-pop__label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: #9a8dff;
+}
+.ach-pop__name {
+  font-family: var(--display); font-weight: 700;
+  font-size: 15px; letter-spacing: -.02em;
+  color: #f2f0ff;
+}
+
+@media (max-width: 720px) {
+  .ach-pop { right: 12px; left: 12px; bottom: 18px; min-width: 0; }
+}
+
+/* ============================== ПРОФИЛЬ ================================= */
+
+.profile {
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  padding: 26px 28px;
+  margin-bottom: 34px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+.profile__avatar {
+  flex: none;
+  width: 84px; height: 84px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: linear-gradient(140deg, var(--accent), var(--accent-deep));
+  color: #fff;
+  font-family: var(--display); font-weight: 700; font-size: 34px;
+}
+.profile__body { flex: 1 1 320px; min-width: 0; display: grid; gap: 18px; }
+.profile__name {
+  font-family: var(--display); font-weight: 700;
+  font-size: 22px; letter-spacing: -.02em;
+}
+.profile__sub { margin: 4px 0 0; font-size: 13px; color: var(--ink-faint); }
+.profile__stats {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+}
+.profile__stats .result__stat { padding: 12px; }
+
+/* --------------------------- шапка списка ------------------------------ */
+
+.ach-head {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.ach-head__title {
+  font-family: var(--display); font-weight: 700;
+  font-size: 18px; letter-spacing: -.02em;
+}
+.ach-head__count {
+  font-size: 13px; font-weight: 600; color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.ach-head__bar { flex: 1 1 180px; min-width: 120px; }
+
+/* --------------------------- сетка достижений --------------------------- */
+
+.ach {
+  list-style: none; margin: 0 0 10px; padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.ach__item {
+  display: flex; align-items: flex-start; gap: 15px;
+  padding: 16px 18px;
+  border-radius: var(--r-md);
+  transition: transform .16s, box-shadow .16s;
+}
+
+/* Полученное — цветное и на подложке */
+.ach__item.is-earned {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+.ach__item.is-earned:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+/* Ещё не полученное — серое и приглушённое */
+.ach__item.is-locked {
+  background: transparent;
+  border: 1px dashed var(--line-strong);
+}
+.ach__item.is-locked .ach__icon {
+  filter: grayscale(1);
+  opacity: .4;
+}
+.ach__item.is-locked .ach__name { color: var(--ink-faint); }
+.ach__item.is-locked .ach__how  { color: var(--ink-faint); }
+
+.ach__icon {
+  flex: none;
+  width: 48px; height: 48px;
+  display: grid; place-items: center;
+  font-size: 26px; line-height: 1;
+  border-radius: 12px;
+  background: var(--accent-soft);
+}
+.ach__item.is-locked .ach__icon { background: var(--surface-3); }
+
+.ach__body { min-width: 0; }
+.ach__name {
+  font-weight: 650; font-size: 15px;
+  margin-bottom: 3px;
+}
+.ach__how { margin: 0 0 6px; font-size: 13px; line-height: 1.45; color: var(--ink-soft); }
+.ach__mark {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.ach__item.is-earned .ach__mark { color: var(--good); }
+
+/* ------------------------- кнопка профиля в шапке ----------------------- */
+
+.topbar__me {
+  display: flex; align-items: center; gap: 9px;
+  background: none; border: 0; padding: 3px 6px 3px 3px;
+  border-radius: 999px; cursor: pointer; font: inherit;
+  transition: background-color .16s;
+}
+.topbar__me:hover { background: var(--surface-2); }
+
   </style>
   <script>
 /* js/theme.js */
@@ -1497,8 +1663,10 @@ window.Theme = (function () {
       <span class="theme-toggle__opt theme-toggle__opt--moon" aria-hidden="true">☾</span>
     </button>
     <div class="topbar__user">
-      <span class="topbar__avatar" id="user-avatar" aria-hidden="true">?</span>
-      <span class="topbar__name" id="user-name">Студент</span>
+      <button class="topbar__me" id="btn-profile" type="button" title="Профиль и достижения">
+        <span class="topbar__avatar" id="user-avatar" aria-hidden="true">?</span>
+        <span class="topbar__name" id="user-name">Студент</span>
+      </button>
       <button class="topbar__exit" id="btn-logout" type="button" title="Сменить пользователя">Выйти</button>
     </div>
   </header>
@@ -1692,7 +1860,28 @@ window.Theme = (function () {
       </section>
     </section>
 
-    <!-- ============ ЭКРАН 4: РЕЗУЛЬТАТ ============ -->
+    <!-- ============ ЭКРАН 4: ПРОФИЛЬ ============ -->
+    <section class="screen screen--profile" id="screen-profile">
+      <div class="section-head">
+        <h2 class="section-head__title">Профиль</h2>
+        <p class="section-head__sub">
+          Достижения открываются по ходу тренажёра. Полученные горят цветом,
+          ещё не полученные остаются серыми — под каждым написано, за что его дают.
+        </p>
+      </div>
+
+      <div class="profile" id="profile-card"></div>
+
+      <div class="ach-head">
+        <h3 class="ach-head__title">Достижения</h3>
+        <span class="ach-head__count" id="ach-count">0 из 0</span>
+        <div class="bar ach-head__bar"><div class="bar__fill" id="ach-bar"></div></div>
+      </div>
+
+      <ul class="ach" id="ach-grid"></ul>
+    </section>
+
+    <!-- ============ ЭКРАН 5: РЕЗУЛЬТАТ ============ -->
     <section class="screen screen--result" id="screen-result">
       <div class="result" id="result"></div>
     </section>
@@ -1702,6 +1891,7 @@ window.Theme = (function () {
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="drag-layer" id="drag-layer" aria-hidden="true"></div>
   <canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
+  <div class="ach-pop" id="ach-pop" hidden role="status" aria-live="polite"></div>
 
   <footer class="footer">
     «Формуляр» · учебный тренажёр · реквизиты приведены по ГОСТ Р 7.0.97-2025 (ОРД) ·
@@ -3375,7 +3565,15 @@ window.Store = (function () {
 
   var KEY = 'sim-trainer-v2';   // v2: другой набор уровней, старый прогресс неприменим
 
-  var empty = { name: '', results: {} };   // results: { 'html-1': {score, max, percent, grade, mistakes, date} }
+  // results:      { 'doc-prikaz': {score, max, percent, grade, mistakes, date} }
+  // achievements: { 'first-doc': '2026-09-14T10:00:00.000Z' }
+  // stats:        накопительные счётчики для достижений
+  var empty = {
+    name: '',
+    results: {},
+    achievements: {},
+    stats: { signs: 0, seals: 0, reviewed: 0, cleanStreak: 0 }
+  };
 
   function read() {
     try {
@@ -3385,6 +3583,12 @@ window.Store = (function () {
       if (!data || typeof data !== 'object') return clone(empty);
       if (typeof data.name !== 'string') data.name = '';
       if (!data.results || typeof data.results !== 'object') data.results = {};
+      /* Поля достижений появились позже — дополняем старые записи */
+      if (!data.achievements || typeof data.achievements !== 'object') data.achievements = {};
+      if (!data.stats || typeof data.stats !== 'object') data.stats = clone(empty.stats);
+      Object.keys(empty.stats).forEach(function (k) {
+        if (typeof data.stats[k] !== 'number') data.stats[k] = 0;
+      });
       return data;
     } catch (e) {
       return clone(empty);
@@ -3424,9 +3628,220 @@ window.Store = (function () {
 
     getResult: function (levelId) { return read().results[levelId] || null; },
 
+    /* ----------------------- достижения ------------------------ */
+
+    getAchievements: function () { return read().achievements; },
+
+    hasAchievement: function (id) { return !!read().achievements[id]; },
+
+    /** Записывает достижение. Возвращает false, если оно уже было. */
+    addAchievement: function (id) {
+      var d = read();
+      if (d.achievements[id]) return false;
+      d.achievements[id] = new Date().toISOString();
+      write(d);
+      return true;
+    },
+
+    /* --------------- накопительные счётчики --------------------- */
+
+    getStat: function (key) { return read().stats[key] || 0; },
+
+    /** Увеличивает счётчик и возвращает новое значение */
+    bumpStat: function (key, by) {
+      var d = read();
+      d.stats[key] = (d.stats[key] || 0) + (by === undefined ? 1 : by);
+      write(d);
+      return d.stats[key];
+    },
+
+    setStat: function (key, value) {
+      var d = read();
+      d.stats[key] = value;
+      write(d);
+      return value;
+    },
+
     getAll: function () { return read().results; },
 
     reset: function () { write(clone(empty)); }
+  };
+})();
+
+  </script>
+  <script>
+/* js/achievements.js */
+/* ==========================================================================
+   Достижения
+
+   Условия привязаны к реальным событиям тренажёра, а не к абстрактным
+   счётчикам: за чистое прохождение, за серию верных реквизитов, за
+   конкретные реквизиты, которые студент научился ставить.
+
+   Порядок в списке — порядок на экране профиля: сначала то, что получают
+   в первые минуты, затем редкое.
+   ========================================================================== */
+
+window.Achievements = (function () {
+  'use strict';
+
+  var LIST = [
+    { id: 'first-doc',  icon: '📄', name: 'Первый документ',
+      how: 'Завершить любой уровень' },
+
+    { id: 'clean-one',  icon: '🎯', name: 'Чисто сработано',
+      how: 'Пройти уровень без единой ошибки' },
+
+    { id: 'streak-5',   icon: '🔥', name: 'Пять подряд',
+      how: 'Поставить подряд пять верных реквизитов, ни разу не ошибившись' },
+
+    { id: 'fast',       icon: '⏱️', name: 'Скорая регистрация',
+      how: 'Пройти уровень без ошибок быстрее чем за минуту' },
+
+    { id: 'sign-5',     icon: '🖋️', name: 'Твёрдая подпись',
+      how: 'Пять раз верно поставить реквизит 22 «Подпись»' },
+
+    { id: 'seal',       icon: '🔴', name: 'Печать поставлена',
+      how: 'Верно поставить реквизит 24 «Печать»' },
+
+    { id: 'reviewed-10',icon: '📚', name: 'Работа над ошибками',
+      how: 'Разобрать десять ошибок в журнале — ошибаться не стыдно' },
+
+    { id: 'no-hint',    icon: '🧠', name: 'Наизусть',
+      how: 'Пройти уровень без ошибок, ни разу не открыв подсказку по теме' },
+
+    { id: 'clean-3',    icon: '💎', name: 'Три подряд',
+      how: 'Пройти без ошибок три уровня подряд' },
+
+    { id: 'half',       icon: '🗂️', name: 'Половина пути',
+      how: 'Пройти без ошибок шесть уровней' },
+
+    { id: 'night',      icon: '🌙', name: 'Ночная смена',
+      how: 'Переключиться на тёмную тему' },
+
+    { id: 'full',       icon: '🏛️', name: 'Полный формуляр',
+      how: 'Пройти без ошибок все двенадцать уровней' }
+  ];
+
+  var byId = {};
+  LIST.forEach(function (a) { byId[a.id] = a; });
+
+  var popupEl = null;
+  var queue = [];
+  var showing = false;
+
+  function init(el) { popupEl = el; }
+
+  /**
+   * Выдаёт достижение, если его ещё нет.
+   * @returns {boolean} true, если достижение выдано именно сейчас
+   */
+  function grant(id) {
+    if (!byId[id]) return false;
+    if (!Store.addAchievement(id)) return false;   // уже было
+    queue.push(byId[id]);
+    pump();
+    return true;
+  }
+
+  /* ------------------------- всплывающее окно ----------------------- */
+
+  function pump() {
+    if (showing || !queue.length || !popupEl) return;
+    showing = true;
+
+    var a = queue.shift();
+    popupEl.innerHTML = '';
+
+    var icon = document.createElement('span');
+    icon.className = 'ach-pop__icon';
+    icon.textContent = a.icon;
+
+    var body = document.createElement('span');
+    body.className = 'ach-pop__body';
+
+    var label = document.createElement('span');
+    label.className = 'ach-pop__label';
+    label.textContent = 'Достижение получено';
+
+    var name = document.createElement('span');
+    name.className = 'ach-pop__name';
+    name.textContent = a.name;
+
+    body.appendChild(label);
+    body.appendChild(name);
+    popupEl.appendChild(icon);
+    popupEl.appendChild(body);
+
+    popupEl.hidden = false;
+    void popupEl.offsetWidth;                      // перезапуск анимации
+    popupEl.classList.add('is-visible');
+
+    /* Когда достижений выдано сразу несколько, показываем каждое короче —
+       иначе очередь из пяти растянется на двадцать секунд. */
+    var hold = queue.length ? 2400 : 4200;
+
+    window.setTimeout(function () {
+      popupEl.classList.remove('is-visible');
+      window.setTimeout(function () {
+        popupEl.hidden = true;
+        showing = false;
+        pump();                                    // следующее из очереди
+      }, 340);
+    }, hold);
+  }
+
+  /* --------------------------- события ------------------------------ */
+
+  /** Верно поставленный реквизит: серия и «именные» достижения */
+  function onCorrect(streak, cardTag) {
+    if (streak >= 5) grant('streak-5');
+
+    var num = (cardTag || '').slice(0, 2);
+    if (num === '22' && Store.bumpStat('signs') >= 5) grant('sign-5');
+    if (num === '24') { Store.bumpStat('seals'); grant('seal'); }
+  }
+
+  /** Ошибка попала в разбор */
+  function onMistakeLogged() {
+    if (Store.bumpStat('reviewed') >= 10) grant('reviewed-10');
+  }
+
+  /**
+   * Итог уровня.
+   * @param {{clean:boolean, seconds:number, theoryOpened:boolean,
+   *          cleared:number, total:number}} r
+   */
+  function onLevelDone(r) {
+    grant('first-doc');
+
+    if (!r.clean) {
+      Store.setStat('cleanStreak', 0);
+      return;
+    }
+
+    grant('clean-one');
+    if (r.seconds < 60) grant('fast');
+    if (!r.theoryOpened) grant('no-hint');
+    if (Store.bumpStat('cleanStreak') >= 3) grant('clean-3');
+    if (r.cleared >= 6) grant('half');
+    if (r.cleared >= r.total) grant('full');
+  }
+
+  function onDarkTheme() { grant('night'); }
+
+  /* ---------------------------------------------------------------- */
+
+  return {
+    LIST: LIST,
+    init: init,
+    grant: grant,
+    earned: function () { return Store.getAchievements(); },
+    count: function () { return Object.keys(Store.getAchievements()).length; },
+    onCorrect: onCorrect,
+    onMistakeLogged: onMistakeLogged,
+    onLevelDone: onLevelDone,
+    onDarkTheme: onDarkTheme
   };
 })();
 
@@ -3819,6 +4234,11 @@ window.Game = (function () {
     onFinish = finishHandler;
     DragDrop.init(el.dragLayer, handleDrop);
     el.restart.addEventListener('click', function () { start(state.topic, state.level); });
+
+    /* Достижение «Наизусть» требует пройти уровень, не заглядывая в подсказку */
+    el.theory.addEventListener('toggle', function () {
+      if (el.theory.open && state) state.theoryOpened = true;
+    });
   }
 
   /* ------------------------------ старт ---------------------------- */
@@ -3838,6 +4258,8 @@ window.Game = (function () {
       unusedWrong: {},        // id лишних карточек, которые пытались поставить
       logged: {},             // уже разобранные пары «карточка + поле»
       logCount: 0,
+      streak: 0,              // подряд верных реквизитов
+      theoryOpened: false,    // открывал ли студент подсказку по теме
       startedAt: Date.now()
     };
 
@@ -4016,6 +4438,9 @@ window.Game = (function () {
     card.parentNode.removeChild(card);
     checkBankEmpty();
 
+    state.streak++;
+    Achievements.onCorrect(state.streak, card._def.tag);
+
     var phrase = nextPraise();
     showGoodFeedback(phrase, card._def, earned, st.attempts);
     toast(phrase + '  +' + earned, 'good');
@@ -4029,6 +4454,7 @@ window.Game = (function () {
   function rejectCard(card, slot, st) {
     busy = true;
     state.mistakes++;
+    state.streak = 0;
     if (card._def.note) state.unusedWrong[card._def.id] = card._def;
 
     var backup = slot.innerHTML;
@@ -4142,6 +4568,7 @@ window.Game = (function () {
     }
     state.logged[key] = true;
     state.logCount++;
+    Achievements.onMistakeLogged();
 
     var item = document.createElement('li');
     item.className = 'mis';
@@ -4285,6 +4712,7 @@ window.Game = (function () {
       mistakes: state.mistakes,
       slots: state.total,
       seconds: Math.round((Date.now() - state.startedAt) / 1000),
+      theoryOpened: state.theoryOpened,
       review: review,
       traps: traps,
       date: new Date().toISOString()
@@ -4354,8 +4782,15 @@ window.Game = (function () {
       welcome: $('screen-welcome'),
       levels:  $('screen-levels'),
       game:    $('screen-game'),
+      profile: $('screen-profile'),
       result:  $('screen-result')
     },
+
+    profileBtn:  $('btn-profile'),
+    profileCard: $('profile-card'),
+    achGrid:     $('ach-grid'),
+    achCount:    $('ach-count'),
+    achBar:      $('ach-bar'),
 
     loginForm: $('form-login'),
     nameInput: $('input-name'),
@@ -4413,8 +4848,9 @@ window.Game = (function () {
     window.requestAnimationFrame(reset);
   }
 
-  /* Из игры и с экрана результата возвращаемся к списку уровней */
+  /* Из игры, профиля и с экрана результата возвращаемся к списку уровней */
   ui.back.addEventListener('click', openLevels);
+  ui.profileBtn.addEventListener('click', openProfile);
 
   /* ============================ ВХОД ============================== */
 
@@ -4570,6 +5006,104 @@ window.Game = (function () {
     return chip;
   }
 
+  /* ============================ ПРОФИЛЬ =========================== */
+
+  function openProfile() {
+    renderProfile();
+    show('profile', 'Профиль');
+  }
+
+  function renderProfile() {
+    var name = Store.getName() || 'Студент';
+    var cleared = clearedCount();
+    var done = 0, percentSum = 0;
+    TOPIC.levels.forEach(function (lvl) {
+      var r = Store.getResult(lvl.id);
+      if (r) { done++; percentSum += r.percent; }
+    });
+
+    /* --- карточка студента --- */
+    ui.profileCard.innerHTML = '';
+
+    var avatar = document.createElement('div');
+    avatar.className = 'profile__avatar';
+    avatar.textContent = name.charAt(0).toUpperCase();
+
+    var head = document.createElement('div');
+    head.className = 'profile__head';
+    head.innerHTML =
+      '<h3 class="profile__name">' + escapeHtml(name) + '</h3>' +
+      '<p class="profile__sub">Обучающийся по профессии 09.01.03 «Оператор информационных систем и ресурсов»</p>';
+
+    var stats = document.createElement('div');
+    stats.className = 'profile__stats';
+    stats.appendChild(statBox(cleared + ' / ' + TOPIC.levels.length, 'без ошибок'));
+    stats.appendChild(statBox(String(done), 'пройдено'));
+    stats.appendChild(statBox(done ? String(Game.gradeOf(Math.round(percentSum / done))) : '—', 'оценка'));
+    stats.appendChild(statBox(Achievements.count() + ' / ' + Achievements.LIST.length, 'достижений'));
+
+    var body = document.createElement('div');
+    body.className = 'profile__body';
+    body.appendChild(head);
+    body.appendChild(stats);
+
+    ui.profileCard.appendChild(avatar);
+    ui.profileCard.appendChild(body);
+
+    /* --- сетка достижений --- */
+    var earned = Achievements.earned();
+    var got = Achievements.count();
+
+    ui.achCount.textContent = got + ' из ' + Achievements.LIST.length;
+    ui.achBar.style.width = (got / Achievements.LIST.length * 100) + '%';
+
+    ui.achGrid.innerHTML = '';
+    Achievements.LIST.forEach(function (a) {
+      ui.achGrid.appendChild(achievementCard(a, earned[a.id]));
+    });
+  }
+
+  /** Полученное достижение — цветное, ещё не полученное — серое */
+  function achievementCard(a, when) {
+    var li = document.createElement('li');
+    li.className = 'ach__item' + (when ? ' is-earned' : ' is-locked');
+
+    var icon = document.createElement('span');
+    icon.className = 'ach__icon';
+    icon.textContent = a.icon;
+    icon.setAttribute('aria-hidden', 'true');
+
+    var body = document.createElement('div');
+    body.className = 'ach__body';
+
+    var name = document.createElement('div');
+    name.className = 'ach__name';
+    name.textContent = a.name;
+
+    var how = document.createElement('p');
+    how.className = 'ach__how';
+    how.textContent = a.how;
+
+    body.appendChild(name);
+    body.appendChild(how);
+
+    var mark = document.createElement('span');
+    mark.className = 'ach__mark';
+    mark.textContent = when ? 'получено ' + formatDate(when) : 'не получено';
+
+    body.appendChild(mark);
+    li.appendChild(icon);
+    li.appendChild(body);
+    return li;
+  }
+
+  function formatDate(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear();
+  }
+
   /* ============================= ИГРА ============================= */
 
   function openGame(level, index) {
@@ -4705,6 +5239,14 @@ window.Game = (function () {
 
     show('result', 'Результат · ' + current.level.name);
 
+    Achievements.onLevelDone({
+      clean: clean,
+      seconds: res.seconds,
+      theoryOpened: res.theoryOpened,
+      cleared: clearedCount(),
+      total: TOPIC.levels.length
+    });
+
     /* Конфетти только за уровень, пройденный без ошибок */
     if (clean) {
       window.setTimeout(function () { Confetti.fire(confettiColors(), 1.5); }, 260);
@@ -4806,6 +5348,10 @@ window.Game = (function () {
     return TOPIC.levels.every(function (lvl) { return isCleared(lvl.id); });
   }
 
+  function clearedCount() {
+    return TOPIC.levels.filter(function (lvl) { return isCleared(lvl.id); }).length;
+  }
+
   function statBox(value, label) {
     var box = document.createElement('div');
     box.className = 'result__stat';
@@ -4866,6 +5412,16 @@ window.Game = (function () {
 
   Theme.bind();
   Confetti.init($('confetti'));
+  Achievements.init($('ach-pop'));
+
+  /* Достижение «Ночная смена» — за осознанное переключение, а не за
+     тему, сохранённую с прошлого раза. Слушатель добавляется после
+     Theme.bind(), поэтому читает уже переключённое состояние. */
+  Array.prototype.forEach.call(document.querySelectorAll('.theme-toggle'), function (btn) {
+    btn.addEventListener('click', function () {
+      if (Theme.get() === 'dark') Achievements.onDarkTheme();
+    });
+  });
 
   /* Карточка разработчика открыта всегда и стоит первой на главном экране,
      выше приветствия. Собирается один раз: renderLevels её не трогает. */
