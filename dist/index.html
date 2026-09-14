@@ -524,20 +524,40 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
   overflow-x: auto;
 }
 
-/* --- лист документа --- */
+/* --- лист документа: пропорции и поля настоящего листа A4 --- */
 .board--doc {
-  background: var(--paper);
+  position: relative;
   width: 100%;
-  max-width: 730px;
-  min-height: 300px;
-  padding: 46px 50px;
+  max-width: 794px;                  /* 210 мм при 96 dpi */
+  /* Поля по ГОСТ Р 7.0.97-2025, п. 3: левое 20 мм, правое 10 мм,
+     верхнее и нижнее по 20 мм. В пикселях при 96 dpi. */
+  padding: 76px 38px 76px 76px;
+
+  /* Бумага и линия поля для подшивки — фоном, чтобы псевдоэлементы
+     остались свободны под пропорцию листа. */
+  background-color: var(--paper);
+  background-image: linear-gradient(to right,
+    transparent 75px, var(--margin-rule) 75px,
+    var(--margin-rule) 76px, transparent 76px);
+
   box-shadow: var(--shadow-lg);
   font-family: var(--doc);
   font-size: 15.5px;
   line-height: 1.45;
   color: var(--paper-ink);
-  border-radius: 3px;
+  border-radius: 2px;
 }
+
+/* Высота листа: 297 мм при ширине 210 мм. Плавающий блок нулевой ширины
+   задаёт минимальную высоту от ширины содержимого и при этом позволяет
+   листу вырасти, если документ длиннее страницы. */
+.board--doc::before {
+  content: "";
+  float: left;
+  width: 0;
+  padding-top: 142.8%;
+}
+.board--doc::after { content: ""; display: table; clear: both; }
 .board--doc .b-text { margin: 0 0 5px; }
 .board--doc hr { border: 0; border-top: 1px solid var(--paper-line); margin: 12px 0; }
 
@@ -912,14 +932,23 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   .welcome { padding: 34px 22px 28px; }
   .welcome__facts { gap: 18px; }
   .board-wrap { padding: 14px; }
-  .board--doc { padding: 26px 20px; font-size: 14px; }
+  .board--doc {
+    padding: 34px 17px 34px 34px;    /* те же 20/10/20/20 мм в масштабе экрана */
+    font-size: 14px;
+    background-image: linear-gradient(to right,
+      transparent 33px, var(--margin-rule) 33px,
+      var(--margin-rule) 34px, transparent 34px);
+  }
   .board--doc .slot__content { font-size: 14px; }
   .board--code { padding: 18px 14px; font-size: 12.5px; }
   .board--code .slot { min-width: 110px; }
   .hud__stats { width: 100%; justify-content: space-between; gap: 6px; }
   .stat { min-width: 0; padding: 8px 10px; }
   .result { padding: 26px 18px; }
-  .b-row { flex-direction: column; }
+  /* Сложившись в столбик, парные поля должны занимать всю ширину листа:
+     у .b-row задан align-items: flex-start, и без stretch они сжимались
+     по содержимому. */
+  .b-row { flex-direction: column; align-items: stretch; }
   .board--layout .b-row { align-items: stretch; gap: 8px; }
   .topbar { padding: 10px 14px; gap: 8px; }
   .topbar__title, .topbar__name { display: none; }
@@ -993,18 +1022,6 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   font-size: 11px; font-weight: 700;
   letter-spacing: .16em; text-transform: uppercase;
   opacity: .55;
-  pointer-events: none;
-}
-
-/* ---------------- поле для подшивки на бланке документа ----------------- */
-
-.board--doc { position: relative; }
-.board--doc::before {
-  content: "";
-  position: absolute;
-  top: 0; bottom: 0; left: 34px;
-  width: 1px;
-  background: var(--margin-rule);
   pointer-events: none;
 }
 
@@ -1094,7 +1111,6 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   .stamp { width: 150px; height: 150px; top: -26px; right: -30px; }
   .mistakes__head { padding: 13px 16px; }
   .mis { padding: 13px 16px; gap: 11px; }
-  .board--doc::before { left: 14px; }
 }
 
 /* ============================ БЛОК «ОСНОВАНИЕ» =========================== */
@@ -1261,29 +1277,53 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 /* ======================== КАРТОЧКА РАЗРАБОТЧИКА ========================== */
 
 .dev {
-  display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
-  margin: 0 0 26px;
-  padding: 22px 24px;
-  background: var(--surface);
+  display: flex; align-items: center; gap: 30px; flex-wrap: wrap;
+  margin: 0 0 30px;
+  padding: 30px 34px;
   border: 1px solid var(--line);
-  border-left: 4px solid var(--accent);
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+
+  /* Лёгкая заливка в цвет акцента — карточка читается как приветственная,
+     а не как служебная сноска внизу страницы. */
+  background:
+    radial-gradient(520px 200px at 8% 0%,
+      color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+    var(--surface);
 }
+
+/* Декоративная кавычка: текст читается как слово автора */
+.dev::after {
+  content: "”";
+  position: absolute;
+  right: 18px; bottom: -34px;
+  font-family: var(--display);
+  font-size: 150px; line-height: 1;
+  color: var(--accent);
+  opacity: .07;
+  pointer-events: none;
+}
+.dev > * { position: relative; z-index: 1; }
 
 .dev__photo {
   flex: none;
   position: relative;
-  width: 104px; height: 104px;
+  width: 148px; height: 148px;
   border-radius: 50%;
   overflow: hidden;
   background: var(--accent-soft);
-  border: 3px solid var(--accent);
   display: grid; place-items: center;
+  /* двойное кольцо: белый просвет и акцентный контур */
+  box-shadow:
+    0 0 0 5px var(--surface),
+    0 0 0 8px var(--accent),
+    0 10px 26px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 .dev__initials {
   font-family: var(--display);
-  font-size: 31px; font-weight: 700;
+  font-size: 44px; font-weight: 700;
   color: var(--accent);
   letter-spacing: .02em;
 }
@@ -1293,25 +1333,46 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   object-fit: cover;
 }
 
-.dev__body { flex: 1 1 320px; min-width: 0; }
+.dev__body { flex: 1 1 340px; min-width: 0; }
+
 .dev__label {
-  display: block;
+  display: inline-block;
   font-size: 10px; font-weight: 700;
-  letter-spacing: .14em; text-transform: uppercase;
-  color: var(--ink-faint);
-  margin-bottom: 4px;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: var(--accent-deep);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 5px 12px;
+  margin-bottom: 10px;
 }
 .dev__name {
   font-family: var(--display); font-weight: 700;
-  font-size: 19px; letter-spacing: -.02em;
-  margin-bottom: 10px;
+  font-size: 24px; letter-spacing: -.025em;
+  margin-bottom: 4px;
 }
-.dev__text { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); max-width: 74ch; }
+.dev__role {
+  margin: 0 0 14px;
+  font-size: 13px; color: var(--ink-faint);
+}
+.dev__text {
+  margin: 0;
+  font-size: 14.5px; line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 68ch;
+  padding-left: 16px;
+  border-left: 3px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
 
 @media (max-width: 720px) {
-  .dev { gap: 18px; padding: 20px; justify-content: center; text-align: center; }
-  .dev__photo { width: 96px; height: 96px; }
+  .dev {
+    gap: 20px; padding: 24px 20px;
+    justify-content: center; text-align: center;
+  }
+  .dev__photo { width: 124px; height: 124px; }
   .dev__body { flex-basis: 100%; }
+  .dev__text { padding-left: 0; border-left: 0; text-align: left; }
+  .dev::after { font-size: 110px; right: 8px; bottom: -26px; }
+}
 }
 
   </style>
@@ -4637,6 +4698,7 @@ window.Game = (function () {
     body.innerHTML =
       '<span class="dev__label">Разработчик</span>' +
       '<h3 class="dev__name">' + escapeHtml(DEV_NAME) + '</h3>' +
+      '<p class="dev__role">Автор электронного образовательного ресурса «Формуляр»</p>' +
       '<p class="dev__text">Ресурс создан как электронное средство обучения ' +
       'для отработки практического навыка оформления организационно-распорядительных ' +
       'документов. Перечень из тридцати реквизитов трудно удержать в голове, пока ' +
