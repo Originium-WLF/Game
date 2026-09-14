@@ -44,7 +44,10 @@ window.Game = (function () {
     el = refs;
     onFinish = finishHandler;
     DragDrop.init(el.dragLayer, handleDrop);
-    el.restart.addEventListener('click', function () { start(state.topic, state.level); });
+    el.restart.addEventListener('click', function () {
+      Achievements.onRestart();
+      start(state.topic, state.level);
+    });
 
     /* Достижение «Наизусть» требует пройти уровень, не заглядывая в подсказку */
     el.theory.addEventListener('toggle', function () {

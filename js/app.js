@@ -363,6 +363,12 @@
 
   function showResult(res) {
     current.lastResult = res;
+
+    /* Прежний результат читаем до сохранения: достижение «Второе дыхание»
+       даётся за чистое прохождение уровня, на котором раньше ошибались. */
+    var prev = Store.getResult(res.levelId);
+    var hadMistakesBefore = !!prev && prev.mistakes > 0;
+
     var isRecord = Store.saveResult(res.levelId, {
       score: res.score, max: res.max, percent: res.percent,
       grade: res.grade, mistakes: res.mistakes, date: res.date
@@ -484,9 +490,12 @@
     show('result', 'Результат · ' + current.level.name);
 
     Achievements.onLevelDone({
+      levelId: res.levelId,
       clean: clean,
       seconds: res.seconds,
       theoryOpened: res.theoryOpened,
+      hadMistakesBefore: hadMistakesBefore,
+      gradeFives: gradeFives(),
       cleared: clearedCount(),
       total: TOPIC.levels.length
     });
@@ -594,6 +603,14 @@
 
   function clearedCount() {
     return TOPIC.levels.filter(function (lvl) { return isCleared(lvl.id); }).length;
+  }
+
+  /** Сколько уровней сдано на пятёрку */
+  function gradeFives() {
+    return TOPIC.levels.filter(function (lvl) {
+      var r = Store.getResult(lvl.id);
+      return r && r.grade === 5;
+    }).length;
   }
 
   function statBox(value, label) {

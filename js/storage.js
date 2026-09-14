@@ -10,11 +10,15 @@ window.Store = (function () {
   // results:      { 'doc-prikaz': {score, max, percent, grade, mistakes, date} }
   // achievements: { 'first-doc': '2026-09-14T10:00:00.000Z' }
   // stats:        накопительные счётчики для достижений
+  // sets:         множества для достижений вида «собери все» —
+  //               'reqs' хранит освоенные номера реквизитов,
+  //               'theory' — уровни, где открывали подсказку
   var empty = {
     name: '',
     results: {},
     achievements: {},
-    stats: { signs: 0, seals: 0, reviewed: 0, cleanStreak: 0 }
+    stats: { signs: 0, seals: 0, reviewed: 0, cleanStreak: 0, restarts: 0, seconds: 0 },
+    sets: {}
   };
 
   function read() {
@@ -31,6 +35,7 @@ window.Store = (function () {
       Object.keys(empty.stats).forEach(function (k) {
         if (typeof data.stats[k] !== 'number') data.stats[k] = 0;
       });
+      if (!data.sets || typeof data.sets !== 'object') data.sets = {};
       return data;
     } catch (e) {
       return clone(empty);
@@ -95,6 +100,28 @@ window.Store = (function () {
       d.stats[key] = (d.stats[key] || 0) + (by === undefined ? 1 : by);
       write(d);
       return d.stats[key];
+    },
+
+    /* ------------------------ множества ------------------------- */
+
+    /** Добавляет ключ в множество. Возвращает его размер после добавления. */
+    addToSet: function (name, key) {
+      var d = read();
+      if (!d.sets[name]) d.sets[name] = {};
+      d.sets[name][key] = true;
+      write(d);
+      return Object.keys(d.sets[name]).length;
+    },
+
+    setSize: function (name) {
+      var set = read().sets[name];
+      return set ? Object.keys(set).length : 0;
+    },
+
+    /** Все ли перечисленные ключи уже есть в множестве */
+    hasAllInSet: function (name, keys) {
+      var set = read().sets[name] || {};
+      return keys.every(function (k) { return !!set[k]; });
     },
 
     setStat: function (key, value) {
