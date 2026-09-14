@@ -137,12 +137,6 @@
     });
 
     renderOverall();
-
-    /* Перерисовываем список при каждом возврате — старую карточку убираем,
-       иначе она добавлялась бы заново на каждый заход */
-    var oldDev = ui.screens.levels.querySelector('.dev');
-    if (oldDev) oldDev.remove();
-    if (allCleared()) ui.screens.levels.appendChild(developerCard());
   }
 
   function levelCard(level, i) {
@@ -374,14 +368,13 @@
 
     ui.result.appendChild(actions);
 
-    /* Тренажёр пройден целиком — знакомим студента с автором */
+    /* Тренажёр пройден целиком — отмечаем это отдельно */
     if (clean && allCleared()) {
       var done = document.createElement('p');
       done.className = 'result__record';
       done.style.marginTop = '26px';
       done.textContent = 'Все ' + TOPIC.levels.length + ' уровней пройдены без ошибок. Поздравляем!';
       ui.result.appendChild(done);
-      ui.result.appendChild(developerCard());
     }
 
     show('result', 'Результат · ' + current.level.name);
@@ -545,6 +538,10 @@
 
   Theme.bind();
   Confetti.init($('confetti'));
+
+  /* Карточка разработчика открыта всегда и стоит первой на главном экране,
+     выше приветствия. Собирается один раз: renderLevels её не трогает. */
+  ui.screens.levels.insertBefore(developerCard(), ui.screens.levels.firstChild);
 
   var saved = Store.getName();
   if (saved) {
