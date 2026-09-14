@@ -34,7 +34,6 @@
     nameError: $('name-error'),
     greeting:  $('greeting'),
 
-    levelsSub:  $('levels-sub'),
     levelsGrid: $('levels-grid'),
     overall:    $('overall'),
 
@@ -129,7 +128,6 @@
   }
 
   function renderLevels() {
-    ui.levelsSub.textContent = TOPIC.desc;
     ui.levelsGrid.innerHTML = '';
 
     TOPIC.levels.forEach(function (level, i) {

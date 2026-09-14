@@ -312,7 +312,7 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
 
 .section-head { margin-bottom: 24px; }
 .section-head__title { font-family: var(--display); font-weight: 700; font-size: 30px; letter-spacing: -.02em; }
-.section-head__sub { margin: 8px 0 0; color: var(--ink-soft); max-width: 62ch; }
+.section-head__sub { margin: 10px 0 0; color: var(--ink-soft); max-width: 76ch; line-height: 1.6; }
 
 /* =========================== ПРИВЕТСТВИЕ ================================ */
 
@@ -1367,6 +1367,44 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   .dev__text { padding-left: 0; border-left: 0; text-align: left; }
   .dev::after { font-size: 110px; right: 8px; bottom: -26px; }
 }
+
+/* ======================= ЗАЧЕМ НУЖЕН ТРЕНАЖЁР ============================ */
+
+/* Не карточки: ниже идёт сетка карточек-уровней, и ещё один такой же ряд
+   сливался бы с ней. Здесь — текстовые блоки под акцентной чертой. */
+.why {
+  list-style: none;
+  margin: 0 0 30px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px 28px;
+}
+
+.why__item { padding-top: 14px; border-top: 2px solid var(--accent); }
+
+.why__title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -.015em;
+  margin-bottom: 7px;
+}
+
+.why__text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* Чередуем насыщенность черты, чтобы ряд не выглядел разлинованным */
+.why__item:nth-child(2) { border-top-color: color-mix(in srgb, var(--accent) 62%, transparent); }
+.why__item:nth-child(3) { border-top-color: color-mix(in srgb, var(--accent) 42%, transparent); }
+.why__item:nth-child(4) { border-top-color: color-mix(in srgb, var(--accent) 26%, transparent); }
+
+@media (max-width: 720px) {
+  .why { gap: 20px; margin-bottom: 24px; }
 }
 
   </style>
@@ -1527,8 +1565,55 @@ window.Theme = (function () {
     <section class="screen screen--levels" id="screen-levels">
       <div class="section-head">
         <h2 class="section-head__title" id="greeting">Привет!</h2>
-        <p class="section-head__sub" id="levels-sub"></p>
+        <p class="section-head__sub">
+          Оператору информационных систем и ресурсов документы встречаются
+          каждый день: входящие письма нужно принять и зарегистрировать,
+          приказы и служебные записки — подготовить, карточки в системе
+          электронного документооборота — заполнить. Оформление здесь
+          не формальность: документ с неверными реквизитами теряет
+          юридическую силу и возвращается на доработку.
+        </p>
       </div>
+
+      <ul class="why">
+        <li class="why__item">
+          <h3 class="why__title">Чтобы документ имел силу</h3>
+          <p class="why__text">
+            Состав реквизитов и их расположение на листе установлены
+            ГОСТ Р 7.0.97-2025. Пропущенное место составления, подпись
+            с лишней должностью, гриф не в том углу — и документ придётся
+            переделывать.
+          </p>
+        </li>
+        <li class="why__item">
+          <h3 class="why__title">Чтобы уверенно работать в СЭД</h3>
+          <p class="why__text">
+            Карточка документа и шаблон в системе электронного
+            документооборота построены на тех же тридцати реквизитах.
+            Не зная их состава, не настроить шаблон и не проверить
+            документ, который пришёл от коллеги.
+          </p>
+        </li>
+        <li class="why__item">
+          <h3 class="why__title">Чтобы сдать практику и экзамен</h3>
+          <p class="why__text">
+            Оформление по ГОСТ спрашивают на учебной практике,
+            в курсовых и выпускных работах и на экзамене по профессии.
+            Разобраться один раз выгоднее, чем каждый раз искать образец.
+          </p>
+        </li>
+        <li class="why__item">
+          <h3 class="why__title">Почему тренажёр, а не конспект</h3>
+          <p class="why__text">
+            Тридцать реквизитов не запоминаются с листа. Здесь вы
+            раскладываете их по настоящему бланку сами, а каждая ошибка
+            тут же разбирается со ссылкой на пункт стандарта. Следующий
+            уровень открывается только после безошибочного прохождения
+            предыдущего.
+          </p>
+        </li>
+      </ul>
+
       <div class="levels" id="levels-grid"></div>
       <div class="overall" id="overall"></div>
     </section>
@@ -4262,7 +4347,6 @@ window.Game = (function () {
     nameError: $('name-error'),
     greeting:  $('greeting'),
 
-    levelsSub:  $('levels-sub'),
     levelsGrid: $('levels-grid'),
     overall:    $('overall'),
 
@@ -4357,7 +4441,6 @@ window.Game = (function () {
   }
 
   function renderLevels() {
-    ui.levelsSub.textContent = TOPIC.desc;
     ui.levelsGrid.innerHTML = '';
 
     TOPIC.levels.forEach(function (level, i) {
