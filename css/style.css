@@ -1249,12 +1249,6 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 /* ======================== КАРТОЧКА РАЗРАБОТЧИКА ========================== */
 
 .dev {
-  /* Кадрирование «лицо и плечи» из полного снимка.
-     --dev-zoom: насколько приблизить (больше — крупнее лицо)
-     --dev-y:    вертикальное смещение кадра (меньше — кадр выше) */
-  --dev-zoom: 2.1;
-  --dev-y: 30%;
-
   display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
   margin: 0 0 26px;
   padding: 22px 24px;
@@ -1285,9 +1279,6 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   position: absolute; inset: 0;
   width: 100%; height: 100%;
   object-fit: cover;
-  object-position: 50% var(--dev-y);
-  transform: scale(var(--dev-zoom));
-  transform-origin: 50% var(--dev-y);
 }
 
 .dev__body { flex: 1 1 320px; min-width: 0; }
