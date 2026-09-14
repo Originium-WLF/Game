@@ -529,8 +529,9 @@
     hudMistakes: $('hud-mistakes'),
     hudProgress: $('hud-progress'),
     restart:     $('btn-restart'),
-    praise:      $('praise'),
-    praiseText:  $('praise-text'),
+    feedback:     $('feedback'),
+    feedbackIcon: $('feedback-icon'),
+    feedbackText: $('feedback-text'),
     mistakes:      $('mistakes'),
     mistakesList:  $('mistakes-list'),
     mistakesCount: $('mistakes-count')

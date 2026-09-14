@@ -54,7 +54,6 @@
   --paper-good-line: #b3e3c9;
   --paper-bad:       #c3372b;
   --paper-bad-bg:    #fbe9e7;
-  --paper-warn:      #8a5a05;
 
   /* блок кода */
   --code-bg:      #14131f;
@@ -596,7 +595,6 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
 .board--layout .slot { border-color: var(--line-strong); background: var(--surface-2); }
 
 .slot__placeholder { display: block; font-style: italic; }
-.slot__hint { display: block; font-size: 12px; color: var(--warn); margin-top: 4px; font-style: normal; }
 .slot__content { display: block; color: inherit; font-style: normal; }
 .board--doc .slot__content { color: var(--paper-ink); font-family: var(--doc); font-size: 15.5px; }
 
@@ -650,8 +648,6 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
 .board--doc .slot.is-wrong .slot__placeholder { color: var(--paper-bad); }
 .board--doc .slot.is-wrong .slot__mark { background: var(--paper-bad); }
 
-.board--doc .slot__hint { color: var(--paper-warn); }
-
 .board--doc .slot.is-over {
   background: #e7e4fb;
   border-color: var(--accent);
@@ -680,7 +676,6 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
 }
 .board--code .slot__content    { display: inline; color: inherit; }
 .board--code .slot__placeholder { display: inline; }
-.board--code .slot__hint       { display: block; font-size: 11px; }
 
 @keyframes pop {
   0%   { transform: scale(.93); }
@@ -1206,33 +1201,47 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 .purpose__text { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
 .purpose__text b { color: var(--ink); }
 
-/* ============================== ПОХВАЛА ================================== */
+/* ========================== ОБРАТНАЯ СВЯЗЬ =============================== */
 
-.praise {
+/* Одна полоса над бланком на оба случая: похвала за верный ответ
+   и ободрение за неверный. Подсказок в самом поле больше нет. */
+.feedback {
   display: flex; align-items: flex-start; gap: 12px;
-  background: var(--good-soft);
-  border: 1px solid var(--good-line);
-  border-left: 4px solid var(--good);
   border-radius: var(--r-md);
   padding: 13px 18px;
   margin-bottom: 18px;
   font-size: 14px;
   color: var(--ink);
+  animation: feedback-in .34s cubic-bezier(.2,.7,.3,1);
 }
-.praise__icon {
+
+.feedback--good {
+  background: var(--good-soft);
+  border: 1px solid var(--good-line);
+  border-left: 4px solid var(--good);
+}
+.feedback--bad {
+  background: var(--bad-soft);
+  border: 1px solid var(--bad-line);
+  border-left: 4px solid var(--bad);
+}
+
+.feedback__icon {
   flex: none;
   width: 22px; height: 22px;
   display: grid; place-items: center;
   border-radius: 50%;
-  background: var(--good); color: #fff;
+  color: #fff;
   font-size: 12px; font-weight: 700;
 }
-.praise__text { line-height: 1.45; }
-.praise__text b { color: var(--good); font-weight: 700; }
+.feedback--good .feedback__icon { background: var(--good); }
+.feedback--bad  .feedback__icon { background: var(--bad); }
 
-.praise.is-new { animation: praise-in .34s cubic-bezier(.2,.7,.3,1); }
+.feedback__text { line-height: 1.45; }
+.feedback--good .feedback__text b { color: var(--good); font-weight: 700; }
+.feedback--bad  .feedback__text b { color: var(--bad);  font-weight: 700; }
 
-@keyframes praise-in {
+@keyframes feedback-in {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: none; }
 }

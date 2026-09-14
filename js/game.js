@@ -17,13 +17,20 @@ window.Game = (function () {
     'В точку! Молодец',
     'Верно! Хорошо разбираешься'
   ];
-  var praiseAt = 0;
 
-  function nextPraise() {
-    var phrase = PRAISE[praiseAt % PRAISE.length];
-    praiseAt++;
-    return phrase;
-  }
+  /* Ошибка — не приговор: подбадриваем и зовём попробовать снова */
+  var ENCOURAGE = [
+    'Неправильно — попробуй ещё!',
+    'Пока мимо. Попробуй ещё раз!',
+    'Не тот реквизит — не сдавайся, пробуй!',
+    'Неверно. Ещё попытка — у тебя получится!',
+    'Мимо — попробуй другую карточку!'
+  ];
+
+  var praiseAt = 0, encourageAt = 0;
+
+  function nextPraise()    { return PRAISE[praiseAt++ % PRAISE.length]; }
+  function nextEncourage() { return ENCOURAGE[encourageAt++ % ENCOURAGE.length]; }
   var MAX_PER_SLOT = POINTS[0];
 
   var el = {};            // ссылки на DOM
@@ -236,7 +243,7 @@ window.Game = (function () {
     checkBankEmpty();
 
     var phrase = nextPraise();
-    showPraise(phrase, card._def, earned, st.attempts);
+    showGoodFeedback(phrase, card._def, earned, st.attempts);
     toast(phrase + '  +' + earned, 'good');
     updateHud();
 
@@ -262,26 +269,18 @@ window.Game = (function () {
 
     card.classList.add('is-flying');
     logMistake(card._def, st);
-    toast('Не подходит — разбор внизу страницы', 'bad');
+
+    var phrase = nextEncourage();
+    showBadFeedback(phrase, card._def);
+    toast(phrase, 'bad');
     updateHud();
 
     window.setTimeout(function () {
       slot.classList.remove('is-wrong');
       slot.innerHTML = backup;
-      addHint(slot, st);
       card.classList.remove('is-flying');
       busy = false;
     }, 950);
-  }
-
-  /** После ошибки поле начинает подсказывать, что от него хотят */
-  function addHint(slot, st) {
-    if (slot.querySelector('.slot__hint') || !st.def.hint) return;
-    var hint = document.createElement('span');
-    hint.className = 'slot__hint';
-    hint.textContent = st.def.hint;
-    slot.appendChild(hint);
-    slot.setAttribute('aria-label', 'Пустое поле: ' + st.def.hint);
   }
 
   function mark(sign) {
@@ -300,34 +299,46 @@ window.Game = (function () {
     }
   }
 
-  /* ---------------------------- похвала ---------------------------- */
+  /* ------------------------ обратная связь -------------------------- */
 
   function resetPraise() {
-    el.praise.hidden = true;
-    el.praiseText.textContent = '';
+    el.feedback.hidden = true;
+    el.feedbackText.textContent = '';
     praiseAt = 0;
+    encourageAt = 0;
   }
 
-  /** Зелёная полоса над бланком: что именно студент поставил верно */
-  function showPraise(phrase, cardDef, earned, attempts) {
-    var what = cardDef.tag || cardDef.text;
-    var tail = (attempts === 1)
-      ? ' с первой попытки'
-      : ' со ' + attempts + '-й попытки';
+  /** Зелёная полоса: что именно студент поставил верно */
+  function showGoodFeedback(phrase, cardDef, earned, attempts) {
+    /* «со» нужно только перед «второй»: со второй, но с третьей, с четвёртой */
+    var tail = (attempts === 1) ? ' с первой попытки'
+             : (attempts === 2) ? ' со второй попытки'
+             : ' с ' + attempts + '-й попытки';
+    showFeedback('good', '✓', phrase,
+      ' «' + (cardDef.tag || cardDef.text) + '» на своём месте' + tail +
+      '. +' + earned + ' очков.');
+  }
 
-    el.praiseText.innerHTML = '';
+  /** Красная полоса: ободряем и зовём попробовать снова */
+  function showBadFeedback(phrase, cardDef) {
+    showFeedback('bad', '✕', phrase,
+      ' «' + (cardDef.tag || cardDef.text) + '» в это поле не подходит. ' +
+      'Разбор — внизу страницы.');
+  }
 
+  function showFeedback(kind, icon, phrase, tail) {
+    el.feedback.className = 'feedback feedback--' + kind;
+    el.feedbackIcon.textContent = icon;
+
+    el.feedbackText.innerHTML = '';
     var strong = document.createElement('b');
     strong.textContent = phrase;
-    el.praiseText.appendChild(strong);
-    el.praiseText.appendChild(document.createTextNode(
-      ' «' + what + '» на своём месте' + tail + '. +' + earned + ' очков.'
-    ));
+    el.feedbackText.appendChild(strong);
+    el.feedbackText.appendChild(document.createTextNode(tail));
 
-    el.praise.hidden = false;
-    el.praise.classList.remove('is-new');
-    void el.praise.offsetWidth;                 // перезапуск анимации
-    el.praise.classList.add('is-new');
+    el.feedback.hidden = false;
+    void el.feedback.offsetWidth;               // перезапуск анимации
+    el.feedback.classList.add('is-new');
   }
 
   /* --------------------------- разбор ошибок ----------------------- */

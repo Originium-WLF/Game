@@ -60,7 +60,6 @@
   --paper-good-line: #b3e3c9;
   --paper-bad:       #c3372b;
   --paper-bad-bg:    #fbe9e7;
-  --paper-warn:      #8a5a05;
 
   /* блок кода */
   --code-bg:      #14131f;
@@ -602,7 +601,6 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
 .board--layout .slot { border-color: var(--line-strong); background: var(--surface-2); }
 
 .slot__placeholder { display: block; font-style: italic; }
-.slot__hint { display: block; font-size: 12px; color: var(--warn); margin-top: 4px; font-style: normal; }
 .slot__content { display: block; color: inherit; font-style: normal; }
 .board--doc .slot__content { color: var(--paper-ink); font-family: var(--doc); font-size: 15.5px; }
 
@@ -656,8 +654,6 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
 .board--doc .slot.is-wrong .slot__placeholder { color: var(--paper-bad); }
 .board--doc .slot.is-wrong .slot__mark { background: var(--paper-bad); }
 
-.board--doc .slot__hint { color: var(--paper-warn); }
-
 .board--doc .slot.is-over {
   background: #e7e4fb;
   border-color: var(--accent);
@@ -686,7 +682,6 @@ h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
 }
 .board--code .slot__content    { display: inline; color: inherit; }
 .board--code .slot__placeholder { display: inline; }
-.board--code .slot__hint       { display: block; font-size: 11px; }
 
 @keyframes pop {
   0%   { transform: scale(.93); }
@@ -1212,33 +1207,47 @@ body.is-dragging { cursor: grabbing; user-select: none; }
 .purpose__text { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-soft); }
 .purpose__text b { color: var(--ink); }
 
-/* ============================== ПОХВАЛА ================================== */
+/* ========================== ОБРАТНАЯ СВЯЗЬ =============================== */
 
-.praise {
+/* Одна полоса над бланком на оба случая: похвала за верный ответ
+   и ободрение за неверный. Подсказок в самом поле больше нет. */
+.feedback {
   display: flex; align-items: flex-start; gap: 12px;
-  background: var(--good-soft);
-  border: 1px solid var(--good-line);
-  border-left: 4px solid var(--good);
   border-radius: var(--r-md);
   padding: 13px 18px;
   margin-bottom: 18px;
   font-size: 14px;
   color: var(--ink);
+  animation: feedback-in .34s cubic-bezier(.2,.7,.3,1);
 }
-.praise__icon {
+
+.feedback--good {
+  background: var(--good-soft);
+  border: 1px solid var(--good-line);
+  border-left: 4px solid var(--good);
+}
+.feedback--bad {
+  background: var(--bad-soft);
+  border: 1px solid var(--bad-line);
+  border-left: 4px solid var(--bad);
+}
+
+.feedback__icon {
   flex: none;
   width: 22px; height: 22px;
   display: grid; place-items: center;
   border-radius: 50%;
-  background: var(--good); color: #fff;
+  color: #fff;
   font-size: 12px; font-weight: 700;
 }
-.praise__text { line-height: 1.45; }
-.praise__text b { color: var(--good); font-weight: 700; }
+.feedback--good .feedback__icon { background: var(--good); }
+.feedback--bad  .feedback__icon { background: var(--bad); }
 
-.praise.is-new { animation: praise-in .34s cubic-bezier(.2,.7,.3,1); }
+.feedback__text { line-height: 1.45; }
+.feedback--good .feedback__text b { color: var(--good); font-weight: 700; }
+.feedback--bad  .feedback__text b { color: var(--bad);  font-weight: 700; }
 
-@keyframes praise-in {
+@keyframes feedback-in {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: none; }
 }
@@ -1503,9 +1512,9 @@ window.Theme = (function () {
         <div class="theory__body" id="theory-body"></div>
       </details>
 
-      <div class="praise" id="praise" hidden aria-live="polite">
-        <span class="praise__icon" aria-hidden="true">✓</span>
-        <span class="praise__text" id="praise-text"></span>
+      <div class="feedback" id="feedback" hidden aria-live="polite">
+        <span class="feedback__icon" id="feedback-icon" aria-hidden="true">✓</span>
+        <span class="feedback__text" id="feedback-text"></span>
       </div>
 
       <div class="playfield">
@@ -3630,13 +3639,20 @@ window.Game = (function () {
     'В точку! Молодец',
     'Верно! Хорошо разбираешься'
   ];
-  var praiseAt = 0;
 
-  function nextPraise() {
-    var phrase = PRAISE[praiseAt % PRAISE.length];
-    praiseAt++;
-    return phrase;
-  }
+  /* Ошибка — не приговор: подбадриваем и зовём попробовать снова */
+  var ENCOURAGE = [
+    'Неправильно — попробуй ещё!',
+    'Пока мимо. Попробуй ещё раз!',
+    'Не тот реквизит — не сдавайся, пробуй!',
+    'Неверно. Ещё попытка — у тебя получится!',
+    'Мимо — попробуй другую карточку!'
+  ];
+
+  var praiseAt = 0, encourageAt = 0;
+
+  function nextPraise()    { return PRAISE[praiseAt++ % PRAISE.length]; }
+  function nextEncourage() { return ENCOURAGE[encourageAt++ % ENCOURAGE.length]; }
   var MAX_PER_SLOT = POINTS[0];
 
   var el = {};            // ссылки на DOM
@@ -3849,7 +3865,7 @@ window.Game = (function () {
     checkBankEmpty();
 
     var phrase = nextPraise();
-    showPraise(phrase, card._def, earned, st.attempts);
+    showGoodFeedback(phrase, card._def, earned, st.attempts);
     toast(phrase + '  +' + earned, 'good');
     updateHud();
 
@@ -3875,26 +3891,18 @@ window.Game = (function () {
 
     card.classList.add('is-flying');
     logMistake(card._def, st);
-    toast('Не подходит — разбор внизу страницы', 'bad');
+
+    var phrase = nextEncourage();
+    showBadFeedback(phrase, card._def);
+    toast(phrase, 'bad');
     updateHud();
 
     window.setTimeout(function () {
       slot.classList.remove('is-wrong');
       slot.innerHTML = backup;
-      addHint(slot, st);
       card.classList.remove('is-flying');
       busy = false;
     }, 950);
-  }
-
-  /** После ошибки поле начинает подсказывать, что от него хотят */
-  function addHint(slot, st) {
-    if (slot.querySelector('.slot__hint') || !st.def.hint) return;
-    var hint = document.createElement('span');
-    hint.className = 'slot__hint';
-    hint.textContent = st.def.hint;
-    slot.appendChild(hint);
-    slot.setAttribute('aria-label', 'Пустое поле: ' + st.def.hint);
   }
 
   function mark(sign) {
@@ -3913,34 +3921,46 @@ window.Game = (function () {
     }
   }
 
-  /* ---------------------------- похвала ---------------------------- */
+  /* ------------------------ обратная связь -------------------------- */
 
   function resetPraise() {
-    el.praise.hidden = true;
-    el.praiseText.textContent = '';
+    el.feedback.hidden = true;
+    el.feedbackText.textContent = '';
     praiseAt = 0;
+    encourageAt = 0;
   }
 
-  /** Зелёная полоса над бланком: что именно студент поставил верно */
-  function showPraise(phrase, cardDef, earned, attempts) {
-    var what = cardDef.tag || cardDef.text;
-    var tail = (attempts === 1)
-      ? ' с первой попытки'
-      : ' со ' + attempts + '-й попытки';
+  /** Зелёная полоса: что именно студент поставил верно */
+  function showGoodFeedback(phrase, cardDef, earned, attempts) {
+    /* «со» нужно только перед «второй»: со второй, но с третьей, с четвёртой */
+    var tail = (attempts === 1) ? ' с первой попытки'
+             : (attempts === 2) ? ' со второй попытки'
+             : ' с ' + attempts + '-й попытки';
+    showFeedback('good', '✓', phrase,
+      ' «' + (cardDef.tag || cardDef.text) + '» на своём месте' + tail +
+      '. +' + earned + ' очков.');
+  }
 
-    el.praiseText.innerHTML = '';
+  /** Красная полоса: ободряем и зовём попробовать снова */
+  function showBadFeedback(phrase, cardDef) {
+    showFeedback('bad', '✕', phrase,
+      ' «' + (cardDef.tag || cardDef.text) + '» в это поле не подходит. ' +
+      'Разбор — внизу страницы.');
+  }
 
+  function showFeedback(kind, icon, phrase, tail) {
+    el.feedback.className = 'feedback feedback--' + kind;
+    el.feedbackIcon.textContent = icon;
+
+    el.feedbackText.innerHTML = '';
     var strong = document.createElement('b');
     strong.textContent = phrase;
-    el.praiseText.appendChild(strong);
-    el.praiseText.appendChild(document.createTextNode(
-      ' «' + what + '» на своём месте' + tail + '. +' + earned + ' очков.'
-    ));
+    el.feedbackText.appendChild(strong);
+    el.feedbackText.appendChild(document.createTextNode(tail));
 
-    el.praise.hidden = false;
-    el.praise.classList.remove('is-new');
-    void el.praise.offsetWidth;                 // перезапуск анимации
-    el.praise.classList.add('is-new');
+    el.feedback.hidden = false;
+    void el.feedback.offsetWidth;               // перезапуск анимации
+    el.feedback.classList.add('is-new');
   }
 
   /* --------------------------- разбор ошибок ----------------------- */
@@ -4685,8 +4705,9 @@ window.Game = (function () {
     hudMistakes: $('hud-mistakes'),
     hudProgress: $('hud-progress'),
     restart:     $('btn-restart'),
-    praise:      $('praise'),
-    praiseText:  $('praise-text'),
+    feedback:     $('feedback'),
+    feedbackIcon: $('feedback-icon'),
+    feedbackText: $('feedback-text'),
     mistakes:      $('mistakes'),
     mistakesList:  $('mistakes-list'),
     mistakesCount: $('mistakes-count')
