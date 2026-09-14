@@ -1187,12 +1187,26 @@ body.is-dragging { cursor: grabbing; user-select: none; }
   white-space: nowrap;
 }
 
+/* Принадлежность ресурса. В узкой шапке уступает место названию страницы. */
+.brand__tag {
+  font-size: 12px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  padding-left: 11px;
+  border-left: 1px solid var(--line);
+}
+
+@media (max-width: 1100px) {
+  .brand__tag { display: none; }
+}
+
 /* порядок на приветственном экране: знак, название, затем пояснение */
 .welcome__badge { margin-bottom: 24px; }
 .welcome__title { margin-bottom: 12px; }
 
 @media (max-width: 720px) {
   .brand__name { display: none; }      /* на телефоне остаётся только знак */
+  .brand__tag  { display: none; }
   .welcome__mark { width: 52px; height: 52px; }
 }
 
